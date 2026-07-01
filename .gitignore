@@ -1,4 +1,35 @@
+# Dependencies
 node_modules/
+**/node_modules/
+
+# Environment variables
 .env
+**/.env
+
+# Build outputs
 dist/
 build/
+**/dist/
+**/build/
+
+# Prisma
+server/src/generated/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Agent / Tool Caches
+.kiro/
+.agents/

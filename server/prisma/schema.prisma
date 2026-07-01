@@ -1,0 +1,117 @@
+// Prisma schema — Hindustan Projects
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Service — IT services offered by the company
+// ─────────────────────────────────────────────────────────────────
+model Service {
+  id               String   @id @default(cuid())
+  title            String
+  slug             String   @unique
+  shortDescription String
+  fullDescription  String
+  icon             String   // Lucide icon name or SVG string
+  order            Int      @default(0)
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([slug])
+  @@index([isActive, order])
+  @@map("services")
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Project — Portfolio items
+// ─────────────────────────────────────────────────────────────────
+model Project {
+  id           String   @id @default(cuid())
+  title        String
+  slug         String   @unique
+  clientName   String
+  description  String
+  thumbnailUrl String?
+  images       String[] // Array of image URLs (Cloudinary)
+  technologies String[] // e.g. ["React", "Node.js", "PostgreSQL"]
+  category     String   // e.g. "Web", "Marketing", "Branding"
+  isFeatured   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([slug])
+  @@index([isFeatured])
+  @@index([category])
+  @@map("projects")
+}
+
+// ─────────────────────────────────────────────────────────────────
+// TeamMember — About page team section
+// ─────────────────────────────────────────────────────────────────
+model TeamMember {
+  id          String   @id @default(cuid())
+  name        String
+  role        String
+  photoUrl    String?
+  bio         String?
+  linkedinUrl String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([order])
+  @@map("team_members")
+}
+
+// ─────────────────────────────────────────────────────────────────
+// ContactLead — Form submissions from the contact page
+// ─────────────────────────────────────────────────────────────────
+enum LeadStatus {
+  NEW
+  CONTACTED
+  CLOSED
+}
+
+model ContactLead {
+  id                String     @id @default(cuid())
+  name              String
+  email             String
+  phone             String?
+  message           String
+  serviceInterested String?
+  status            LeadStatus @default(NEW)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("contact_leads")
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Admin — CMS dashboard users
+// ─────────────────────────────────────────────────────────────────
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+}
+
+model Admin {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  role         AdminRole @default(ADMIN)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([email])
+  @@map("admins")
+}

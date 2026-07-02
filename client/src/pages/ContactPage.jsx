@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 import { MapPin, Phone, Mail, MessageCircle, Send, CheckCircle, AlertCircle, ChevronDown } from 'lucide-react'
 import { Container, Button } from '@/components/ui'
 import { useServices } from '@/hooks/useServices'
-import { useFaqs } from '@/hooks/useContent'
+import { useFaqs, useSiteSettings } from '@/hooks/useContent'
 import { api } from '@/utils/api'
 import { fadeUp, staggerContainer } from '@/utils/motion'
 import contactHeroPerson from '@/assets/contact_hero_person.png'
@@ -128,6 +128,14 @@ export default function ContactPage() {
 
   const { data: faqsData } = useFaqs()
   const faqs = faqsData?.data?.length ? faqsData.data : FAQ_FALLBACK
+
+  const { data: settingsData } = useSiteSettings()
+  const cfg = settingsData?.data || {}
+  const phone    = cfg.phone    || '+91 99999 99999'
+  const email    = cfg.email    || 'info@hindustanprojects.com'
+  const address  = cfg.address  || 'Bhilwara, Rajasthan 311001, India'
+  const whatsapp = cfg.whatsapp || cfg.phone || '919999999999'
+  const whatsappNum = whatsapp.replace(/[^0-9]/g, '')
 
   const {
     register,
@@ -300,21 +308,21 @@ export default function ContactPage() {
                 <ContactInfoCard
                   icon={MapPin}
                   label="Office Address"
-                  value="Bhilwara, Rajasthan, India – 311 001"
+                  value={address}
                   borderColor="border-l-blue-500"
                 />
                 <ContactInfoCard
                   icon={Phone}
                   label="Phone Number"
-                  value="+91 99999 99999"
-                  href="tel:+919999999999"
+                  value={phone}
+                  href={`tel:${phone.replace(/\s+/g, '')}`}
                   borderColor="border-l-amber-500"
                 />
                 <ContactInfoCard
                   icon={Mail}
                   label="Email Address"
-                  value="info@hindustanprojects.com"
-                  href="mailto:info@hindustanprojects.com"
+                  value={email}
+                  href={`mailto:${email}`}
                   borderColor="border-l-pink-500"
                 />
               </motion.div>
@@ -322,7 +330,7 @@ export default function ContactPage() {
               {/* Pulsing WhatsApp CTA */}
               <motion.div variants={fadeUp}>
                 <a
-                  href="https://wa.me/919999999999?text=Hi!%20I%27d%20like%20to%20discuss%20a%20project."
+                  href={`https://wa.me/${whatsappNum}?text=Hi!%20I%27d%20like%20to%20discuss%20a%20project.`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group relative flex items-center gap-3 px-6 py-4 rounded-2xl border border-[#25D366]/40

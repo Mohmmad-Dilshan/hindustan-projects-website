@@ -4,14 +4,14 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, Pencil, Trash2, X, Check, Star } from 'lucide-react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { api } from '@/utils/api'
-import { SEO } from '@/components/ui'
+import { SEO, ImageUploader } from '@/components/ui'
 
 const CATEGORIES = ['Web', 'App', 'Marketing', 'Branding', 'Software']
 
 function ProjectForm({ initial, onSave, onCancel, loading }) {
-  const { register, handleSubmit } = useForm({
+  const { register, handleSubmit, control } = useForm({
     defaultValues: initial ?? {
       title: '', slug: '', clientName: '', description: '',
       thumbnailUrl: '', technologies: '', category: 'Web', isFeatured: false,
@@ -58,12 +58,6 @@ function ProjectForm({ initial, onSave, onCancel, loading }) {
           </select>
         </div>
         <div>
-          <label className="text-xs font-medium text-gray-600 block mb-1">Thumbnail URL</label>
-          <input {...register('thumbnailUrl')} placeholder="https://..."
-            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg
-              focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue" />
-        </div>
-        <div>
           <label className="text-xs font-medium text-gray-600 block mb-1">
             Technologies (comma separated)
           </label>
@@ -78,6 +72,18 @@ function ProjectForm({ initial, onSave, onCancel, loading }) {
           className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg
             focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue resize-none" />
       </div>
+      {/* Thumbnail upload */}
+      <Controller
+        name="thumbnailUrl"
+        control={control}
+        render={({ field }) => (
+          <ImageUploader
+            label="Thumbnail Image"
+            value={field.value}
+            onChange={field.onChange}
+          />
+        )}
+      />
       <div className="flex items-center gap-2">
         <input type="checkbox" id="isFeatured" {...register('isFeatured')} className="rounded" />
         <label htmlFor="isFeatured" className="text-sm text-gray-600">Featured project</label>

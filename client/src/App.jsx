@@ -10,6 +10,7 @@ import ServiceDetailPage from '@/pages/ServiceDetailPage'
 import AboutPage from '@/pages/AboutPage'
 import PortfolioPage from '@/pages/PortfolioPage'
 import ContactPage from '@/pages/ContactPage'
+import NotFoundPage from '@/pages/NotFoundPage'
 
 // Admin pages — lazy loaded
 const AdminLoginPage    = lazy(() => import('@/pages/admin/AdminLoginPage'))
@@ -44,6 +45,7 @@ export default function App() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/portfolio" element={<PortfolioPage />} />
         <Route path="/contact" element={<ContactPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
 
       {/* ── Admin ── */}

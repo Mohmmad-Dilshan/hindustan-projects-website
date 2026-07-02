@@ -4,12 +4,12 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, Pencil, Trash2, X, Check } from 'lucide-react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { api } from '@/utils/api'
-import { SEO } from '@/components/ui'
+import { SEO, ImageUploader } from '@/components/ui'
 
 function TeamForm({ initial, onSave, onCancel, loading }) {
-  const { register, handleSubmit } = useForm({
+  const { register, handleSubmit, control } = useForm({
     defaultValues: initial ?? { name: '', role: '', photoUrl: '', bio: '', linkedinUrl: '', order: 0 },
   })
 
@@ -29,12 +29,6 @@ function TeamForm({ initial, onSave, onCancel, loading }) {
               focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue" />
         </div>
         <div>
-          <label className="text-xs font-medium text-gray-600 block mb-1">Photo URL</label>
-          <input {...register('photoUrl')} placeholder="https://..."
-            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg
-              focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue" />
-        </div>
-        <div>
           <label className="text-xs font-medium text-gray-600 block mb-1">LinkedIn URL</label>
           <input {...register('linkedinUrl')} placeholder="https://linkedin.com/in/..."
             className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg
@@ -47,6 +41,14 @@ function TeamForm({ initial, onSave, onCancel, loading }) {
               focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue" />
         </div>
       </div>
+      {/* Photo upload */}
+      <Controller
+        name="photoUrl"
+        control={control}
+        render={({ field }) => (
+          <ImageUploader label="Profile Photo" value={field.value} onChange={field.onChange} />
+        )}
+      />
       <div>
         <label className="text-xs font-medium text-gray-600 block mb-1">Bio</label>
         <textarea rows={2} {...register('bio')}

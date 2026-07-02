@@ -3,7 +3,7 @@
  */
 import { Link } from 'react-router-dom'
 import { Rocket, Award, Clock, TrendingUp, CheckCircle2 } from 'lucide-react'
-import { Container, Button } from '@/components/ui'
+import { Container, Button, SEO } from '@/components/ui'
 import PortfolioSection from '@/components/sections/PortfolioSection'
 
 const STATS = [
@@ -18,6 +18,7 @@ import portfolioHeroNewFit from '@/assets/portfolio_hero_new_fit.png'
 export default function PortfolioPage() {
   return (
     <>
+      <SEO title="Portfolio" description="View Hindustan Projects portfolio — 50+ projects delivered across web development, digital marketing, mobile apps and more." path="/portfolio" />
       {/* ── Hero ─────────────────────────────────────────────────── */}
       <section className="relative pt-36 pb-0 overflow-hidden bg-[#050e20] flex flex-col justify-between">
         {/* Grid bg */}

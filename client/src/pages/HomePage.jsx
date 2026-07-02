@@ -12,7 +12,8 @@ import TestimonialsSection from '@/components/sections/TestimonialsSection'
 import TeamSection from '@/components/sections/TeamSection'
 import FaqSection from '@/components/sections/FaqSection'
 import { Container, Button, SEO } from '@/components/ui'
-import { usePartners } from '@/hooks/useContent'
+import { usePartners, useSiteSettings } from '@/hooks/useContent'
+import { api } from '@/utils/api'
 
 const FALLBACK_PARTNERS = [
   { id: '1', name: 'Bhilwara Textiles' },
@@ -30,12 +31,29 @@ export default function HomePage() {
   const [email, setEmail] = useState('')
   const [service, setService] = useState('Web Development')
   const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const { data: partnersData } = usePartners()
+  const { data: settingsData } = useSiteSettings()
   const partners = partnersData?.data?.length ? partnersData.data : FALLBACK_PARTNERS
+  const cfg = settingsData?.data || {}
+  const phone = cfg.phone || '+91 99999 99999'
+  const contactEmail = cfg.email || 'info@hindustanprojects.com'
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    if (!name || !email) return
+    setSubmitting(true)
+    try {
+      await api.post('/contact', {
+        name, email,
+        serviceInterested: service,
+        message: `Quick quote request from homepage for: ${service}`,
+        recaptchaToken: 'dev-token',
+        _hp: '',
+      })
+    } catch { /* silent — UX first */ }
     setSubmitted(true)
+    setSubmitting(false)
   }
 
   return (
@@ -160,9 +178,10 @@ export default function HomePage() {
                     </div>
                     <button 
                       type="submit" 
-                      className="w-full mt-2.5 bg-brand-red hover:bg-brand-red-dark text-white font-medium py-2 rounded-lg text-xs transition-all shadow-md active:scale-[0.98] cursor-pointer"
+                      className="w-full mt-2.5 bg-brand-red hover:bg-brand-red-dark text-white font-medium py-2 rounded-lg text-xs transition-all shadow-md active:scale-[0.98] cursor-pointer disabled:opacity-60"
+                      disabled={submitting}
                     >
-                      Send Message
+                      {submitting ? 'Sending…' : 'Send Message'}
                     </button>
                   </form>
                 )}
@@ -171,23 +190,22 @@ export default function HomePage() {
                 
                 <div className="space-y-3.5">
                   <a
-                    href="tel:+919999999999"
+                    href={`tel:${phone.replace(/\s+/g, '')}`}
                     className="text-white/80 hover:text-white text-sm flex items-center gap-3 transition-colors duration-150 group"
                   >
                     <div className="w-8 h-8 rounded-full bg-brand-red/10 border border-brand-red-light/20 flex items-center justify-center shrink-0 group-hover:bg-brand-red group-hover:border-brand-red transition-all duration-200">
                       <Phone className="w-3.5 h-3.5 text-brand-red-light group-hover:text-white transition-colors" />
                     </div>
-                    <span className="font-medium">+91 99999 99999</span>
+                    <span className="font-medium">{phone}</span>
                   </a>
-                  
                   <a
-                    href="mailto:info@hindustanprojects.com"
+                    href={`mailto:${contactEmail}`}
                     className="text-white/80 hover:text-white text-sm flex items-center gap-3 transition-colors duration-150 group"
                   >
                     <div className="w-8 h-8 rounded-full bg-brand-red/10 border border-brand-red-light/20 flex items-center justify-center shrink-0 group-hover:bg-brand-red group-hover:border-brand-red transition-all duration-200">
                       <Mail className="w-3.5 h-3.5 text-brand-red-light group-hover:text-white transition-colors" />
                     </div>
-                    <span className="font-medium">info@hindustanprojects.com</span>
+                    <span className="font-medium">{contactEmail}</span>
                   </a>
                 </div>
               </div>

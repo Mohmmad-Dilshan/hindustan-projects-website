@@ -50,6 +50,7 @@ export default function AboutPage() {
   const milestones = milestonesData?.data?.length ? milestonesData.data : (milestonesLoading ? [] : FALLBACK_MILESTONES)
   return (
     <>
+      <SEO title="About Us" description="Learn about Hindustan Projects — IT services company in Bhilwara, Rajasthan. Our story, team, mission and vision." path="/about" />
       {/* ── Hero ─────────────────────────────────────────────────── */}
       <section className="relative pt-36 pb-24 overflow-hidden bg-[#050e20]">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff06_1px,transparent_1px),linear-gradient(to_bottom,#ffffff06_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />

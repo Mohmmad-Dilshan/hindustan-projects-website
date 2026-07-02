@@ -3,7 +3,7 @@
  */
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { AlertCircle, Trash2, ChevronDown, MessageSquare, Mail, Phone, Filter, Inbox, Eye, X, Calendar } from 'lucide-react'
+import { AlertCircle, Trash2, ChevronDown, MessageSquare, Mail, Phone, Filter, Inbox, Eye, X, Calendar, Download } from 'lucide-react'
 import { api } from '@/utils/api'
 import { SEO } from '@/components/ui'
 
@@ -13,7 +13,7 @@ const STATUS_CONFIG = {
   CLOSED:    { label: 'Closed',    dot: 'bg-emerald-500',pill: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
 }
 
-function PageHeader({ count }) {
+function PageHeader({ count, onExport }) {
   return (
     <div className="flex items-start justify-between flex-wrap gap-4">
       <div>
@@ -27,6 +27,14 @@ function PageHeader({ count }) {
           {count != null ? `${count} total submissions` : 'All form submissions from your website'}
         </p>
       </div>
+      {onExport && (
+        <button
+          onClick={onExport}
+          className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold hover:shadow-md transition-all shrink-0 cursor-pointer"
+        >
+          <Download className="w-3.5 h-3.5" /> Export to CSV
+        </button>
+      )}
     </div>
   )
 }
@@ -61,11 +69,35 @@ export default function AdminLeadsPage() {
 
   const leads = data ?? []
 
+  const handleExport = () => {
+    if (!leads.length) return
+    const headers = ['Name', 'Email', 'Phone', 'Service Interested', 'Status', 'Date', 'Message']
+    const rows = leads.map(l => [
+      l.name,
+      l.email,
+      l.phone || '',
+      l.serviceInterested || '',
+      l.status,
+      new Date(l.createdAt).toLocaleDateString(),
+      l.message.replace(/"/g, '""')
+    ])
+    // Form CSV content string
+    const csvContent = "data:text/csv;charset=utf-8," 
+      + [headers.join(','), ...rows.map(e => e.map(val => `"${val}"`).join(","))].join("\n")
+    const encodedUri = encodeURI(csvContent)
+    const link = document.createElement("a")
+    link.setAttribute("href", encodedUri)
+    link.setAttribute("download", `Hindustan_Projects_Leads_${new Date().toISOString().split('T')[0]}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   return (
     <>
       <SEO title="Leads" noIndex />
       <div className="space-y-5">
-        <PageHeader count={isLoading ? null : leads.length} />
+        <PageHeader count={isLoading ? null : leads.length} onExport={leads.length ? handleExport : null} />
 
         {/* Filter bar */}
         <div className="flex items-center gap-3">
@@ -240,7 +272,7 @@ export default function AdminLeadsPage() {
                       {new Date(selectedLead.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </span>
                   </div>
-                  <div>
+                  <div className="col-span-2 sm:col-span-1">
                     <span className="text-[10px] uppercase font-bold text-gray-400 block mb-0.5">Email Address</span>
                     <a href={`mailto:${selectedLead.email}`} className="text-brand-blue hover:underline flex items-center gap-1">
                       <Mail className="w-3.5 h-3.5" />
@@ -248,12 +280,22 @@ export default function AdminLeadsPage() {
                     </a>
                   </div>
                   {selectedLead.phone && (
-                    <div>
+                    <div className="col-span-2 sm:col-span-1">
                       <span className="text-[10px] uppercase font-bold text-gray-400 block mb-0.5">Phone Number</span>
-                      <a href={`tel:${selectedLead.phone}`} className="text-brand-blue hover:underline flex items-center gap-1">
-                        <Phone className="w-3.5 h-3.5" />
-                        {selectedLead.phone}
-                      </a>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <a href={`tel:${selectedLead.phone}`} className="text-brand-blue hover:underline flex items-center gap-1 font-semibold">
+                          <Phone className="w-3.5 h-3.5" />
+                          {selectedLead.phone}
+                        </a>
+                        <a
+                          href={`https://wa.me/${selectedLead.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hello ${selectedLead.name}, thank you for contacting Hindustan Projects regarding ${selectedLead.serviceInterested || 'your query'}. We received your message: "${selectedLead.message.slice(0, 50)}..."`)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-[10px] bg-green-500 hover:bg-green-600 text-white font-semibold px-2 py-0.5 rounded-lg transition-colors cursor-pointer"
+                        >
+                          Chat
+                        </a>
+                      </div>
                     </div>
                   )}
                   <div>

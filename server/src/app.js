@@ -16,7 +16,6 @@ import uploadRouter from './routes/upload.route.js'
 import testimonialsRouter from './routes/testimonials.route.js'
 import contentRouter from './routes/content.route.js'
 import sitemapRouter from './routes/sitemap.route.js'
-import sitemapRouter from './routes/sitemap.route.js'
 
 const app = express()
 

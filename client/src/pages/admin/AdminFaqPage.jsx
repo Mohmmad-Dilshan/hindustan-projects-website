@@ -94,16 +94,34 @@ export default function AdminFaqPage() {
           </button>
         </div>
 
-        {/* Add Form */}
-        {showForm && (
-          <div className="bg-white border border-blue-100 border-l-4 border-l-brand-blue rounded-xl p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-5">
-              <div className="w-7 h-7 rounded-lg bg-brand-blue/10 flex items-center justify-center">
-                <Plus className="w-3.5 h-3.5 text-brand-blue" />
+        {/* Modal Dialog */}
+        {(showForm || editing) && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm" onClick={() => { setShowForm(false); setEditing(null); }} />
+            {/* Modal Content */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-2xl relative w-full max-w-2xl max-h-[90vh] overflow-y-auto z-10 p-6">
+              <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
+                <h3 className="font-heading text-lg font-bold text-gray-900">
+                  {editing ? 'Edit FAQ' : 'Add New FAQ'}
+                </h3>
+                <button onClick={() => { setShowForm(false); setEditing(null); }} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-              <h3 className="font-heading text-base font-semibold text-gray-800">New FAQ</h3>
+              <FaqForm
+                initial={editing ? editing : null}
+                onSave={(d) => {
+                  if (editing) {
+                    updateM.mutate({ id: editing.id, ...d });
+                  } else {
+                    createM.mutate(d);
+                  }
+                }}
+                onCancel={() => { setShowForm(false); setEditing(null); }}
+                loading={editing ? updateM.isPending : createM.isPending}
+              />
             </div>
-            <FaqForm onSave={createM.mutate} onCancel={() => setShowForm(false)} loading={createM.isPending} />
           </div>
         )}
 
@@ -126,61 +144,49 @@ export default function AdminFaqPage() {
             </div>
           ) : faqs.map((f, idx) => (
             <div key={f.id} className="bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
-              {editing?.id === f.id ? (
-                <div className="p-6 border-l-4 border-l-brand-blue rounded-xl">
-                  <div className="flex items-center gap-2 mb-5">
-                    <div className="w-7 h-7 rounded-lg bg-brand-blue/10 flex items-center justify-center">
-                      <Pencil className="w-3.5 h-3.5 text-brand-blue" />
-                    </div>
-                    <h3 className="font-heading text-base font-semibold text-gray-800">Edit FAQ</h3>
+              <div>
+                {/* Header row */}
+                <div className="p-4 flex items-center gap-3">
+                  {/* Number badge */}
+                  <div className="w-7 h-7 rounded-lg bg-brand-blue/8 flex items-center justify-center shrink-0">
+                    <span className="text-brand-blue font-bold text-xs">{String(idx + 1).padStart(2, '0')}</span>
                   </div>
-                  <FaqForm initial={f} onSave={d => updateM.mutate({ id: f.id, ...d })} onCancel={() => setEditing(null)} loading={updateM.isPending} />
-                </div>
-              ) : (
-                <div>
-                  {/* Header row */}
-                  <div className="p-4 flex items-center gap-3">
-                    {/* Number badge */}
-                    <div className="w-7 h-7 rounded-lg bg-brand-blue/8 flex items-center justify-center shrink-0">
-                      <span className="text-brand-blue font-bold text-xs">{String(idx + 1).padStart(2, '0')}</span>
-                    </div>
 
-                    {/* Question */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-gray-900 text-sm">{f.question}</span>
-                        {!f.isActive && (
-                          <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-500 border border-gray-200 rounded-full">Hidden</span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Expand + Actions */}
-                    <div className="flex items-center gap-1 shrink-0">
-                      <button
-                        onClick={() => setExpanded(expanded === f.id ? null : f.id)}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all">
-                        <ChevronDown className={`w-4 h-4 transition-transform ${expanded === f.id ? 'rotate-180' : ''}`} />
-                      </button>
-                      <button onClick={() => { setEditing(f); setShowForm(false) }}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-brand-blue hover:bg-brand-blue/8 transition-all">
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => { if (window.confirm('Delete?')) deleteM.mutate(f.id) }}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                  {/* Question */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-gray-900 text-sm">{f.question}</span>
+                      {!f.isActive && (
+                        <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-500 border border-gray-200 rounded-full">Hidden</span>
+                      )}
                     </div>
                   </div>
 
-                  {/* Answer accordion */}
-                  {expanded === f.id && (
-                    <div className="px-4 pb-4 pt-0 border-t border-gray-100">
-                      <p className="text-sm text-gray-600 leading-relaxed pt-3">{f.answer}</p>
-                    </div>
-                  )}
+                  {/* Expand + Actions */}
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      onClick={() => setExpanded(expanded === f.id ? null : f.id)}
+                      className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all">
+                      <ChevronDown className={`w-4 h-4 transition-transform ${expanded === f.id ? 'rotate-180' : ''}`} />
+                    </button>
+                    <button onClick={() => { setEditing(f); setShowForm(false) }}
+                      className="p-1.5 rounded-lg text-gray-400 hover:text-brand-blue hover:bg-brand-blue/8 transition-all">
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => { if (window.confirm('Delete?')) deleteM.mutate(f.id) }}
+                      className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-              )}
+
+                {/* Answer accordion */}
+                {expanded === f.id && (
+                  <div className="px-4 pb-4 pt-0 border-t border-gray-100">
+                    <p className="text-sm text-gray-600 leading-relaxed pt-3">{f.answer}</p>
+                  </div>
+                )}
+              </div>
             </div>
           ))}
         </div>

@@ -146,16 +146,34 @@ export default function AdminTestimonialsPage() {
           </button>
         </div>
 
-        {/* Add Form */}
-        {showForm && (
-          <div className="bg-white border border-blue-100 border-l-4 border-l-brand-blue rounded-xl p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-5">
-              <div className="w-7 h-7 rounded-lg bg-brand-blue/10 flex items-center justify-center">
-                <Plus className="w-3.5 h-3.5 text-brand-blue" />
+        {/* Modal Dialog */}
+        {(showForm || editing) && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm" onClick={() => { setShowForm(false); setEditing(null); }} />
+            {/* Modal Content */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-2xl relative w-full max-w-2xl max-h-[90vh] overflow-y-auto z-10 p-6">
+              <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
+                <h3 className="font-heading text-lg font-bold text-gray-900">
+                  {editing ? `Edit Testimonial: ${editing.name}` : 'Add New Testimonial'}
+                </h3>
+                <button onClick={() => { setShowForm(false); setEditing(null); }} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-              <h3 className="font-heading text-base font-semibold text-gray-800">New Testimonial</h3>
+              <TestimonialForm
+                initial={editing ? editing : null}
+                onSave={(d) => {
+                  if (editing) {
+                    updateM.mutate({ id: editing.id, ...d });
+                  } else {
+                    createM.mutate(d);
+                  }
+                }}
+                onCancel={() => { setShowForm(false); setEditing(null); }}
+                loading={editing ? updateM.isPending : createM.isPending}
+              />
             </div>
-            <TestimonialForm onSave={createM.mutate} onCancel={() => setShowForm(false)} loading={createM.isPending} />
           </div>
         )}
 
@@ -179,62 +197,45 @@ export default function AdminTestimonialsPage() {
             </div>
           ) : items.map(t => (
             <div key={t.id} className="bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
-              {editing?.id === t.id ? (
-                <div className="p-6 border-l-4 border-l-brand-blue rounded-xl">
-                  <div className="flex items-center gap-2 mb-5">
-                    <div className="w-7 h-7 rounded-lg bg-brand-blue/10 flex items-center justify-center">
-                      <Pencil className="w-3.5 h-3.5 text-brand-blue" />
-                    </div>
-                    <h3 className="font-heading text-base font-semibold text-gray-800">Edit: {t.name}</h3>
+              <div className="p-4 flex items-start gap-4">
+                {/* Avatar */}
+                {t.avatarUrl ? (
+                  <img src={t.avatarUrl} alt={t.name}
+                    className="w-11 h-11 rounded-full object-cover shrink-0 border-2 border-white shadow-sm"
+                    loading="lazy" />
+                ) : (
+                  <div className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 ${getAvatarColor(t.name)} shadow-sm`}>
+                    <span className="text-white font-bold text-sm">
+                      {t.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                    </span>
                   </div>
-                  <TestimonialForm
-                    initial={t}
-                    onSave={(d) => updateM.mutate({ id: t.id, ...d })}
-                    onCancel={() => setEditing(null)}
-                    loading={updateM.isPending}
-                  />
-                </div>
-              ) : (
-                <div className="p-4 flex items-start gap-4">
-                  {/* Avatar */}
-                  {t.avatarUrl ? (
-                    <img src={t.avatarUrl} alt={t.name}
-                      className="w-11 h-11 rounded-full object-cover shrink-0 border-2 border-white shadow-sm"
-                      loading="lazy" />
-                  ) : (
-                    <div className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 ${getAvatarColor(t.name)} shadow-sm`}>
-                      <span className="text-white font-bold text-sm">
-                        {t.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
-                      </span>
-                    </div>
-                  )}
+                )}
 
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="font-semibold text-gray-900 text-sm">{t.name}</span>
-                      <span className="text-xs text-gray-400">{t.role}, {t.company}</span>
-                      {!t.isActive && (
-                        <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-500 border border-gray-200 rounded-full">Hidden</span>
-                      )}
-                    </div>
-                    <StarRating rating={t.rating} />
-                    <p className="text-xs text-gray-500 mt-1.5 line-clamp-2 italic">&ldquo;{t.text}&rdquo;</p>
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="font-semibold text-gray-900 text-sm">{t.name}</span>
+                    <span className="text-xs text-gray-400">{t.role}, {t.company}</span>
+                    {!t.isActive && (
+                      <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-500 border border-gray-200 rounded-full">Hidden</span>
+                    )}
                   </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-1 shrink-0">
-                    <button onClick={() => { setEditing(t); setShowForm(false) }}
-                      className="p-1.5 rounded-lg text-gray-400 hover:text-brand-blue hover:bg-brand-blue/8 transition-all">
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => { if (window.confirm('Delete?')) deleteM.mutate(t.id) }}
-                      className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+                  <StarRating rating={t.rating} />
+                  <p className="text-xs text-gray-500 mt-1.5 line-clamp-2 italic">&ldquo;{t.text}&rdquo;</p>
                 </div>
-              )}
+
+                {/* Actions */}
+                <div className="flex items-center gap-1 shrink-0">
+                  <button onClick={() => { setEditing(t); setShowForm(false) }}
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-brand-blue hover:bg-brand-blue/8 transition-all">
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => { if (window.confirm('Delete?')) deleteM.mutate(t.id) }}
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
             </div>
           ))}
         </div>

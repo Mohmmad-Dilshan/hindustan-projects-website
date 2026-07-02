@@ -90,16 +90,34 @@ export default function AdminPartnersPage() {
           </button>
         </div>
 
-        {/* Add Form */}
-        {showForm && (
-          <div className="bg-white border border-blue-100 border-l-4 border-l-brand-blue rounded-xl p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-5">
-              <div className="w-7 h-7 rounded-lg bg-brand-blue/10 flex items-center justify-center">
-                <Plus className="w-3.5 h-3.5 text-brand-blue" />
+        {/* Modal Dialog */}
+        {(showForm || editing) && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm" onClick={() => { setShowForm(false); setEditing(null); }} />
+            {/* Modal Content */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-2xl relative w-full max-w-2xl max-h-[90vh] overflow-y-auto z-10 p-6">
+              <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
+                <h3 className="font-heading text-lg font-bold text-gray-900">
+                  {editing ? `Edit Partner: ${editing.name}` : 'Add New Partner'}
+                </h3>
+                <button onClick={() => { setShowForm(false); setEditing(null); }} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-              <h3 className="font-heading text-base font-semibold text-gray-800">New Partner</h3>
+              <PartnerForm
+                initial={editing ? editing : null}
+                onSave={(d) => {
+                  if (editing) {
+                    updateM.mutate({ id: editing.id, ...d });
+                  } else {
+                    createM.mutate(d);
+                  }
+                }}
+                onCancel={() => { setShowForm(false); setEditing(null); }}
+                loading={editing ? updateM.isPending : createM.isPending}
+              />
             </div>
-            <PartnerForm onSave={createM.mutate} onCancel={() => setShowForm(false)} loading={createM.isPending} />
           </div>
         )}
 
@@ -126,56 +144,44 @@ export default function AdminPartnersPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {items.map((p, idx) => (
               <div key={p.id} className="bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
-                {editing?.id === p.id ? (
-                  <div className="p-5 border-l-4 border-l-brand-blue rounded-xl">
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-7 h-7 rounded-lg bg-brand-blue/10 flex items-center justify-center">
-                        <Pencil className="w-3.5 h-3.5 text-brand-blue" />
-                      </div>
-                      <h3 className="font-heading text-sm font-semibold text-gray-800">Edit Partner</h3>
+                <div className="p-4 flex items-center gap-3">
+                  {/* Logo or Initial */}
+                  {p.logoUrl ? (
+                    <img src={p.logoUrl} alt={p.name}
+                      className="w-12 h-12 object-contain rounded-xl shrink-0 border border-gray-100 p-1"
+                      loading="lazy" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-xl bg-brand-blue/8 flex items-center justify-center shrink-0 border border-brand-blue/15">
+                      <Building2 className="w-5 h-5 text-brand-blue/50" />
                     </div>
-                    <PartnerForm initial={p} onSave={d => updateM.mutate({ id: p.id, ...d })} onCancel={() => setEditing(null)} loading={updateM.isPending} />
-                  </div>
-                ) : (
-                  <div className="p-4 flex items-center gap-3">
-                    {/* Logo or Initial */}
-                    {p.logoUrl ? (
-                      <img src={p.logoUrl} alt={p.name}
-                        className="w-12 h-12 object-contain rounded-xl shrink-0 border border-gray-100 p-1"
-                        loading="lazy" />
-                    ) : (
-                      <div className="w-12 h-12 rounded-xl bg-brand-blue/8 flex items-center justify-center shrink-0 border border-brand-blue/15">
-                        <Building2 className="w-5 h-5 text-brand-blue/50" />
-                      </div>
-                    )}
+                  )}
 
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-900 text-sm truncate">{p.name}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs text-gray-400 font-mono">#{p.order}</span>
-                        {!p.isActive && (
-                          <span className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-500 border border-gray-200 rounded-full">Hidden</span>
-                        )}
-                        {p.isActive && (
-                          <span className="text-xs px-1.5 py-0.5 bg-green-50 text-green-700 border border-green-200 rounded-full">Active</span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex items-center gap-1 shrink-0">
-                      <button onClick={() => { setEditing(p); setShowForm(false) }}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-brand-blue hover:bg-brand-blue/8 transition-all">
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => { if (window.confirm('Delete?')) deleteM.mutate(p.id) }}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-900 text-sm truncate">{p.name}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs text-gray-400 font-mono">#{p.order}</span>
+                      {!p.isActive && (
+                        <span className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-500 border border-gray-200 rounded-full">Hidden</span>
+                      )}
+                      {p.isActive && (
+                        <span className="text-xs px-1.5 py-0.5 bg-green-50 text-green-700 border border-green-200 rounded-full">Active</span>
+                      )}
                     </div>
                   </div>
-                )}
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button onClick={() => { setEditing(p); setShowForm(false) }}
+                      className="p-1.5 rounded-lg text-gray-400 hover:text-brand-blue hover:bg-brand-blue/8 transition-all">
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => { if (window.confirm('Delete?')) deleteM.mutate(p.id) }}
+                      className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
               </div>
             ))}
           </div>

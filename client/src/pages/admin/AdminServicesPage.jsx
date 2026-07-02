@@ -196,16 +196,34 @@ export default function AdminServicesPage() {
           </button>
         </div>
 
-        {/* Add Form */}
-        {showForm && (
-          <div className="bg-white border border-blue-100 border-l-4 border-l-brand-blue rounded-xl p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-5">
-              <div className="w-7 h-7 rounded-lg bg-brand-blue/10 flex items-center justify-center">
-                <Plus className="w-3.5 h-3.5 text-brand-blue" />
+        {/* Modal Dialog */}
+        {(showForm || editing) && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm" onClick={() => { setShowForm(false); setEditing(null); }} />
+            {/* Modal Content */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-2xl relative w-full max-w-2xl max-h-[90vh] overflow-y-auto z-10 p-6">
+              <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
+                <h3 className="font-heading text-lg font-bold text-gray-900">
+                  {editing ? `Edit Service: ${editing.title}` : 'Add New Service'}
+                </h3>
+                <button onClick={() => { setShowForm(false); setEditing(null); }} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-              <h3 className="font-heading text-base font-semibold text-gray-800">New Service</h3>
+              <ServiceForm
+                initial={editing ? prepareForEdit(editing) : null}
+                onSave={(data) => {
+                  if (editing) {
+                    updateMutation.mutate({ id: editing.id, ...data });
+                  } else {
+                    createMutation.mutate(data);
+                  }
+                }}
+                onCancel={() => { setShowForm(false); setEditing(null); }}
+                loading={editing ? updateMutation.isPending : createMutation.isPending}
+              />
             </div>
-            <ServiceForm onSave={createMutation.mutate} onCancel={() => setShowForm(false)} loading={createMutation.isPending} />
           </div>
         )}
 
@@ -229,74 +247,57 @@ export default function AdminServicesPage() {
             </div>
           ) : services.map(s => (
             <div key={s.id} className="bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
-              {editing?.id === s.id ? (
-                <div className="p-6 border-l-4 border-l-brand-blue rounded-xl">
-                  <div className="flex items-center gap-2 mb-5">
-                    <div className="w-7 h-7 rounded-lg bg-brand-blue/10 flex items-center justify-center">
-                      <Pencil className="w-3.5 h-3.5 text-brand-blue" />
-                    </div>
-                    <h3 className="font-heading text-base font-semibold text-gray-800">Edit: {s.title}</h3>
-                  </div>
-                  <ServiceForm
-                    initial={prepareForEdit(editing)}
-                    onSave={(data) => updateMutation.mutate({ id: s.id, ...data })}
-                    onCancel={() => setEditing(null)}
-                    loading={updateMutation.isPending}
-                  />
+              <div className="p-4 flex items-center gap-4">
+                {/* Icon Badge */}
+                <div className="w-10 h-10 rounded-xl bg-brand-blue/10 flex items-center justify-center shrink-0">
+                  <span className="text-brand-blue font-bold text-xs">{s.icon?.slice(0,2)}</span>
                 </div>
-              ) : (
-                <div className="p-4 flex items-center gap-4">
-                  {/* Icon Badge */}
-                  <div className="w-10 h-10 rounded-xl bg-brand-blue/10 flex items-center justify-center shrink-0">
-                    <span className="text-brand-blue font-bold text-xs">{s.icon?.slice(0,2)}</span>
-                  </div>
 
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-gray-900 text-sm">{s.title}</span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium border ${
-                        s.isActive
-                          ? 'bg-green-50 text-green-700 border-green-200'
-                          : 'bg-gray-100 text-gray-500 border-gray-200'
-                      }`}>
-                        {s.isActive ? 'Active' : 'Inactive'}
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-semibold text-gray-900 text-sm">{s.title}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium border ${
+                      s.isActive
+                        ? 'bg-green-50 text-green-700 border-green-200'
+                        : 'bg-gray-100 text-gray-500 border-gray-200'
+                    }`}>
+                      {s.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                    {s.tag && (
+                      <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-medium">
+                        <Tag className="w-3 h-3" />{s.tag}
                       </span>
-                      {s.tag && (
-                        <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-medium">
-                          <Tag className="w-3 h-3" />{s.tag}
-                        </span>
-                      )}
-                      {s.deliveryTime && (
-                        <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                          <Clock className="w-3 h-3" />{s.deliveryTime}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-gray-400 truncate mt-1">{s.shortDescription}</p>
-                    {s.keyFeatures?.length > 0 && (
-                      <p className="text-xs text-gray-300 mt-0.5">
-                        {s.keyFeatures.length} features · {s.techStack?.length || 0} tech · {Array.isArray(s.process) ? s.process.length : 0} steps
-                      </p>
+                    )}
+                    {s.deliveryTime && (
+                      <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                        <Clock className="w-3 h-3" />{s.deliveryTime}
+                      </span>
                     )}
                   </div>
+                  <p className="text-xs text-gray-400 truncate mt-1">{s.shortDescription}</p>
+                  {s.keyFeatures?.length > 0 && (
+                    <p className="text-xs text-gray-300 mt-0.5">
+                      {s.keyFeatures.length} features · {s.techStack?.length || 0} tech · {Array.isArray(s.process) ? s.process.length : 0} steps
+                    </p>
+                  )}
+                </div>
 
-                  {/* Order Badge + Actions */}
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-xs text-gray-300 font-mono">#{s.order}</span>
-                    <div className="flex items-center gap-1">
-                      <button onClick={() => { setEditing(s); setShowForm(false) }}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-brand-blue hover:bg-brand-blue/8 transition-all">
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => { if (window.confirm('Delete this service?')) deleteMutation.mutate(s.id) }}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                {/* Order Badge + Actions */}
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-xs text-gray-300 font-mono">#{s.order}</span>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => { setEditing(s); setShowForm(false) }}
+                      className="p-1.5 rounded-lg text-gray-400 hover:text-brand-blue hover:bg-brand-blue/8 transition-all">
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => { if (window.confirm('Delete this service?')) deleteMutation.mutate(s.id) }}
+                      className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
           ))}
         </div>

@@ -159,20 +159,34 @@ export default function AdminProjectsPage() {
           </button>
         </div>
 
-        {/* Add Form */}
-        {showForm && (
-          <div className="bg-white border border-blue-100 border-l-4 border-l-brand-blue rounded-xl p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-5">
-              <div className="w-7 h-7 rounded-lg bg-brand-blue/10 flex items-center justify-center">
-                <Plus className="w-3.5 h-3.5 text-brand-blue" />
+        {/* Modal Dialog */}
+        {(showForm || editing) && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm" onClick={() => { setShowForm(false); setEditing(null); }} />
+            {/* Modal Content */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-2xl relative w-full max-w-2xl max-h-[90vh] overflow-y-auto z-10 p-6">
+              <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
+                <h3 className="font-heading text-lg font-bold text-gray-900">
+                  {editing ? `Edit Project: ${editing.title}` : 'Add New Project'}
+                </h3>
+                <button onClick={() => { setShowForm(false); setEditing(null); }} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-              <h3 className="font-heading text-base font-semibold text-gray-800">New Project</h3>
+              <ProjectForm
+                initial={editing ? { ...editing, technologies: editing.technologies?.join(', ') } : null}
+                onSave={(data) => {
+                  if (editing) {
+                    updateMutation.mutate({ id: editing.id, ...data });
+                  } else {
+                    createMutation.mutate(data);
+                  }
+                }}
+                onCancel={() => { setShowForm(false); setEditing(null); }}
+                loading={editing ? updateMutation.isPending : createMutation.isPending}
+              />
             </div>
-            <ProjectForm
-              onSave={createMutation.mutate}
-              onCancel={() => setShowForm(false)}
-              loading={createMutation.isPending}
-            />
           </div>
         )}
 
@@ -196,66 +210,49 @@ export default function AdminProjectsPage() {
             </div>
           ) : projects.map(p => (
             <div key={p.id} className="bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
-              {editing?.id === p.id ? (
-                <div className="p-6 border-l-4 border-l-brand-blue rounded-xl">
-                  <div className="flex items-center gap-2 mb-5">
-                    <div className="w-7 h-7 rounded-lg bg-brand-blue/10 flex items-center justify-center">
-                      <Pencil className="w-3.5 h-3.5 text-brand-blue" />
-                    </div>
-                    <h3 className="font-heading text-base font-semibold text-gray-800">Edit: {p.title}</h3>
+              <div className="p-4 flex items-center gap-4">
+                {/* Thumbnail */}
+                {p.thumbnailUrl ? (
+                  <img src={p.thumbnailUrl} alt={p.title}
+                    className="w-14 h-14 rounded-xl object-cover shrink-0 border border-gray-100"
+                    loading="lazy" />
+                ) : (
+                  <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
+                    <ImageIcon className="w-5 h-5 text-gray-300" />
                   </div>
-                  <ProjectForm
-                    initial={{ ...p, technologies: p.technologies?.join(', ') }}
-                    onSave={(data) => updateMutation.mutate({ id: p.id, ...data })}
-                    onCancel={() => setEditing(null)}
-                    loading={updateMutation.isPending}
-                  />
-                </div>
-              ) : (
-                <div className="p-4 flex items-center gap-4">
-                  {/* Thumbnail */}
-                  {p.thumbnailUrl ? (
-                    <img src={p.thumbnailUrl} alt={p.title}
-                      className="w-14 h-14 rounded-xl object-cover shrink-0 border border-gray-100"
-                      loading="lazy" />
-                  ) : (
-                    <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
-                      <ImageIcon className="w-5 h-5 text-gray-300" />
-                    </div>
-                  )}
+                )}
 
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-gray-900 text-sm">{p.title}</span>
-                      {p.isFeatured && (
-                        <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-700 border border-yellow-200 font-medium">
-                          <Star className="w-3 h-3 fill-yellow-500 text-yellow-500" /> Featured
-                        </span>
-                      )}
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium border ${CATEGORY_COLORS[p.category] || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
-                        {p.category}
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-semibold text-gray-900 text-sm">{p.title}</span>
+                    {p.isFeatured && (
+                      <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-700 border border-yellow-200 font-medium">
+                        <Star className="w-3 h-3 fill-yellow-500 text-yellow-500" /> Featured
                       </span>
-                    </div>
-                    <p className="text-xs text-gray-400 mt-1">{p.clientName}</p>
-                    {p.technologies?.length > 0 && (
-                      <p className="text-xs text-gray-300 mt-0.5">{p.technologies.slice(0,3).join(' · ')}{p.technologies.length > 3 ? ` +${p.technologies.length - 3}` : ''}</p>
                     )}
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium border ${CATEGORY_COLORS[p.category] || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                      {p.category}
+                    </span>
                   </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-1 shrink-0">
-                    <button onClick={() => { setEditing(p); setShowForm(false) }}
-                      className="p-1.5 rounded-lg text-gray-400 hover:text-brand-blue hover:bg-brand-blue/8 transition-all">
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => { if (window.confirm('Delete project?')) deleteMutation.mutate(p.id) }}
-                      className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+                  <p className="text-xs text-gray-400 mt-1">{p.clientName}</p>
+                  {p.technologies?.length > 0 && (
+                    <p className="text-xs text-gray-300 mt-0.5">{p.technologies.slice(0,3).join(' · ')}{p.technologies.length > 3 ? ` +${p.technologies.length - 3}` : ''}</p>
+                  )}
                 </div>
-              )}
+
+                {/* Actions */}
+                <div className="flex items-center gap-1 shrink-0">
+                  <button onClick={() => { setEditing(p); setShowForm(false) }}
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-brand-blue hover:bg-brand-blue/8 transition-all">
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => { if (window.confirm('Delete project?')) deleteMutation.mutate(p.id) }}
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
             </div>
           ))}
         </div>

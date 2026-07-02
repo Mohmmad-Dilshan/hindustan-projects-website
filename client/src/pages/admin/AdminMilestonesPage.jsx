@@ -91,16 +91,34 @@ export default function AdminMilestonesPage() {
           </button>
         </div>
 
-        {/* Add Form */}
-        {showForm && (
-          <div className="bg-white border border-blue-100 border-l-4 border-l-brand-blue rounded-xl p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-5">
-              <div className="w-7 h-7 rounded-lg bg-brand-blue/10 flex items-center justify-center">
-                <Plus className="w-3.5 h-3.5 text-brand-blue" />
+        {/* Modal Dialog */}
+        {(showForm || editing) && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm" onClick={() => { setShowForm(false); setEditing(null); }} />
+            {/* Modal Content */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-2xl relative w-full max-w-2xl max-h-[90vh] overflow-y-auto z-10 p-6">
+              <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
+                <h3 className="font-heading text-lg font-bold text-gray-900">
+                  {editing ? `Edit Milestone: ${editing.title}` : 'Add New Milestone'}
+                </h3>
+                <button onClick={() => { setShowForm(false); setEditing(null); }} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-              <h3 className="font-heading text-base font-semibold text-gray-800">New Milestone</h3>
+              <MilestoneForm
+                initial={editing ? editing : null}
+                onSave={(d) => {
+                  if (editing) {
+                    updateM.mutate({ id: editing.id, ...d });
+                  } else {
+                    createM.mutate(d);
+                  }
+                }}
+                onCancel={() => { setShowForm(false); setEditing(null); }}
+                loading={editing ? updateM.isPending : createM.isPending}
+              />
             </div>
-            <MilestoneForm onSave={createM.mutate} onCancel={() => setShowForm(false)} loading={createM.isPending} />
           </div>
         )}
 
@@ -130,42 +148,30 @@ export default function AdminMilestonesPage() {
               <div className="space-y-2">
                 {items.map(m => (
                   <div key={m.id} className="bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
-                    {editing?.id === m.id ? (
-                      <div className="p-6 border-l-4 border-l-brand-blue rounded-xl">
-                        <div className="flex items-center gap-2 mb-5">
-                          <div className="w-7 h-7 rounded-lg bg-brand-blue/10 flex items-center justify-center">
-                            <Pencil className="w-3.5 h-3.5 text-brand-blue" />
-                          </div>
-                          <h3 className="font-heading text-base font-semibold text-gray-800">Edit: {m.title}</h3>
-                        </div>
-                        <MilestoneForm initial={m} onSave={d => updateM.mutate({ id: m.id, ...d })} onCancel={() => setEditing(null)} loading={updateM.isPending} />
+                    <div className="p-4 flex items-center gap-4">
+                      {/* Year Badge */}
+                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-brand-blue to-brand-blue/80 flex flex-col items-center justify-center shrink-0 shadow-sm">
+                        <span className="text-white font-bold text-sm leading-tight">{m.year}</span>
                       </div>
-                    ) : (
-                      <div className="p-4 flex items-center gap-4">
-                        {/* Year Badge */}
-                        <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-brand-blue to-brand-blue/80 flex flex-col items-center justify-center shrink-0 shadow-sm">
-                          <span className="text-white font-bold text-sm leading-tight">{m.year}</span>
-                        </div>
 
-                        {/* Content */}
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-gray-900 text-sm">{m.title}</p>
-                          <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{m.desc}</p>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex items-center gap-1 shrink-0">
-                          <button onClick={() => { setEditing(m); setShowForm(false) }}
-                            className="p-1.5 rounded-lg text-gray-400 hover:text-brand-blue hover:bg-brand-blue/8 transition-all">
-                            <Pencil className="w-4 h-4" />
-                          </button>
-                          <button onClick={() => { if (window.confirm('Delete?')) deleteM.mutate(m.id) }}
-                            className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 text-sm">{m.title}</p>
+                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{m.desc}</p>
                       </div>
-                    )}
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button onClick={() => { setEditing(m); setShowForm(false) }}
+                          className="p-1.5 rounded-lg text-gray-400 hover:text-brand-blue hover:bg-brand-blue/8 transition-all">
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => { if (window.confirm('Delete?')) deleteM.mutate(m.id) }}
+                          className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>

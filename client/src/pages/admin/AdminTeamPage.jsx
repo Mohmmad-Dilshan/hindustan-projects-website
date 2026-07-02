@@ -135,20 +135,34 @@ export default function AdminTeamPage() {
           </button>
         </div>
 
-        {/* Add Form */}
-        {showForm && (
-          <div className="bg-white border border-blue-100 border-l-4 border-l-brand-blue rounded-xl p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-5">
-              <div className="w-7 h-7 rounded-lg bg-brand-blue/10 flex items-center justify-center">
-                <Plus className="w-3.5 h-3.5 text-brand-blue" />
+        {/* Modal Dialog */}
+        {(showForm || editing) && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm" onClick={() => { setShowForm(false); setEditing(null); }} />
+            {/* Modal Content */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-2xl relative w-full max-w-2xl max-h-[90vh] overflow-y-auto z-10 p-6">
+              <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
+                <h3 className="font-heading text-lg font-bold text-gray-900">
+                  {editing ? `Edit Team Member: ${editing.name}` : 'Add New Team Member'}
+                </h3>
+                <button onClick={() => { setShowForm(false); setEditing(null); }} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-              <h3 className="font-heading text-base font-semibold text-gray-800">New Team Member</h3>
+              <TeamForm
+                initial={editing ? editing : null}
+                onSave={(data) => {
+                  if (editing) {
+                    updateMutation.mutate({ id: editing.id, ...data });
+                  } else {
+                    createMutation.mutate(data);
+                  }
+                }}
+                onCancel={() => { setShowForm(false); setEditing(null); }}
+                loading={editing ? updateMutation.isPending : createMutation.isPending}
+              />
             </div>
-            <TeamForm
-              onSave={createMutation.mutate}
-              onCancel={() => setShowForm(false)}
-              loading={createMutation.isPending}
-            />
           </div>
         )}
 
@@ -172,66 +186,49 @@ export default function AdminTeamPage() {
             </div>
           ) : members.map(m => (
             <div key={m.id} className="bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
-              {editing?.id === m.id ? (
-                <div className="p-6 border-l-4 border-l-brand-blue rounded-xl">
-                  <div className="flex items-center gap-2 mb-5">
-                    <div className="w-7 h-7 rounded-lg bg-brand-blue/10 flex items-center justify-center">
-                      <Pencil className="w-3.5 h-3.5 text-brand-blue" />
-                    </div>
-                    <h3 className="font-heading text-base font-semibold text-gray-800">Edit: {m.name}</h3>
-                  </div>
-                  <TeamForm
-                    initial={m}
-                    onSave={(data) => updateMutation.mutate({ id: m.id, ...data })}
-                    onCancel={() => setEditing(null)}
-                    loading={updateMutation.isPending}
-                  />
-                </div>
-              ) : (
-                <div className="p-4 flex items-center gap-4">
-                  {/* Avatar */}
-                  {m.photoUrl ? (
-                    <img src={m.photoUrl} alt={m.name}
-                      className="w-12 h-12 rounded-full object-cover shrink-0 border-2 border-white shadow-sm"
-                      loading="lazy" />
-                  ) : (
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${getAvatarColor(m.name)} shadow-sm`}>
-                      <span className="text-white font-bold text-sm">
-                        {m.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-gray-900 text-sm">{m.name}</span>
-                      {m.linkedinUrl && (
-                        <a href={m.linkedinUrl} target="_blank" rel="noopener noreferrer"
-                          className="text-blue-400 hover:text-blue-600 transition-colors">
-                          <LinkedinIcon className="w-3.5 h-3.5" />
-                        </a>
-                      )}
-                    </div>
-                    <span className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full bg-brand-blue/8 text-brand-blue border border-brand-blue/15 font-medium">
-                      {m.role}
+              <div className="p-4 flex items-center gap-4">
+                {/* Avatar */}
+                {m.photoUrl ? (
+                  <img src={m.photoUrl} alt={m.name}
+                    className="w-12 h-12 rounded-full object-cover shrink-0 border-2 border-white shadow-sm"
+                    loading="lazy" />
+                ) : (
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${getAvatarColor(m.name)} shadow-sm`}>
+                    <span className="text-white font-bold text-sm">
+                      {m.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                     </span>
-                    {m.bio && <p className="text-xs text-gray-400 truncate mt-1">{m.bio}</p>}
                   </div>
+                )}
 
-                  {/* Actions */}
-                  <div className="flex items-center gap-1 shrink-0">
-                    <button onClick={() => { setEditing(m); setShowForm(false) }}
-                      className="p-1.5 rounded-lg text-gray-400 hover:text-brand-blue hover:bg-brand-blue/8 transition-all">
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => { if (window.confirm('Delete member?')) deleteMutation.mutate(m.id) }}
-                      className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-gray-900 text-sm">{m.name}</span>
+                    {m.linkedinUrl && (
+                      <a href={m.linkedinUrl} target="_blank" rel="noopener noreferrer"
+                        className="text-blue-400 hover:text-blue-600 transition-colors">
+                        <LinkedinIcon className="w-3.5 h-3.5" />
+                      </a>
+                    )}
                   </div>
+                  <span className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full bg-brand-blue/8 text-brand-blue border border-brand-blue/15 font-medium">
+                    {m.role}
+                  </span>
+                  {m.bio && <p className="text-xs text-gray-400 truncate mt-1">{m.bio}</p>}
                 </div>
-              )}
+
+                {/* Actions */}
+                <div className="flex items-center gap-1 shrink-0">
+                  <button onClick={() => { setEditing(m); setShowForm(false) }}
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-brand-blue hover:bg-brand-blue/8 transition-all">
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => { if (window.confirm('Delete member?')) deleteMutation.mutate(m.id) }}
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
             </div>
           ))}
         </div>

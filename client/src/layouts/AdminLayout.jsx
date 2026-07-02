@@ -9,7 +9,7 @@ import {
   LayoutDashboard, MessageSquare, Briefcase, FolderKanban,
   Users, LogOut, Menu, X, Settings, Star,
   HelpCircle, Flag, Handshake, SlidersHorizontal, Bell,
-  ChevronRight, BookOpen, UserCheck, FileText,
+  ChevronRight, BookOpen, UserCheck, FileText, Plug,
 } from 'lucide-react'
 import { api } from '@/utils/api'
 
@@ -38,8 +38,9 @@ const NAV_GROUPS = [
   {
     label: 'Settings',
     items: [
-      { to: '/admin/site-settings', icon: SlidersHorizontal,  label: 'Site Settings' },
-      { to: '/admin/settings',      icon: Settings,           label: 'Account' },
+      { to: '/admin/site-settings',  icon: SlidersHorizontal,  label: 'Site Settings' },
+      { to: '/admin/integrations',   icon: Plug,               label: 'Integrations', badge: 'key' },
+      { to: '/admin/settings',       icon: Settings,           label: 'Account' },
     ]
   },
   {
@@ -63,6 +64,7 @@ const PAGE_TITLES = {
   '/admin/partners':     'Partners',
   '/admin/legal':        'Legal Pages',
   '/admin/site-settings':'Site Settings',
+  '/admin/integrations': 'Integrations',
   '/admin/settings':     'Account',
   '/admin/help':         'Help / Guide',
 }
@@ -157,6 +159,9 @@ export default function AdminLayout() {
                         <span className="flex-1">{label}</span>
                         {badge === 'new' && (
                           <span className="w-1.5 h-1.5 rounded-full bg-green-400 shrink-0" />
+                        )}
+                        {badge === 'key' && (
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30 shrink-0 tracking-wide">API</span>
                         )}
                       </>
                     )}

@@ -499,11 +499,25 @@ const mockPrisma = {
   },
 
   siteSetting: {
-    findMany: async (args) => mockSettings,
+    findMany: async (args) => {
+      // Support where.key.in filter used by integration controller
+      if (args?.where?.key?.in) {
+        return mockSettings.filter(s => args.where.key.in.includes(s.key))
+      }
+      return mockSettings
+    },
     findUnique: async (args) => mockSettings.find(s => s.key === args.where.key) || null,
+    deleteMany: async (args) => {
+      if (args?.where?.key) {
+        const before = mockSettings.length
+        mockSettings = mockSettings.filter(s => s.key !== args.where.key)
+        return { count: before - mockSettings.length }
+      }
+      return { count: 0 }
+    },
     upsert: async (args) => {
       const key = args.where.key
-      const value = args.create.value
+      const value = args.update?.value ?? args.create.value
       const idx = mockSettings.findIndex(s => s.key === key)
       if (idx !== -1) {
         mockSettings[idx].value = value

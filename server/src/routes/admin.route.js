@@ -22,6 +22,10 @@ import {
   listApplications, updateApplicationStatus, deleteApplication
 } from '../controllers/adminCareers.controller.js'
 import { listLegalPages, updateLegalPage } from '../controllers/legal.controller.js'
+import {
+  getIntegrationConfig, updateIntegrationConfig,
+  testSmtpConnection, testCloudinaryConnection,
+} from '../controllers/integration.controller.js'
 
 const router = Router()
 
@@ -109,5 +113,11 @@ router.delete('/careers/:id', verifyToken, requireRole('SUPER_ADMIN'), deleteJob
 router.get('/applications', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), listApplications)
 router.patch('/applications/:id/status', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), updateApplicationStatus)
 router.delete('/applications/:id', verifyToken, requireRole('SUPER_ADMIN'), deleteApplication)
+
+// ── Integration Config (Cloudinary, SMTP, reCAPTCHA) ──────────
+router.get('/integrations',                verifyToken, requireRole('SUPER_ADMIN'), getIntegrationConfig)
+router.patch('/integrations',              verifyToken, requireRole('SUPER_ADMIN'), updateIntegrationConfig)
+router.post('/integrations/test-smtp',     verifyToken, requireRole('SUPER_ADMIN'), testSmtpConnection)
+router.post('/integrations/test-cloudinary', verifyToken, requireRole('SUPER_ADMIN'), testCloudinaryConnection)
 
 export default router

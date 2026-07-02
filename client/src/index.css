@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* ── Font display: swap — prevents invisible text during font load ── */
+@font-face { font-family: 'Poppins'; font-display: swap; }
+@font-face { font-family: 'Inter'; font-display: swap; }
+
 /* ── Brand Design Tokens (Tailwind v4 @theme) ─────────────────── */
 @theme {
   /* Colors */

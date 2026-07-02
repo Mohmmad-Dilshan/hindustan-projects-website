@@ -1,39 +1,16 @@
 import { lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import RootLayout from '@/layouts/RootLayout'
-import AdminLayout from '@/layouts/AdminLayout'
 import GlobalClickRipple from '@/components/ui/GlobalClickRipple'
 
-// Public pages
-import HomePage from '@/pages/HomePage'
-import ServicesPage from '@/pages/ServicesPage'
-import ServiceDetailPage from '@/pages/ServiceDetailPage'
-import AboutPage from '@/pages/AboutPage'
-import PortfolioPage from '@/pages/PortfolioPage'
-import ContactPage from '@/pages/ContactPage'
-import NotFoundPage from '@/pages/NotFoundPage'
-import CareersPage from '@/pages/CareersPage'
-import JobDetailPage from '@/pages/JobDetailPage'
-import PrivacyPolicyPage from '@/pages/PrivacyPolicyPage'
-import TermsOfServicePage from '@/pages/TermsOfServicePage'
-import RefundPolicyPage from '@/pages/RefundPolicyPage'
-
-// Admin pages — lazy loaded
-const AdminLoginPage    = lazy(() => import('@/pages/admin/AdminLoginPage'))
-const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'))
-const AdminLeadsPage    = lazy(() => import('@/pages/admin/AdminLeadsPage'))
-const AdminServicesPage = lazy(() => import('@/pages/admin/AdminServicesPage'))
-const AdminProjectsPage = lazy(() => import('@/pages/admin/AdminProjectsPage'))
-const AdminTeamPage     = lazy(() => import('@/pages/admin/AdminTeamPage'))
-const AdminSettingsPage     = lazy(() => import('@/pages/admin/AdminSettingsPage'))
-const AdminTestimonialsPage = lazy(() => import('@/pages/admin/AdminTestimonialsPage'))
-const AdminFaqPage          = lazy(() => import('@/pages/admin/AdminFaqPage'))
-const AdminSiteSettingsPage = lazy(() => import('@/pages/admin/AdminSiteSettingsPage'))
-const AdminMilestonesPage   = lazy(() => import('@/pages/admin/AdminMilestonesPage'))
-const AdminPartnersPage     = lazy(() => import('@/pages/admin/AdminPartnersPage'))
-const AdminHelpPage         = lazy(() => import('@/pages/admin/AdminHelpPage'))
-const AdminCareersPage      = lazy(() => import('@/pages/admin/AdminCareersPage'))
-const AdminLegalPage        = lazy(() => import('@/pages/admin/AdminLegalPage'))
+// ── Page loading fallback ──────────────────────────────────────
+function PageFallback() {
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center bg-bg-base">
+      <div className="w-8 h-8 border-2 border-brand-blue border-t-transparent rounded-full animate-spin" />
+    </div>
+  )
+}
 
 function AdminFallback() {
   return (
@@ -43,56 +20,114 @@ function AdminFallback() {
   )
 }
 
+// ── Public pages — lazy loaded for code splitting ──────────────
+// HomePage is eager-loaded (above the fold, always needed)
+import HomePage from '@/pages/HomePage'
+
+const ServicesPage      = lazy(() => import('@/pages/ServicesPage'))
+const ServiceDetailPage = lazy(() => import('@/pages/ServiceDetailPage'))
+const AboutPage         = lazy(() => import('@/pages/AboutPage'))
+const PortfolioPage     = lazy(() => import('@/pages/PortfolioPage'))
+const ContactPage       = lazy(() => import('@/pages/ContactPage'))
+const CareersPage       = lazy(() => import('@/pages/CareersPage'))
+const JobDetailPage     = lazy(() => import('@/pages/JobDetailPage'))
+const PrivacyPolicyPage = lazy(() => import('@/pages/PrivacyPolicyPage'))
+const TermsOfServicePage = lazy(() => import('@/pages/TermsOfServicePage'))
+const RefundPolicyPage  = lazy(() => import('@/pages/RefundPolicyPage'))
+const NotFoundPage      = lazy(() => import('@/pages/NotFoundPage'))
+
+// ── Admin pages — lazy loaded ──────────────────────────────────
+const AdminLayout        = lazy(() => import('@/layouts/AdminLayout'))
+const AdminLoginPage     = lazy(() => import('@/pages/admin/AdminLoginPage'))
+const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'))
+const AdminLeadsPage     = lazy(() => import('@/pages/admin/AdminLeadsPage'))
+const AdminServicesPage  = lazy(() => import('@/pages/admin/AdminServicesPage'))
+const AdminProjectsPage  = lazy(() => import('@/pages/admin/AdminProjectsPage'))
+const AdminTeamPage      = lazy(() => import('@/pages/admin/AdminTeamPage'))
+const AdminSettingsPage     = lazy(() => import('@/pages/admin/AdminSettingsPage'))
+const AdminTestimonialsPage = lazy(() => import('@/pages/admin/AdminTestimonialsPage'))
+const AdminFaqPage          = lazy(() => import('@/pages/admin/AdminFaqPage'))
+const AdminSiteSettingsPage = lazy(() => import('@/pages/admin/AdminSiteSettingsPage'))
+const AdminMilestonesPage   = lazy(() => import('@/pages/admin/AdminMilestonesPage'))
+const AdminPartnersPage     = lazy(() => import('@/pages/admin/AdminPartnersPage'))
+const AdminHelpPage         = lazy(() => import('@/pages/admin/AdminHelpPage'))
+const AdminCareersPage      = lazy(() => import('@/pages/admin/AdminCareersPage'))
+const AdminLegalPage        = lazy(() => import('@/pages/admin/AdminLegalPage'))
+const AdminIntegrationPage  = lazy(() => import('@/pages/admin/AdminIntegrationPage'))
+
 export default function App() {
   return (
     <>
       <GlobalClickRipple />
       <Routes>
-      {/* ── Public site ── */}
-      <Route element={<RootLayout />}>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/services" element={<ServicesPage />} />
-        <Route path="/services/:slug" element={<ServiceDetailPage />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/portfolio" element={<PortfolioPage />} />
-        <Route path="/careers" element={<CareersPage />} />
-        <Route path="/careers/:slug" element={<JobDetailPage />} />
-        <Route path="/contact" element={<ContactPage />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-        <Route path="/terms-of-service" element={<TermsOfServicePage />} />
-        <Route path="/refund-policy" element={<RefundPolicyPage />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Route>
+        {/* ── Public site ── */}
+        <Route element={<RootLayout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/services" element={
+            <Suspense fallback={<PageFallback />}><ServicesPage /></Suspense>
+          } />
+          <Route path="/services/:slug" element={
+            <Suspense fallback={<PageFallback />}><ServiceDetailPage /></Suspense>
+          } />
+          <Route path="/about" element={
+            <Suspense fallback={<PageFallback />}><AboutPage /></Suspense>
+          } />
+          <Route path="/portfolio" element={
+            <Suspense fallback={<PageFallback />}><PortfolioPage /></Suspense>
+          } />
+          <Route path="/careers" element={
+            <Suspense fallback={<PageFallback />}><CareersPage /></Suspense>
+          } />
+          <Route path="/careers/:slug" element={
+            <Suspense fallback={<PageFallback />}><JobDetailPage /></Suspense>
+          } />
+          <Route path="/contact" element={
+            <Suspense fallback={<PageFallback />}><ContactPage /></Suspense>
+          } />
+          <Route path="/privacy-policy" element={
+            <Suspense fallback={<PageFallback />}><PrivacyPolicyPage /></Suspense>
+          } />
+          <Route path="/terms-of-service" element={
+            <Suspense fallback={<PageFallback />}><TermsOfServicePage /></Suspense>
+          } />
+          <Route path="/refund-policy" element={
+            <Suspense fallback={<PageFallback />}><RefundPolicyPage /></Suspense>
+          } />
+          <Route path="*" element={
+            <Suspense fallback={<PageFallback />}><NotFoundPage /></Suspense>
+          } />
+        </Route>
 
-      {/* ── Admin ── */}
-      <Route path="/admin/login" element={
-        <Suspense fallback={<AdminFallback />}>
-          <AdminLoginPage />
-        </Suspense>
-      } />
-      <Route path="/admin" element={
-        <Suspense fallback={<AdminFallback />}>
-          <AdminLayout />
-        </Suspense>
-      }>
-        <Route path="dashboard" element={<AdminDashboardPage />} />
-        <Route path="leads"     element={<AdminLeadsPage />} />
-        <Route path="services"  element={<AdminServicesPage />} />
-        <Route path="projects"  element={<AdminProjectsPage />} />
-        <Route path="team"      element={<AdminTeamPage />} />
-        <Route path="settings"      element={<AdminSettingsPage />} />
-        <Route path="testimonials"  element={<AdminTestimonialsPage />} />
-        <Route path="faqs"          element={<AdminFaqPage />} />
-        <Route path="site-settings" element={<AdminSiteSettingsPage />} />
-        <Route path="milestones"    element={<AdminMilestonesPage />} />
-        <Route path="partners"      element={<AdminPartnersPage />} />
-        <Route path="careers"       element={<AdminCareersPage />} />
-        <Route path="legal"         element={<AdminLegalPage />} />
-        <Route path="help"          element={<AdminHelpPage />} />
-        <Route index element={<AdminDashboardPage />} />
-      </Route>
-    </Routes>
-  </>
-)
+        {/* ── Admin ── */}
+        <Route path="/admin/login" element={
+          <Suspense fallback={<AdminFallback />}>
+            <AdminLoginPage />
+          </Suspense>
+        } />
+        <Route path="/admin" element={
+          <Suspense fallback={<AdminFallback />}>
+            <AdminLayout />
+          </Suspense>
+        }>
+          <Route path="dashboard"    element={<Suspense fallback={<PageFallback />}><AdminDashboardPage /></Suspense>} />
+          <Route path="leads"        element={<Suspense fallback={<PageFallback />}><AdminLeadsPage /></Suspense>} />
+          <Route path="services"     element={<Suspense fallback={<PageFallback />}><AdminServicesPage /></Suspense>} />
+          <Route path="projects"     element={<Suspense fallback={<PageFallback />}><AdminProjectsPage /></Suspense>} />
+          <Route path="team"         element={<Suspense fallback={<PageFallback />}><AdminTeamPage /></Suspense>} />
+          <Route path="settings"     element={<Suspense fallback={<PageFallback />}><AdminSettingsPage /></Suspense>} />
+          <Route path="testimonials" element={<Suspense fallback={<PageFallback />}><AdminTestimonialsPage /></Suspense>} />
+          <Route path="faqs"         element={<Suspense fallback={<PageFallback />}><AdminFaqPage /></Suspense>} />
+          <Route path="site-settings"element={<Suspense fallback={<PageFallback />}><AdminSiteSettingsPage /></Suspense>} />
+          <Route path="milestones"   element={<Suspense fallback={<PageFallback />}><AdminMilestonesPage /></Suspense>} />
+          <Route path="partners"     element={<Suspense fallback={<PageFallback />}><AdminPartnersPage /></Suspense>} />
+          <Route path="careers"      element={<Suspense fallback={<PageFallback />}><AdminCareersPage /></Suspense>} />
+          <Route path="legal"        element={<Suspense fallback={<PageFallback />}><AdminLegalPage /></Suspense>} />
+          <Route path="integrations" element={<Suspense fallback={<PageFallback />}><AdminIntegrationPage /></Suspense>} />
+          <Route path="help"         element={<Suspense fallback={<PageFallback />}><AdminHelpPage /></Suspense>} />
+          <Route index element={<Suspense fallback={<PageFallback />}><AdminDashboardPage /></Suspense>} />
+        </Route>
+      </Routes>
+    </>
+  )
 }
 

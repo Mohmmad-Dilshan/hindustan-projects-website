@@ -1,5 +1,9 @@
 import prisma from '../config/db.js'
 
+// Cache duration constants
+const CACHE_SHORT = 'public, max-age=300, stale-while-revalidate=60'   // 5 min
+const CACHE_LONG  = 'public, max-age=3600, stale-while-revalidate=300' // 1 hour
+
 /**
  * GET /api/services
  * Returns all active services ordered by the `order` field.
@@ -18,6 +22,7 @@ export const getAllServices = async (_req, res, next) => {
         order: true,
       },
     })
+    res.setHeader('Cache-Control', CACHE_SHORT)
     res.json({ status: 'ok', data: services })
   } catch (err) {
     next(err)
@@ -39,6 +44,7 @@ export const getServiceBySlug = async (req, res, next) => {
       return res.status(404).json({ status: 'error', message: 'Service not found.' })
     }
 
+    res.setHeader('Cache-Control', CACHE_LONG)
     res.json({ status: 'ok', data: service })
   } catch (err) {
     next(err)

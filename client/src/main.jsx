@@ -16,11 +16,22 @@ import '@fontsource/inter/600.css'
 import './index.css'
 import App from './App.jsx'
 
+// Inject reCAPTCHA site key as a meta tag so index.html can pick it up
+const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY
+if (recaptchaSiteKey) {
+  const meta = document.createElement('meta')
+  meta.name = 'recaptcha-site-key'
+  meta.content = recaptchaSiteKey
+  document.head.appendChild(meta)
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
+      // Stale time: data stays fresh for 2 min before refetch
+      staleTime: 2 * 60 * 1000,
     },
   },
 })

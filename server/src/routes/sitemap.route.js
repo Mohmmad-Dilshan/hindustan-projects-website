@@ -17,11 +17,15 @@ router.get('/', async (_req, res, next) => {
     })
 
     const staticPages = [
-      { path: '/',          priority: '1.0', freq: 'weekly' },
-      { path: '/services',  priority: '0.9', freq: 'weekly' },
-      { path: '/about',     priority: '0.7', freq: 'monthly' },
-      { path: '/portfolio', priority: '0.7', freq: 'weekly' },
-      { path: '/contact',   priority: '0.8', freq: 'monthly' },
+      { path: '/',                   priority: '1.0', freq: 'weekly' },
+      { path: '/services',           priority: '0.9', freq: 'weekly' },
+      { path: '/about',              priority: '0.7', freq: 'monthly' },
+      { path: '/portfolio',          priority: '0.7', freq: 'weekly' },
+      { path: '/contact',            priority: '0.8', freq: 'monthly' },
+      { path: '/careers',            priority: '0.6', freq: 'weekly' },
+      { path: '/privacy-policy',     priority: '0.3', freq: 'yearly' },
+      { path: '/terms-of-service',   priority: '0.3', freq: 'yearly' },
+      { path: '/refund-policy',      priority: '0.3', freq: 'yearly' },
     ]
 
     const servicePages = services.map(s => ({

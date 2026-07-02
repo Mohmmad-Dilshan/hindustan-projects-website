@@ -132,12 +132,12 @@ export default function AdminSettingsPage() {
           </form>
         </div>
 
-        {/* Admin info card */}
-        <div className="bg-brand-blue/4 border border-brand-blue/15 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-brand-blue mb-2">Default Credentials</h3>
-          <p className="text-xs text-text-muted leading-relaxed">
-            Default login: <strong>admin@hindustanprojects.com</strong> / <strong>ChangeMe@123</strong><br />
-            Change your password immediately after first login.
+        {/* Security reminder */}
+        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-5">
+          <h3 className="text-sm font-semibold text-yellow-800 mb-2">Security Reminder</h3>
+          <p className="text-xs text-yellow-700 leading-relaxed">
+            Use a strong, unique password. Never share your admin credentials.
+            If you suspect unauthorized access, change your password immediately.
           </p>
         </div>
       </div>

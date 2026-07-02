@@ -7,7 +7,7 @@ import {
   Users, Award, Rocket, Heart, Code2, Handshake,
   TrendingUp, Shield, Clock, Star
 } from 'lucide-react'
-import { Container, Button } from '@/components/ui'
+import { Container, Button, SEO } from '@/components/ui'
 import { useTeam } from '@/hooks/useTeam'
 import { useMilestones } from '@/hooks/useContent'
 

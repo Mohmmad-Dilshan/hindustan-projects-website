@@ -12,10 +12,7 @@ export const listServices = async (_req, res, next) => {
 
 export const createService = async (req, res, next) => {
   try {
-    const { title, slug, shortDescription, fullDescription, icon, order } = req.body
-    const service = await prisma.service.create({
-      data: { title, slug, shortDescription, fullDescription, icon, order: order ?? 0 },
-    })
+    const service = await prisma.service.create({ data: req.body })
     res.status(201).json({ status: 'ok', data: service })
   } catch (err) { next(err) }
 }

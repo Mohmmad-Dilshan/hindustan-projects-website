@@ -11,6 +11,7 @@ import { Container, Button } from '@/components/ui'
 import Skeleton from '@/components/ui/Skeleton'
 import { useService, useServices } from '@/hooks/useServices'
 import { getServiceIcon } from '@/utils/serviceIcons'
+import { useSiteSettings } from '@/hooks/useContent'
 
 /* ── Service config (icons, colors, process, features) ─────────── */
 const SERVICE_CONFIG = {
@@ -240,6 +241,9 @@ export default function ServiceDetailPage() {
   const { data, isLoading } = useService(slug)
   const { data: allData } = useServices()
 
+  const { data: settingsData } = useSiteSettings()
+  const waNum = (settingsData?.data?.whatsapp || settingsData?.data?.phone || '919999999999').replace(/[^0-9]/g, '')
+
   const service = data?.data || PLACEHOLDER_SERVICE_DETAILS[slug]
   const allServices = allData?.data?.length ? allData.data : PLACEHOLDER_SERVICES
 
@@ -339,7 +343,7 @@ export default function ServiceDetailPage() {
                   Get a Free Quote
                 </Button>
                 <a
-                  href="https://wa.me/919999999999"
+                  href={`https://wa.me/${waNum}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 w-full py-2.5 rounded-md border border-white/15
@@ -472,7 +476,7 @@ export default function ServiceDetailPage() {
                     Get a Free Quote
                   </Button>
                   <a
-                    href="https://wa.me/919999999999"
+                    href={`https://wa.me/${waNum}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 w-full py-2.5 rounded-md

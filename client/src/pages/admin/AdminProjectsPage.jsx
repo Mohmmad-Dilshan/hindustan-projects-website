@@ -3,7 +3,7 @@
  */
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Pencil, Trash2, X, Check, Star, FolderOpen, ImageIcon } from 'lucide-react'
+import { Plus, Pencil, Trash2, X, Check, Star, FolderOpen, ImageIcon, Search, Filter } from 'lucide-react'
 import { useForm, Controller } from 'react-hook-form'
 import { api } from '@/utils/api'
 import { SEO, ImageUploader } from '@/components/ui'
@@ -115,6 +115,8 @@ function ProjectForm({ initial, onSave, onCancel, loading }) {
 export default function AdminProjectsPage() {
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('')
   const qc = useQueryClient()
 
   const { data: projects = [], isLoading } = useQuery({
@@ -135,6 +137,14 @@ export default function AdminProjectsPage() {
   const deleteMutation = useMutation({
     mutationFn: (id) => api.delete(`/admin/projects/${id}`),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-projects'] }),
+  })
+
+  const filteredProjects = projects.filter(p => {
+    const matchesSearch = p.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          p.clientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          p.technologies?.some(t => t.toLowerCase().includes(searchTerm.toLowerCase()))
+    const matchesCategory = !categoryFilter || p.category === categoryFilter
+    return matchesSearch && matchesCategory
   })
 
   return (
@@ -190,6 +200,30 @@ export default function AdminProjectsPage() {
           </div>
         )}
 
+        {/* Search & Filter Bar */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search projects by title, client, or tech..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue/25 focus:border-brand-blue transition-all"
+            />
+          </div>
+          <div className="relative w-full sm:w-48">
+            <select
+              value={categoryFilter}
+              onChange={e => setCategoryFilter(e.target.value)}
+              className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue/25 focus:border-brand-blue cursor-pointer"
+            >
+              <option value="">All Categories</option>
+              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+        </div>
+
         {/* Projects List */}
         <div className="space-y-2">
           {isLoading ? (
@@ -208,7 +242,13 @@ export default function AdminProjectsPage() {
               <p className="font-semibold text-gray-700">No projects yet</p>
               <p className="text-sm text-gray-400">Add your first project to showcase your work.</p>
             </div>
-          ) : projects.map(p => (
+          ) : filteredProjects.length === 0 ? (
+            <div className="bg-white border border-gray-100 rounded-xl py-16 flex flex-col items-center gap-2 text-center text-gray-400 text-sm shadow-sm">
+              <Search className="w-8 h-8 text-gray-200 mx-auto mb-1" />
+              <p className="font-semibold text-gray-600">No projects found</p>
+              <p className="text-xs text-gray-400">Try adjusting your filters or search terms.</p>
+            </div>
+          ) : filteredProjects.map(p => (
             <div key={p.id} className="bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
               <div className="p-4 flex items-center gap-4">
                 {/* Thumbnail */}

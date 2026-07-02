@@ -3,7 +3,7 @@
  */
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { AlertCircle, Trash2, ChevronDown, MessageSquare, Mail, Phone, Filter, Inbox } from 'lucide-react'
+import { AlertCircle, Trash2, ChevronDown, MessageSquare, Mail, Phone, Filter, Inbox, Eye, X, Calendar } from 'lucide-react'
 import { api } from '@/utils/api'
 import { SEO } from '@/components/ui'
 
@@ -33,6 +33,7 @@ function PageHeader({ count }) {
 
 export default function AdminLeadsPage() {
   const [statusFilter, setStatusFilter] = useState('')
+  const [selectedLead, setSelectedLead] = useState(null)
   const qc = useQueryClient()
 
   const { data, isLoading, isError } = useQuery({
@@ -42,12 +43,20 @@ export default function AdminLeadsPage() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, status }) => api.patch(`/admin/leads/${id}`, { status }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-leads'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-leads'] })
+      if (selectedLead) {
+        setSelectedLead(prev => prev ? { ...prev, status } : null)
+      }
+    },
   })
 
   const deleteMutation = useMutation({
     mutationFn: (id) => api.delete(`/admin/leads/${id}`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-leads'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-leads'] })
+      setSelectedLead(null)
+    },
   })
 
   const leads = data ?? []
@@ -172,13 +181,22 @@ export default function AdminLeadsPage() {
                         {new Date(lead.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </td>
                       <td className="px-5 py-4">
-                        <button
-                          onClick={() => { if (window.confirm('Delete this lead?')) deleteMutation.mutate(lead.id) }}
-                          className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all"
-                          aria-label="Delete lead"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => setSelectedLead(lead)}
+                            className="p-1.5 rounded-lg text-gray-300 hover:text-brand-blue hover:bg-brand-blue/5 transition-all"
+                            aria-label="View details"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => { if (window.confirm('Delete this lead?')) deleteMutation.mutate(lead.id) }}
+                            className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all"
+                            aria-label="Delete lead"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   )
@@ -187,6 +205,108 @@ export default function AdminLeadsPage() {
             </table>
           </div>
         </div>
+
+        {/* Lead Details Modal */}
+        {selectedLead && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm" onClick={() => setSelectedLead(null)} />
+            
+            {/* Content Card */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-2xl relative w-full max-w-lg z-10 overflow-hidden flex flex-col max-h-[85vh]">
+              {/* Header */}
+              <div className="flex items-center justify-between p-5 border-b border-gray-100 bg-gray-50/50">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-brand-blue animate-pulse" />
+                  <h3 className="font-heading font-bold text-gray-900 text-base">Contact Lead Details</h3>
+                </div>
+                <button onClick={() => setSelectedLead(null)} className="p-1 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="p-6 overflow-y-auto space-y-5 text-sm">
+                {/* Meta details */}
+                <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-gray-400 block mb-0.5">Sender Name</span>
+                    <span className="font-semibold text-gray-800">{selectedLead.name}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-gray-400 block mb-0.5">Submitted Date</span>
+                    <span className="text-gray-700 flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                      {new Date(selectedLead.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-gray-400 block mb-0.5">Email Address</span>
+                    <a href={`mailto:${selectedLead.email}`} className="text-brand-blue hover:underline flex items-center gap-1">
+                      <Mail className="w-3.5 h-3.5" />
+                      {selectedLead.email}
+                    </a>
+                  </div>
+                  {selectedLead.phone && (
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-gray-400 block mb-0.5">Phone Number</span>
+                      <a href={`tel:${selectedLead.phone}`} className="text-brand-blue hover:underline flex items-center gap-1">
+                        <Phone className="w-3.5 h-3.5" />
+                        {selectedLead.phone}
+                      </a>
+                    </div>
+                  )}
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-gray-400 block mb-0.5">Interested Service</span>
+                    {selectedLead.serviceInterested ? (
+                      <span className="px-2 py-0.5 rounded-lg bg-brand-blue/8 text-brand-blue text-xs font-semibold border border-brand-blue/15">
+                        {selectedLead.serviceInterested}
+                      </span>
+                    ) : (
+                      <span className="text-gray-400">—</span>
+                    )}
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-gray-400 block mb-0.5">Status</span>
+                    <select
+                      value={selectedLead.status}
+                      onChange={e => updateMutation.mutate({ id: selectedLead.id, status: e.target.value })}
+                      className="text-xs font-semibold px-2.5 py-1 rounded-full border border-gray-200 bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-blue/20"
+                    >
+                      <option value="NEW">New</option>
+                      <option value="CONTACTED">Contacted</option>
+                      <option value="CLOSED">Closed</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Message Body */}
+                <div className="space-y-1.5">
+                  <span className="text-[10px] uppercase font-bold text-gray-400 block">Message Body</span>
+                  <div className="bg-white border border-gray-100 p-4 rounded-xl text-gray-700 leading-relaxed text-xs whitespace-pre-wrap max-h-48 overflow-y-auto">
+                    {selectedLead.message}
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-2 shrink-0">
+                <button
+                  onClick={() => { if (window.confirm('Delete this lead?')) deleteMutation.mutate(selectedLead.id) }}
+                  className="px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                >
+                  Delete Lead
+                </button>
+                <button
+                  onClick={() => setSelectedLead(null)}
+                  className="px-4 py-2 text-xs font-semibold bg-brand-blue text-white hover:shadow-md rounded-xl transition-all"
+                >
+                  Close View
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   )

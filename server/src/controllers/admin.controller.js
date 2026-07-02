@@ -79,10 +79,12 @@ export const changePassword = async (req, res, next) => {
 // ── GET /api/admin/stats ───────────────────────────────────────
 export const getDashboardStats = async (_req, res, next) => {
   try {
-    const [totalLeads, newLeads, totalProjects, totalServices, totalTeam] =
+    const [totalLeads, newLeads, contactedLeads, closedLeads, totalProjects, totalServices, totalTeam] =
       await Promise.all([
         prisma.contactLead.count(),
         prisma.contactLead.count({ where: { status: 'NEW' } }),
+        prisma.contactLead.count({ where: { status: 'CONTACTED' } }),
+        prisma.contactLead.count({ where: { status: 'CLOSED' } }),
         prisma.project.count(),
         prisma.service.count({ where: { isActive: true } }),
         prisma.teamMember.count(),
@@ -90,7 +92,7 @@ export const getDashboardStats = async (_req, res, next) => {
 
     res.json({
       status: 'ok',
-      data: { totalLeads, newLeads, totalProjects, totalServices, totalTeam },
+      data: { totalLeads, newLeads, contactedLeads, closedLeads, totalProjects, totalServices, totalTeam },
     })
   } catch (err) {
     next(err)

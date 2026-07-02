@@ -140,33 +140,100 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* ── Setup checklist ── */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-          <div className="flex items-center gap-2 mb-1">
-            <Flag className="w-4 h-4 text-brand-blue" />
-            <h2 className="font-heading text-base font-bold text-gray-800">Setup Checklist</h2>
-          </div>
-          <p className="text-xs text-gray-400 mb-5">Complete these steps to get your website fully ready.</p>
+        {/* ── Visual Breakdown + Checklist ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          {/* Lead Status Breakdown Card */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Activity className="w-4 h-4 text-brand-blue" />
+                <h2 className="font-heading text-base font-bold text-gray-800">Leads Status Breakdown</h2>
+              </div>
+              <p className="text-xs text-gray-400 mb-5">Visual summary of website contact form query stages.</p>
 
-          {/* Progress bar */}
-          <div className="w-full h-1.5 bg-gray-100 rounded-full mb-5 overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-brand-blue to-blue-400 rounded-full" style={{ width: '16%' }} />
-          </div>
-
-          <ul className="space-y-2">
-            {CHECKLIST.map((item, i) => (
-              <li key={item.text}>
-                <Link to={item.to}
-                  className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-gray-50 transition-colors group">
-                  <div className="w-5 h-5 rounded-md border-2 border-gray-200 group-hover:border-brand-blue shrink-0 transition-colors flex items-center justify-center">
-                    <span className="text-[9px] font-bold text-gray-300 group-hover:text-brand-blue">{i + 1}</span>
+              {isLoading ? (
+                <div className="space-y-4 py-4">
+                  <div className="h-4 bg-gray-100 rounded-lg animate-pulse" />
+                  <div className="h-10 bg-gray-100 rounded-lg animate-pulse" />
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Visual segment progress bar */}
+                  <div className="w-full h-4 bg-gray-100 rounded-full overflow-hidden flex shadow-inner">
+                    {data?.totalLeads > 0 ? (
+                      <>
+                        <div
+                          className="h-full bg-blue-500 transition-all duration-500"
+                          style={{ width: `${(data.newLeads / data.totalLeads) * 100}%` }}
+                          title={`New: ${data.newLeads}`}
+                        />
+                        <div
+                          className="h-full bg-amber-500 transition-all duration-500"
+                          style={{ width: `${(data.contactedLeads / data.totalLeads) * 100}%` }}
+                          title={`Contacted: ${data.contactedLeads}`}
+                        />
+                        <div
+                          className="h-full bg-emerald-500 transition-all duration-500"
+                          style={{ width: `${(data.closedLeads / data.totalLeads) * 100}%` }}
+                          title={`Closed: ${data.closedLeads}`}
+                        />
+                      </>
+                    ) : (
+                      <div className="h-full w-full bg-gray-100 flex items-center justify-center text-[10px] text-gray-400 font-medium">No leads submitted yet</div>
+                    )}
                   </div>
-                  <span className="text-sm text-gray-600 group-hover:text-gray-900 flex-1 transition-colors">{item.text}</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-brand-blue opacity-0 group-hover:opacity-100 transition-all" />
-                </Link>
-              </li>
-            ))}
-          </ul>
+
+                  {/* Info stats block */}
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="p-3.5 bg-blue-50/50 rounded-xl border border-blue-100/50 text-center">
+                      <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mx-auto mb-1" />
+                      <p className="text-[10px] uppercase font-bold text-blue-500 mb-0.5">New</p>
+                      <p className="text-xl font-bold text-blue-900">{data?.newLeads ?? 0}</p>
+                    </div>
+                    <div className="p-3.5 bg-amber-50/50 rounded-xl border border-amber-100/50 text-center">
+                      <div className="w-1.5 h-1.5 rounded-full bg-amber-500 mx-auto mb-1" />
+                      <p className="text-[10px] uppercase font-bold text-amber-600 mb-0.5">Contacted</p>
+                      <p className="text-xl font-bold text-amber-900">{data?.contactedLeads ?? 0}</p>
+                    </div>
+                    <div className="p-3.5 bg-emerald-50/50 rounded-xl border border-emerald-100/50 text-center">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mx-auto mb-1" />
+                      <p className="text-[10px] uppercase font-bold text-emerald-600 mb-0.5">Closed</p>
+                      <p className="text-xl font-bold text-emerald-900">{data?.closedLeads ?? 0}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Setup checklist */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+            <div className="flex items-center gap-2 mb-1">
+              <Flag className="w-4 h-4 text-brand-blue" />
+              <h2 className="font-heading text-base font-bold text-gray-800">Setup Checklist</h2>
+            </div>
+            <p className="text-xs text-gray-400 mb-4">Complete these steps to get your website fully ready.</p>
+
+            {/* Progress bar */}
+            <div className="w-full h-1.5 bg-gray-100 rounded-full mb-4 overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-brand-blue to-blue-400 rounded-full" style={{ width: '33%' }} />
+            </div>
+
+            <ul className="space-y-1.5">
+              {CHECKLIST.map((item, i) => (
+                <li key={item.text}>
+                  <Link to={item.to}
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors group">
+                    <div className="w-5 h-5 rounded-md border-2 border-gray-200 group-hover:border-brand-blue shrink-0 transition-colors flex items-center justify-center">
+                      <span className="text-[9px] font-bold text-gray-300 group-hover:text-brand-blue">{i + 1}</span>
+                    </div>
+                    <span className="text-xs text-gray-600 group-hover:text-gray-900 flex-1 transition-colors">{item.text}</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-brand-blue opacity-0 group-hover:opacity-100 transition-all" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
     </>

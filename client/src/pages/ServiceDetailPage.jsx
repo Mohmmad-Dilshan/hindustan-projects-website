@@ -343,7 +343,7 @@ export default function ServiceDetailPage() {
                   Get a Free Quote
                 </Button>
                 <a
-                  href={`https://wa.me/${waNum}`}
+                  href={`https://wa.me/${waNum}?text=${encodeURIComponent(settingsData?.data?.whatsappMessage ? settingsData.data.whatsappMessage.replace('{service}', service.title) : `Hi! I visited your website and want to discuss ${service.title} service.`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 w-full py-2.5 rounded-md border border-white/15
@@ -476,7 +476,7 @@ export default function ServiceDetailPage() {
                     Get a Free Quote
                   </Button>
                   <a
-                    href={`https://wa.me/${waNum}`}
+                    href={`https://wa.me/${waNum}?text=${encodeURIComponent(settingsData?.data?.whatsappMessage ? settingsData.data.whatsappMessage.replace('{service}', service.title) : `Hi! I visited your website and want to discuss ${service.title} service.`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 w-full py-2.5 rounded-md

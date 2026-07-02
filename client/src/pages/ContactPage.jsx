@@ -330,7 +330,7 @@ export default function ContactPage() {
               {/* Pulsing WhatsApp CTA */}
               <motion.div variants={fadeUp}>
                 <a
-                  href={`https://wa.me/${whatsappNum}?text=Hi!%20I%27d%20like%20to%20discuss%20a%20project.`}
+                  href={`https://wa.me/${whatsappNum}?text=${encodeURIComponent(cfg.whatsappMessage || "Hi! I'd like to discuss a project.")}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group relative flex items-center gap-3 px-6 py-4 rounded-2xl border border-[#25D366]/40

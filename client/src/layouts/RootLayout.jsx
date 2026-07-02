@@ -40,7 +40,7 @@ export default function RootLayout() {
 
       {/* Floating WhatsApp Chat Widget */}
       <a
-        href={`https://wa.me/${whatsappNum}?text=Hi!%20I%20visited%20your%20website%20and%20want%20to%20discuss%20a%20project.`}
+        href={`https://wa.me/${whatsappNum}?text=${encodeURIComponent(cfg.whatsappMessage || "Hi! I visited your website and want to discuss a project.")}`}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat on WhatsApp"

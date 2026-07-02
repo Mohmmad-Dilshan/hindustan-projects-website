@@ -33,6 +33,7 @@ const FIELD_GROUPS = [
     fields: [
       { key: 'phone',   label: 'Phone Number',   placeholder: '+91 99999 99999', Icon: Phone },
       { key: 'whatsapp', label: 'WhatsApp Number', placeholder: '+91 99999 99999', Icon: MessageCircle },
+      { key: 'whatsappMessage', label: 'WhatsApp Welcome Message', placeholder: 'Hi! I visited your website and want to discuss a project.', Icon: MessageCircle },
       { key: 'email',   label: 'Email Address',  placeholder: 'info@hindustanprojects.com', Icon: Mail },
       { key: 'address', label: 'Office Address', placeholder: 'Bhilwara, Rajasthan 311001, India', Icon: MapPin },
     ],

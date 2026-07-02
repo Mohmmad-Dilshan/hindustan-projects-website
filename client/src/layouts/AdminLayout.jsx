@@ -100,7 +100,7 @@ export default function AdminLayout() {
         {/* ── Logo ── */}
         <div className="flex items-center justify-between px-5 h-16 border-b border-white/10 shrink-0">
           <div className="flex items-center gap-2.5">
-            <img src="/apple-touch-icon.png" alt="Logo" className="w-8 h-8 rounded-lg object-contain bg-white/10 p-0.5 border border-white/20" />
+            <img src="/logo-with-bg.png" alt="Logo" className="w-8 h-8 rounded-lg object-contain" />
             <div>
               <p className="font-heading font-bold text-white text-sm leading-none">Hindustan</p>
               <p className="text-white/40 text-[10px] font-medium tracking-wider uppercase">Projects Admin</p>

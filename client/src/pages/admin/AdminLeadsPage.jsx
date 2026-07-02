@@ -1,16 +1,34 @@
 /**
- * Admin Leads — Table with status filter + update
+ * Admin Leads — Table with status filter + update (premium polish)
  */
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { AlertCircle, Trash2, ChevronDown } from 'lucide-react'
+import { AlertCircle, Trash2, ChevronDown, MessageSquare, Mail, Phone, Filter, Inbox } from 'lucide-react'
 import { api } from '@/utils/api'
 import { SEO } from '@/components/ui'
 
-const STATUS_COLORS = {
-  NEW:       'bg-blue-100 text-blue-700',
-  CONTACTED: 'bg-yellow-100 text-yellow-700',
-  CLOSED:    'bg-green-100 text-green-700',
+const STATUS_CONFIG = {
+  NEW:       { label: 'New',       dot: 'bg-blue-500',   pill: 'bg-blue-50 text-blue-700 border-blue-200' },
+  CONTACTED: { label: 'Contacted', dot: 'bg-amber-500',  pill: 'bg-amber-50 text-amber-700 border-amber-200' },
+  CLOSED:    { label: 'Closed',    dot: 'bg-emerald-500',pill: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+}
+
+function PageHeader({ count }) {
+  return (
+    <div className="flex items-start justify-between flex-wrap gap-4">
+      <div>
+        <div className="flex items-center gap-2 mb-1">
+          <div className="w-8 h-8 rounded-lg bg-brand-blue/10 flex items-center justify-center">
+            <MessageSquare className="w-4 h-4 text-brand-blue" />
+          </div>
+          <h1 className="font-heading text-2xl font-bold text-gray-900">Contact Leads</h1>
+        </div>
+        <p className="text-sm text-gray-400 ml-10">
+          {count != null ? `${count} total submissions` : 'All form submissions from your website'}
+        </p>
+      </div>
+    </div>
+  )
 }
 
 export default function AdminLeadsPage() {
@@ -37,52 +55,50 @@ export default function AdminLeadsPage() {
   return (
     <>
       <SEO title="Leads" noIndex />
-      <div className="space-y-6">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <h1 className="font-heading text-2xl font-bold text-gray-900">Contact Leads</h1>
-            <p className="text-sm text-gray-500 mt-1">All form submissions from the website.</p>
-          </div>
+      <div className="space-y-5">
+        <PageHeader count={isLoading ? null : leads.length} />
 
-          {/* Filter */}
-          <div className="relative">
-            <select
-              value={statusFilter}
-              onChange={e => setStatusFilter(e.target.value)}
-              className="appearance-none pl-3 pr-8 py-2 text-sm border border-gray-200
-                rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue/30
-                focus:border-brand-blue cursor-pointer"
-            >
-              <option value="">All Statuses</option>
-              <option value="NEW">New</option>
-              <option value="CONTACTED">Contacted</option>
-              <option value="CLOSED">Closed</option>
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4
-              text-gray-400 pointer-events-none" />
+        {/* Filter bar */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500">
+            <Filter className="w-3.5 h-3.5" />
+            Filter:
+          </div>
+          <div className="flex gap-2">
+            {[{ v: '', l: 'All' }, { v: 'NEW', l: 'New' }, { v: 'CONTACTED', l: 'Contacted' }, { v: 'CLOSED', l: 'Closed' }].map(opt => (
+              <button key={opt.v}
+                onClick={() => setStatusFilter(opt.v)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
+                  statusFilter === opt.v
+                    ? 'bg-brand-blue text-white border-brand-blue shadow-sm'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                }`}>
+                {opt.l}
+              </button>
+            ))}
           </div>
         </div>
 
         {isError && (
-          <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50
-            border border-red-200 rounded-lg px-4 py-3">
+          <div className="flex items-center gap-2.5 text-sm text-red-700 bg-red-50
+            border border-red-200 rounded-xl px-4 py-3">
             <AlertCircle className="w-4 h-4 shrink-0" />
-            Failed to load leads.
+            Failed to load leads. Make sure the backend server is running.
           </div>
         )}
 
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Contact</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Service</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Message</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-4 py-3" />
+                <tr className="border-b border-gray-100 bg-gray-50/80">
+                  <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider">Name</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider">Contact</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider">Service</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider">Message</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
+                  <th className="px-5 py-3.5 w-12" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -90,61 +106,83 @@ export default function AdminLeadsPage() {
                   Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i}>
                       {Array.from({ length: 7 }).map((_, j) => (
-                        <td key={j} className="px-4 py-3">
-                          <div className="h-4 bg-gray-100 rounded animate-pulse" />
+                        <td key={j} className="px-5 py-4">
+                          <div className="h-4 bg-gray-100 rounded-lg animate-pulse" />
                         </td>
                       ))}
                     </tr>
                   ))
                 ) : leads.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-12 text-gray-400 text-sm">
-                      No leads yet.
+                    <td colSpan={7} className="text-center py-16">
+                      <Inbox className="w-10 h-10 text-gray-200 mx-auto mb-3" />
+                      <p className="text-gray-400 text-sm font-medium">No leads yet</p>
+                      <p className="text-gray-300 text-xs mt-1">Leads will appear here when visitors submit the contact form</p>
                     </td>
                   </tr>
-                ) : leads.map(lead => (
-                  <tr key={lead.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-3 font-medium text-gray-900">{lead.name}</td>
-                    <td className="px-4 py-3">
-                      <p className="text-gray-700">{lead.email}</p>
-                      {lead.phone && <p className="text-gray-400 text-xs">{lead.phone}</p>}
-                    </td>
-                    <td className="px-4 py-3 text-gray-500">{lead.serviceInterested || '—'}</td>
-                    <td className="px-4 py-3 text-gray-500 max-w-xs">
-                      <p className="truncate">{lead.message}</p>
-                    </td>
-                    <td className="px-4 py-3">
-                      <select
-                        value={lead.status}
-                        onChange={e => updateMutation.mutate({ id: lead.id, status: e.target.value })}
-                        className={`text-xs font-semibold px-2.5 py-1 rounded-full border-0
-                          cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-blue/30
-                          ${STATUS_COLORS[lead.status]}`}
-                      >
-                        <option value="NEW">New</option>
-                        <option value="CONTACTED">Contacted</option>
-                        <option value="CLOSED">Closed</option>
-                      </select>
-                    </td>
-                    <td className="px-4 py-3 text-gray-400 text-xs whitespace-nowrap">
-                      {new Date(lead.createdAt).toLocaleDateString('en-IN')}
-                    </td>
-                    <td className="px-4 py-3">
-                      <button
-                        onClick={() => {
-                          if (window.confirm('Delete this lead?')) {
-                            deleteMutation.mutate(lead.id)
-                          }
-                        }}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-500
-                          hover:bg-red-50 transition-colors"
-                        aria-label="Delete lead"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                ) : leads.map(lead => {
+                  const sc = STATUS_CONFIG[lead.status] || STATUS_CONFIG.NEW
+                  return (
+                    <tr key={lead.id} className="hover:bg-blue-50/30 transition-colors">
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-blue to-blue-400
+                            flex items-center justify-center text-white text-xs font-bold shrink-0">
+                            {lead.name?.[0]?.toUpperCase() || '?'}
+                          </div>
+                          <span className="font-semibold text-gray-900">{lead.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-1 text-gray-600 text-xs mb-0.5">
+                          <Mail className="w-3 h-3 text-gray-400" />
+                          {lead.email}
+                        </div>
+                        {lead.phone && (
+                          <div className="flex items-center gap-1 text-gray-400 text-xs">
+                            <Phone className="w-3 h-3" />
+                            {lead.phone}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-5 py-4">
+                        {lead.serviceInterested
+                          ? <span className="px-2 py-1 rounded-lg bg-brand-blue/8 text-brand-blue text-xs font-medium border border-brand-blue/15">{lead.serviceInterested}</span>
+                          : <span className="text-gray-300">—</span>}
+                      </td>
+                      <td className="px-5 py-4 text-gray-500 max-w-xs">
+                        <p className="truncate text-xs leading-relaxed">{lead.message}</p>
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="relative">
+                          <select
+                            value={lead.status}
+                            onChange={e => updateMutation.mutate({ id: lead.id, status: e.target.value })}
+                            className={`appearance-none text-xs font-semibold pl-5 pr-6 py-1.5 rounded-full border cursor-pointer
+                              focus:outline-none focus:ring-2 focus:ring-brand-blue/20 ${sc.pill}`}
+                          >
+                            <option value="NEW">New</option>
+                            <option value="CONTACTED">Contacted</option>
+                            <option value="CLOSED">Closed</option>
+                          </select>
+                          <div className={`absolute left-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full ${sc.dot} pointer-events-none`} />
+                        </div>
+                      </td>
+                      <td className="px-5 py-4 text-gray-400 text-xs whitespace-nowrap">
+                        {new Date(lead.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </td>
+                      <td className="px-5 py-4">
+                        <button
+                          onClick={() => { if (window.confirm('Delete this lead?')) deleteMutation.mutate(lead.id) }}
+                          className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all"
+                          aria-label="Delete lead"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>

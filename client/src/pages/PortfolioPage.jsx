@@ -18,7 +18,12 @@ import portfolioHeroNewFit from '@/assets/portfolio_hero_new_fit.png'
 export default function PortfolioPage() {
   return (
     <>
-      <SEO title="Portfolio" description="View Hindustan Projects portfolio — 50+ projects delivered across web development, digital marketing, mobile apps and more." path="/portfolio" />
+      <SEO
+        title="Portfolio — 50+ Projects Delivered"
+        description="Explore Hindustan Projects portfolio — 50+ projects delivered across web development, digital marketing, mobile apps, branding and software for clients in Bhilwara and across India."
+        path="/portfolio"
+        keywords="web development portfolio Bhilwara, IT projects Rajasthan, digital marketing case studies, mobile app development portfolio India"
+      />
       {/* ── Hero ─────────────────────────────────────────────────── */}
       <section className="relative pt-36 pb-0 overflow-hidden bg-[#050e20] flex flex-col justify-between">
         {/* Grid bg */}

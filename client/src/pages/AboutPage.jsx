@@ -50,7 +50,19 @@ export default function AboutPage() {
   const milestones = milestonesData?.data?.length ? milestonesData.data : (milestonesLoading ? [] : FALLBACK_MILESTONES)
   return (
     <>
-      <SEO title="About Us" description="Learn about Hindustan Projects — IT services company in Bhilwara, Rajasthan. Our story, team, mission and vision." path="/about" />
+      <SEO
+        title="About Us — IT Company in Bhilwara, Rajasthan"
+        description="Hindustan Projects is a technology company based in Bhilwara, Rajasthan founded in 2019. Learn about our story, team, mission and vision."
+        path="/about"
+        keywords="IT company Bhilwara, technology company Rajasthan, web development company Bhilwara, about Hindustan Projects, IT firm Rajasthan"
+        schemas={[{
+          '@context': 'https://schema.org',
+          '@type': 'AboutPage',
+          name: 'About Hindustan Projects',
+          url: 'https://hindustanprojects.com/about',
+          description: 'Hindustan Projects is a technology company based in Bhilwara, Rajasthan, helping businesses grow through smart digital solutions.',
+        }]}
+      />
       {/* ── Hero ─────────────────────────────────────────────────── */}
       <section className="relative pt-36 pb-24 overflow-hidden bg-[#050e20]">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff06_1px,transparent_1px),linear-gradient(to_bottom,#ffffff06_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />

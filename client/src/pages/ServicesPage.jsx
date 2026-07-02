@@ -4,6 +4,8 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight, CheckCircle2, Zap, Shield, Clock, Users } from 'lucide-react'
 import { Container, Button, SEO } from '@/components/ui'
+import { serviceSchema, breadcrumbSchema } from '@/components/ui/SEO'
+import { SITE } from '@/components/ui/SEO'
 import { useServices } from '@/hooks/useServices'
 import { getServiceIcon } from '@/utils/serviceIcons'
 
@@ -119,9 +121,19 @@ export default function ServicesPage() {
   return (
     <>
       <SEO
-        title="Our Services"
-        description="Expert IT services from Hindustan Projects — web development, digital marketing, IT consulting, mobile apps and more."
+        title="IT Services in Bhilwara, Rajasthan"
+        description="Expert IT services from Hindustan Projects, Bhilwara — web development, digital marketing, IT consulting, mobile apps, cloud solutions, and SEO."
         path="/services"
+        keywords="IT services Bhilwara, web development Rajasthan, digital marketing company Bhilwara, mobile app development India, SEO services Rajasthan"
+        schemas={[
+          breadcrumbSchema([{ name: 'Home', path: '/' }, { name: 'Services', path: '/services' }]),
+          ...(services.map(s => serviceSchema({
+            title: s.title,
+            description: s.shortDescription,
+            url: `${SITE.url}/services/${s.slug}`,
+            serviceType: s.title,
+          }))),
+        ]}
       />
 
       {/* ── Hero ─────────────────────────────────────────────────── */}

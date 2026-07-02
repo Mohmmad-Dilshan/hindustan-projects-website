@@ -4,10 +4,11 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { motion } from 'framer-motion'
 import { MapPin, Phone, Mail, MessageCircle, Send, CheckCircle, AlertCircle, ChevronDown } from 'lucide-react'
-import { Container, Button } from '@/components/ui'
+import { Container, Button, SEO } from '@/components/ui'
 import { useServices } from '@/hooks/useServices'
 import { useFaqs, useSiteSettings } from '@/hooks/useContent'
 import { api } from '@/utils/api'
+import { faqSchema, breadcrumbSchema } from '@/components/ui/SEO'
 import { fadeUp, staggerContainer } from '@/utils/motion'
 import contactHeroPerson from '@/assets/contact_hero_person.png'
 
@@ -191,6 +192,16 @@ export default function ContactPage() {
 
   return (
     <>
+      <SEO
+        title="Contact Us — Get a Free IT Consultation"
+        description="Contact Hindustan Projects in Bhilwara, Rajasthan. Get a free consultation for web development, digital marketing, IT consulting. Call, email, or WhatsApp us today."
+        path="/contact"
+        keywords="contact IT company Bhilwara, web development consultation Rajasthan, IT services quote India, hire web developer Bhilwara"
+        schemas={[
+          breadcrumbSchema([{ name: 'Home', path: '/' }, { name: 'Contact', path: '/contact' }]),
+          ...(faqs.length ? [faqSchema(faqs.map(f => ({ question: f.question, answer: f.answer })))] : []),
+        ]}
+      />
       {/* ── Page Hero Header ── */}
       <section className="pt-36 pb-24 bg-gradient-to-b from-brand-blue via-slate-900 to-brand-blue border-b border-white/5 relative overflow-hidden">
         {/* Mesh Background grid */}

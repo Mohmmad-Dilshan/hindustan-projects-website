@@ -7,7 +7,8 @@ import {
   Clock, Shield, Zap, Users, Star, Code2, Megaphone,
   Lightbulb, Monitor, Settings, Layers, Smartphone, MessageSquare
 } from 'lucide-react'
-import { Container, Button } from '@/components/ui'
+import { Container, Button, SEO } from '@/components/ui'
+import { serviceSchema, breadcrumbSchema, SITE } from '@/components/ui/SEO'
 import Skeleton from '@/components/ui/Skeleton'
 import { useService, useServices } from '@/hooks/useServices'
 import { getServiceIcon } from '@/utils/serviceIcons'
@@ -273,6 +274,25 @@ export default function ServiceDetailPage() {
 
   return (
     <>
+      <SEO
+        title={service.title}
+        description={service.shortDescription}
+        path={`/services/${service.slug}`}
+        keywords={`${service.title} Bhilwara, ${service.title} Rajasthan, ${service.title} India`}
+        schemas={[
+          serviceSchema({
+            title: service.title,
+            description: service.shortDescription,
+            url: `${SITE.url}/services/${service.slug}`,
+            serviceType: service.title,
+          }),
+          breadcrumbSchema([
+            { name: 'Home', path: '/' },
+            { name: 'Services', path: '/services' },
+            { name: service.title, path: `/services/${service.slug}` },
+          ]),
+        ]}
+      />
       {/* ── Hero Header ──────────────────────────────────────────── */}
       <section className="relative pt-32 pb-20 overflow-hidden bg-[#050e20]">
         {/* Grid pattern */}

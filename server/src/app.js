@@ -15,6 +15,8 @@ import adminRouter from './routes/admin.route.js'
 import uploadRouter from './routes/upload.route.js'
 import testimonialsRouter from './routes/testimonials.route.js'
 import contentRouter from './routes/content.route.js'
+import sitemapRouter from './routes/sitemap.route.js'
+import sitemapRouter from './routes/sitemap.route.js'
 
 const app = express()
 
@@ -42,6 +44,8 @@ app.use('/api/admin', adminRouter)
 app.use('/api/upload', uploadRouter)
 app.use('/api/testimonials', testimonialsRouter)
 app.use('/api', contentRouter)
+app.use('/sitemap.xml', sitemapRouter)
+app.get('/sitemap.xml', sitemapRouter)
 
 // ── 6. 404 + Error handlers ───────────────────────────────────
 app.use(notFound)

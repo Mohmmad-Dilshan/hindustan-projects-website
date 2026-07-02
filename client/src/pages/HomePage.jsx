@@ -12,6 +12,7 @@ import TestimonialsSection from '@/components/sections/TestimonialsSection'
 import TeamSection from '@/components/sections/TeamSection'
 import FaqSection from '@/components/sections/FaqSection'
 import { Container, Button, SEO } from '@/components/ui'
+import { SITE, localBusinessSchema } from '@/components/ui/SEO'
 import { usePartners, useSiteSettings } from '@/hooks/useContent'
 import { api } from '@/utils/api'
 
@@ -58,7 +59,11 @@ export default function HomePage() {
 
   return (
     <>
-      <SEO path="/" />
+      <SEO
+        path="/"
+        schemas={[localBusinessSchema()]}
+        keywords="IT company Bhilwara, web development Bhilwara, digital marketing Rajasthan, IT services Bhilwara, custom software Rajasthan"
+      />
       <HeroSection />
 
       {/* ── Partner Logos Banner ── */}

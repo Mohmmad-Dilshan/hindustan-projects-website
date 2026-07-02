@@ -1,0 +1,55 @@
+/**
+ * sitemap.route.js — Dynamic XML sitemap from DB
+ * GET /api/sitemap.xml — returns XML with all pages + service slugs
+ */
+import { Router } from 'express'
+import prisma from '../config/db.js'
+
+const router = Router()
+const BASE = 'https://hindustanprojects.com'
+
+router.get('/', async (_req, res, next) => {
+  try {
+    const services = await prisma.service.findMany({
+      where: { isActive: true },
+      select: { slug: true, updatedAt: true },
+      orderBy: { order: 'asc' },
+    })
+
+    const staticPages = [
+      { path: '/',          priority: '1.0', freq: 'weekly' },
+      { path: '/services',  priority: '0.9', freq: 'weekly' },
+      { path: '/about',     priority: '0.7', freq: 'monthly' },
+      { path: '/portfolio', priority: '0.7', freq: 'weekly' },
+      { path: '/contact',   priority: '0.8', freq: 'monthly' },
+    ]
+
+    const servicePages = services.map(s => ({
+      path: `/services/${s.slug}`,
+      priority: '0.8',
+      freq: 'monthly',
+      lastmod: s.updatedAt.toISOString().split('T')[0],
+    }))
+
+    const allPages = [...staticPages, ...servicePages]
+    const today = new Date().toISOString().split('T')[0]
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${allPages.map(p => `  <url>
+    <loc>${BASE}${p.path}</loc>
+    <lastmod>${p.lastmod || today}</lastmod>
+    <changefreq>${p.freq}</changefreq>
+    <priority>${p.priority}</priority>
+  </url>`).join('\n')}
+</urlset>`
+
+    res.setHeader('Content-Type', 'application/xml')
+    res.setHeader('Cache-Control', 'public, max-age=86400') // 24h cache
+    res.send(xml)
+  } catch (err) {
+    next(err)
+  }
+})
+
+export default router

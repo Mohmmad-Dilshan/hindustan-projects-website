@@ -4,6 +4,8 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import PageTransition from '@/components/ui/PageTransition'
 
+import { useSiteSettings } from '@/hooks/useContent'
+
 /**
  * RootLayout — shared shell for all public pages.
  * Uses React Router <Outlet> to render the active page.
@@ -19,6 +21,11 @@ function ScrollToTop() {
 
 export default function RootLayout() {
   const location = useLocation()
+  const { data: settingsData } = useSiteSettings()
+  const cfg = settingsData?.data || {}
+
+  const whatsapp = cfg.whatsapp || cfg.phone || '919999999999'
+  const whatsappNum = whatsapp.replace(/[^0-9]/g, '')
 
   return (
     <div className="min-h-screen bg-bg-base text-text-dark font-body flex flex-col relative">
@@ -33,7 +40,7 @@ export default function RootLayout() {
 
       {/* Floating WhatsApp Chat Widget */}
       <a
-        href="https://wa.me/919999999999?text=Hi!%20I%20visited%20your%20website%20and%20want%20to%20discuss%20a%20project."
+        href={`https://wa.me/${whatsappNum}?text=Hi!%20I%20visited%20your%20website%20and%20want%20to%20discuss%20a%20project.`}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat on WhatsApp"

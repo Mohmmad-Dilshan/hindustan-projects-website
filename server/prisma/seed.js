@@ -195,6 +195,142 @@ async function main() {
   }
   console.log(`✅ Seeded ${partners.length} partners`)
 
+  // ── Projects ──────────────────────────────────────────────────
+  const projects = [
+    {
+      id: 'proj-1',
+      title: 'Bhilwara Textiles E-Commerce Platform',
+      slug: 'bhilwara-textiles-ecommerce',
+      clientName: 'Bhilwara Textiles Ltd.',
+      description: 'A full-stack e-commerce platform with inventory management, payment integration via Razorpay, and a custom admin dashboard. Increased online sales by 3x within 6 months of launch.',
+      thumbnailUrl: '',
+      images: [],
+      technologies: ['React', 'Node.js', 'PostgreSQL', 'Razorpay', 'Tailwind CSS'],
+      category: 'Web',
+      isFeatured: true,
+    },
+    {
+      id: 'proj-2',
+      title: 'Jaipur Crafts Digital Marketing Campaign',
+      slug: 'jaipur-crafts-marketing',
+      clientName: 'Jaipur Crafts E-Store',
+      description: 'Multi-channel digital marketing campaign spanning Google Ads, Meta Ads, and SEO. Achieved 3x ROI within 3 months. Conversion rates improved by 42% through checkout optimization.',
+      thumbnailUrl: '',
+      images: [],
+      technologies: ['Google Ads', 'Meta Ads', 'SEO', 'Google Analytics'],
+      category: 'Marketing',
+      isFeatured: true,
+    },
+    {
+      id: 'proj-3',
+      title: 'Singhal Marbles Corporate Brand Identity',
+      slug: 'singhal-marbles-branding',
+      clientName: 'Singhal Marbles & Granites',
+      description: 'Complete brand identity redesign including logo, brand guidelines, marketing collateral, and corporate website. Established a premium positioning in the B2B granite market.',
+      thumbnailUrl: '',
+      images: [],
+      technologies: ['Figma', 'Adobe Illustrator', 'Brand Guidelines', 'WordPress'],
+      category: 'Branding',
+      isFeatured: true,
+    },
+    {
+      id: 'proj-4',
+      title: 'Textile ERP System',
+      slug: 'textile-erp-system',
+      clientName: 'Rajasthan Polytech Industries',
+      description: 'Custom ERP solution for textile manufacturing — production tracking, inventory management, billing, and supplier management. Reduced operational overhead by 35%.',
+      thumbnailUrl: '',
+      images: [],
+      technologies: ['Node.js', 'React', 'PostgreSQL', 'Docker'],
+      category: 'Software',
+      isFeatured: false,
+    },
+    {
+      id: 'proj-5',
+      title: 'Restaurant Website & Local SEO',
+      slug: 'restaurant-website-seo',
+      clientName: 'Spice Garden Restaurant, Bhilwara',
+      description: 'Responsive website with online menu, table booking system, and local SEO optimization. Restaurant now ranks #1 on Google for "restaurant in Bhilwara".',
+      thumbnailUrl: '',
+      images: [],
+      technologies: ['React', 'Tailwind CSS', 'SEO', 'Google My Business'],
+      category: 'Web',
+      isFeatured: false,
+    },
+    {
+      id: 'proj-6',
+      title: 'Real Estate Social Media Growth',
+      slug: 'real-estate-social-media',
+      clientName: 'RetailHub Properties',
+      description: 'Organic social media strategy growing followers from 500 to 12,000+ in 6 months. Content calendar, Reels production, and paid boost strategy for property listings.',
+      thumbnailUrl: '',
+      images: [],
+      technologies: ['Instagram', 'Facebook', 'Canva', 'Meta Business Suite'],
+      category: 'Marketing',
+      isFeatured: false,
+    },
+    {
+      id: 'proj-7',
+      title: 'Logistics Mobile App',
+      slug: 'logistics-mobile-app',
+      clientName: 'FastMove Logistics, Rajasthan',
+      description: 'Real-time GPS tracking and booking mobile app for a regional logistics provider. Features push notifications, driver management, and customer portal. Available on iOS & Android.',
+      thumbnailUrl: '',
+      images: [],
+      technologies: ['React Native', 'Firebase', 'Google Maps API', 'Node.js'],
+      category: 'App',
+      isFeatured: false,
+    },
+  ]
+  for (const p of projects) {
+    await prisma.project.upsert({ where: { id: p.id }, update: p, create: p })
+  }
+  console.log(`✅ Seeded ${projects.length} projects`)
+
+  // ── Team Members ──────────────────────────────────────────────
+  const team = [
+    {
+      id: 'team-1',
+      name: 'Mohammad Dilshan',
+      role: 'Founder & CEO',
+      bio: 'Visionary tech entrepreneur with 8+ years of experience in web development and digital strategy. Founded Hindustan Projects to bring world-class IT services to businesses in Bhilwara and Rajasthan.',
+      linkedinUrl: '#',
+      photoUrl: '',
+      order: 1,
+    },
+    {
+      id: 'team-2',
+      name: 'Rohan Verma',
+      role: 'Lead Software Architect',
+      bio: '6+ years in full-stack engineering. Expert in React, Node.js, and cloud architectures. Has built and deployed 30+ production applications for clients across India.',
+      linkedinUrl: '#',
+      photoUrl: '',
+      order: 2,
+    },
+    {
+      id: 'team-3',
+      name: 'Priya Mehta',
+      role: 'Head of UI/UX Design',
+      bio: 'Crafts intuitive, conversion-focused user interfaces and modern corporate brand guidelines. 5+ years designing digital products that users love.',
+      linkedinUrl: '#',
+      photoUrl: '',
+      order: 3,
+    },
+    {
+      id: 'team-4',
+      name: 'Karan Singhal',
+      role: 'Head of Digital Marketing',
+      bio: 'Specialist in SEO, Google Ads, and Meta campaigns. Has managed ₹50L+ in ad spend with consistent 3-5x ROAS across industries.',
+      linkedinUrl: '#',
+      photoUrl: '',
+      order: 4,
+    },
+  ]
+  for (const m of team) {
+    await prisma.teamMember.upsert({ where: { id: m.id }, update: m, create: m })
+  }
+  console.log(`✅ Seeded ${team.length} team members`)
+
   // ── Default Super Admin ────────────────────────────────────────
   const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@hindustanprojects.com'
   const adminPassword = process.env.SEED_ADMIN_PASSWORD || 'ChangeMe@123'

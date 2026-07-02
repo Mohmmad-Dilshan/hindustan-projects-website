@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { CheckCircle2, AlertCircle, Eye, EyeOff } from 'lucide-react'
+import { CheckCircle2, AlertCircle, Eye, EyeOff, Lock, ShieldAlert, KeyRound } from 'lucide-react'
 import { api } from '@/utils/api'
 import { SEO } from '@/components/ui'
 
@@ -21,21 +21,22 @@ const schema = z.object({
 function PasswordInput({ label, name, register, error, show, onToggle }) {
   return (
     <div>
-      <label className="text-xs font-medium text-gray-600 block mb-1.5">{label}</label>
+      <label className="text-xs font-semibold text-gray-600 block mb-1.5">{label}</label>
       <div className="relative">
+        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
         <input
           type={show ? 'text' : 'password'}
           {...register(name)}
-          className={`w-full px-3.5 py-2.5 text-sm border rounded-lg pr-10
-            focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue
-            transition-colors ${error ? 'border-red-400' : 'border-gray-200'}`}
+          className={`w-full pl-9 pr-10 py-2.5 text-sm border rounded-xl bg-gray-50 focus:bg-white
+            focus:outline-none focus:ring-2 focus:ring-brand-blue/25 focus:border-brand-blue
+            transition-all ${error ? 'border-red-400 bg-red-50/30' : 'border-gray-200'}`}
         />
         <button type="button" onClick={onToggle}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
           {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
         </button>
       </div>
-      {error && <p className="text-xs text-red-500 mt-1">{error.message}</p>}
+      {error && <p className="text-xs text-red-500 mt-1.5 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{error.message}</p>}
     </div>
   )
 }
@@ -69,15 +70,43 @@ export default function AdminSettingsPage() {
     <>
       <SEO title="Settings" noIndex />
       <div className="space-y-6 max-w-lg">
-        <div>
-          <h1 className="font-heading text-2xl font-bold text-gray-900">Settings</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage your admin account.</p>
+
+        {/* Page Header */}
+        <div className="flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-brand-blue/10 flex items-center justify-center shrink-0">
+            <KeyRound className="w-5 h-5 text-brand-blue" />
+          </div>
+          <div>
+            <h1 className="font-heading text-2xl font-bold text-gray-900">Account Settings</h1>
+            <p className="text-sm text-gray-500 mt-0.5">Manage your admin account and security.</p>
+          </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="font-heading text-base font-semibold text-gray-800 mb-5">
-            Change Password
-          </h2>
+        {/* Profile Card */}
+        <div className="bg-white border border-gray-100 rounded-xl shadow-sm p-5">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-brand-blue to-brand-blue/70 flex items-center justify-center shadow-sm shrink-0">
+              <span className="text-white font-bold text-lg">A</span>
+            </div>
+            <div>
+              <p className="font-semibold text-gray-900">Admin</p>
+              <p className="text-xs text-gray-400 mt-0.5">Administrator · Hindustan Projects</p>
+              <span className="inline-flex items-center gap-1 mt-1.5 text-xs px-2 py-0.5 bg-green-50 text-green-700 border border-green-200 rounded-full font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+                Active Session
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Change Password */}
+        <div className="bg-white border border-blue-100 border-l-4 border-l-brand-blue rounded-xl p-6 shadow-sm">
+          <div className="flex items-center gap-2 mb-5">
+            <div className="w-7 h-7 rounded-lg bg-brand-blue/10 flex items-center justify-center">
+              <Lock className="w-3.5 h-3.5 text-brand-blue" />
+            </div>
+            <h2 className="font-heading text-base font-semibold text-gray-800">Change Password</h2>
+          </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
             <PasswordInput
@@ -106,39 +135,35 @@ export default function AdminSettingsPage() {
             />
 
             {status === 'success' && (
-              <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50
-                border border-green-200 rounded-lg px-3 py-2.5">
-                <CheckCircle2 className="w-4 h-4 shrink-0" />
-                {msg}
+              <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+                <CheckCircle2 className="w-4 h-4 shrink-0" /> {msg}
               </div>
             )}
             {status === 'error' && (
-              <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50
-                border border-red-200 rounded-lg px-3 py-2.5">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                {msg}
+              <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+                <AlertCircle className="w-4 h-4 shrink-0" /> {msg}
               </div>
             )}
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-brand-blue hover:bg-brand-blue-dark text-white
-                font-medium py-2.5 rounded-lg text-sm transition-colors
-                disabled:opacity-60 disabled:cursor-not-allowed mt-1"
-            >
+              className="w-full bg-brand-blue text-white font-semibold py-2.5 rounded-xl text-sm hover:shadow-md transition-all disabled:opacity-60 disabled:cursor-not-allowed mt-1">
               {isSubmitting ? 'Updating…' : 'Update Password'}
             </button>
           </form>
         </div>
 
         {/* Security reminder */}
-        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-yellow-800 mb-2">Security Reminder</h3>
-          <p className="text-xs text-yellow-700 leading-relaxed">
-            Use a strong, unique password. Never share your admin credentials.
-            If you suspect unauthorized access, change your password immediately.
-          </p>
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 flex items-start gap-3">
+          <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <div>
+            <h3 className="text-sm font-semibold text-amber-800 mb-1">Security Reminder</h3>
+            <p className="text-xs text-amber-700 leading-relaxed">
+              Use a strong, unique password. Never share your admin credentials.
+              If you suspect unauthorized access, change your password immediately.
+            </p>
+          </div>
         </div>
       </div>
     </>

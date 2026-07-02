@@ -118,7 +118,7 @@ export default function AdminLayout() {
         </div>
 
         {/* ── Nav links ── */}
-        <nav className="flex-1 py-4 px-3 overflow-y-auto space-y-5" aria-label="Admin navigation">
+        <nav className="flex-1 py-4 px-3 overflow-y-auto space-y-5 scrollbar-thin" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent' }} aria-label="Admin navigation">
           {NAV_GROUPS.map(group => (
             <div key={group.label}>
               <p className="text-[10px] font-bold uppercase tracking-widest text-white/30 px-3 mb-1.5">

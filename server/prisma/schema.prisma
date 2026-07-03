@@ -418,3 +418,35 @@ model ChatbotInquiry {
   @@map("chatbot_inquiries")
 }
 
+// ─────────────────────────────────────────────────────────────────
+// ErrorLog — Lightweight custom backup error tracker
+// ─────────────────────────────────────────────────────────────────
+model ErrorLog {
+  id           String   @id @default(cuid())
+  source       String   // "FRONTEND" | "BACKEND"
+  errorMessage String
+  pageOrRoute  String
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  @@index([source])
+  @@index([createdAt])
+  @@map("error_logs")
+}
+
+// ─────────────────────────────────────────────────────────────────
+// PageVisit — Lightweight custom visitor tracker
+// ─────────────────────────────────────────────────────────────────
+model PageVisit {
+  id        String   @id @default(cuid())
+  path      String
+  referrer  String?
+  userAgent String?
+  ipHash    String
+  createdAt DateTime @default(now())
+
+  @@index([path])
+  @@index([createdAt])
+  @@map("page_visits")
+}
+

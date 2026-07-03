@@ -31,6 +31,7 @@ const MASKED_KEYS = new Set([
   'sys_jwt_secret',
   'sys_resend_api_key',
   'sys_twilio_auth_token',
+  'sys_sentry_dsn',
 ])
 
 // Maps DB keys → process.env variable names
@@ -51,6 +52,8 @@ const ENV_MAP = {
   sys_twilio_auth_token: 'TWILIO_AUTH_TOKEN',
   sys_twilio_whatsapp_from: 'TWILIO_WHATSAPP_FROM',
   sys_admin_whatsapp_to: 'ADMIN_WHATSAPP_TO',
+  sys_sentry_dsn: 'SENTRY_DSN',
+  sys_ga_measurement_id: 'GA_MEASUREMENT_ID',
 }
 
 // All integration keys we manage
@@ -98,6 +101,8 @@ export const getIntegrationConfig = async (_req, res, next) => {
         config.sys_admin_whatsapp_to &&
         rows.find((r) => r.key === 'sys_twilio_auth_token')?.value
       ),
+      sentry: !!rows.find((r) => r.key === 'sys_sentry_dsn')?.value,
+      googleAnalytics: !!rows.find((r) => r.key === 'sys_ga_measurement_id')?.value,
     }
 
     res.json({ status: 'ok', data: config })

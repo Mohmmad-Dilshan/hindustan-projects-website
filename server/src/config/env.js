@@ -23,6 +23,8 @@ export const env = {
   TWILIO_AUTH_TOKEN: process.env.TWILIO_AUTH_TOKEN,
   TWILIO_WHATSAPP_FROM: process.env.TWILIO_WHATSAPP_FROM,
   ADMIN_WHATSAPP_TO: process.env.ADMIN_WHATSAPP_TO,
+  SENTRY_DSN: process.env.SENTRY_DSN,
+  GA_MEASUREMENT_ID: process.env.GA_MEASUREMENT_ID,
 }
 
 // Validate required env vars at startup

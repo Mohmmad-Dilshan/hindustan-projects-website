@@ -23,6 +23,7 @@ import {
   ExternalLink,
   UserCheck,
   FileText,
+  Activity,
 } from 'lucide-react'
 import { SEO } from '@/components/ui'
 
@@ -321,6 +322,39 @@ export default function AdminHelpPage() {
           num: '7',
           title: 'FAQ Chatbot Widget',
           desc: 'Answers public website users rule-based pricing/business hours/contact questions. Captured user entries are logged for admin review.',
+        },
+      ],
+    },
+    {
+      id: 'monitoring-guide',
+      title: 'Monitoring & Error Tracking',
+      subtitle: 'Analyze site traffic, watch system health, and view javascript crash logs',
+      icon: Activity,
+      steps: [
+        {
+          num: '1',
+          title: 'Site Traffic Analytics',
+          desc: 'Click "Monitoring" in the sidebar Settings category. Under the "Site Traffic" tab, you can view the total page hit counters for Today, This Week, and This Month, plus a 7-day visual traffic chart.',
+        },
+        {
+          num: '2',
+          title: 'Popular Pages Listing',
+          desc: 'The bottom table on the Site Traffic tab displays the most visited page URLs (e.g. /services, /portfolio) ordered by the total view count, letting you identify popular content areas.',
+        },
+        {
+          num: '3',
+          title: 'Crash Logs Monitoring',
+          desc: 'The "Recent Errors" tab logs Javascript runtime errors or rendering crashes. Both frontend browser errors and backend server faults are captured with timestamps, routes, and user agent info.',
+        },
+        {
+          num: '4',
+          title: 'Emergency Email Alerts',
+          desc: 'If the site experiences a high failure rate (5+ errors within 10 minutes), the system immediately dispatches an emergency email notification to the administrator to warn of potential downtime.',
+        },
+        {
+          num: '5',
+          title: 'System Health Status',
+          desc: 'The "System Health" tab auto-refreshes every 30 seconds to show Database connectivity (ONLINE/OFFLINE), process memory heap consumption, server platform type, and CPU load averages.',
         },
       ],
     },

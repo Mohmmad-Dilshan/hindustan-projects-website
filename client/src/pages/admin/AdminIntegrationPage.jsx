@@ -30,6 +30,7 @@ import {
   KeyRound,
   Unlock,
   ShieldAlert,
+  Activity,
 } from 'lucide-react'
 import { api } from '@/utils/api'
 import { SEO } from '@/components/ui'
@@ -367,6 +368,8 @@ export default function AdminIntegrationPage() {
           sys_twilio_auth_token: data.sys_twilio_auth_token || '',
           sys_twilio_whatsapp_from: data.sys_twilio_whatsapp_from || '',
           sys_admin_whatsapp_to: data.sys_admin_whatsapp_to || '',
+          sys_sentry_dsn: data.sys_sentry_dsn || '',
+          sys_ga_measurement_id: data.sys_ga_measurement_id || '',
         }
       : {},
   })
@@ -713,6 +716,46 @@ export default function AdminIntegrationPage() {
                     need to be kept secret.
                   </p>
                 </div>
+              </Section>
+
+              {/* ── Sentry & Google Analytics ── */}
+              <Section
+                icon={Activity}
+                title="Sentry & Google Analytics — System Monitoring"
+                accentColor="indigo"
+                badge={
+                  <div className="flex gap-2 items-center">
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${status.sentry ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>
+                      Sentry: {status.sentry ? 'ON' : 'OFF'}
+                    </span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${status.googleAnalytics ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>
+                      GA4: {status.googleAnalytics ? 'ON' : 'OFF'}
+                    </span>
+                  </div>
+                }
+              >
+                <div className="bg-indigo-50/50 border border-indigo-100 rounded-lg p-3 flex items-start gap-2 text-xs text-indigo-700">
+                  <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                  <span>
+                    Configures <strong>Sentry</strong> for frontend/backend Javascript error tracking and <strong>Google Analytics 4</strong> for client-side web stream traffic. Leaving them empty disables the respective integration.
+                  </span>
+                </div>
+
+                <SecretInput
+                  label="Sentry DSN (Server & Frontend)"
+                  name="sys_sentry_dsn"
+                  placeholder="https://xxxxxx@o450xxxxxx.ingest.sentry.io/xxxxxx"
+                  register={register}
+                  description="Project DSN to capture and report runtime errors. Format: https://public_key@host/project_id"
+                />
+
+                <PlainInput
+                  label="Google Analytics 4 Measurement ID"
+                  name="sys_ga_measurement_id"
+                  placeholder="G-XXXXXXXXXX"
+                  register={register}
+                  description="Your GA4 web stream measurement ID (starts with G-). Bypasses tracking if blank."
+                />
               </Section>
 
               {/* ── Twilio WhatsApp ── */}

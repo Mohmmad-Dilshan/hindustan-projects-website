@@ -31,6 +31,7 @@ import {
   StickyNote,
   Calendar,
   History,
+  Activity,
 } from 'lucide-react'
 import { api } from '@/utils/api'
 
@@ -71,6 +72,7 @@ const NAV_GROUPS = [
     items: [
       { to: '/admin/site-settings', icon: SlidersHorizontal, label: 'Site Settings' },
       { to: '/admin/integrations', icon: Plug, label: 'Integrations', badge: 'key' },
+      { to: '/admin/monitoring', icon: Activity, label: 'Monitoring', badge: 'live' },
       { to: '/admin/backup', icon: Database, label: 'Data Backup', badge: 'dl' },
       { to: '/admin/settings', icon: Settings, label: 'Account' },
     ],
@@ -95,6 +97,7 @@ const PAGE_TITLES = {
   '/admin/legal': 'Legal Pages',
   '/admin/site-settings': 'Site Settings',
   '/admin/integrations': 'Integrations',
+  '/admin/monitoring': 'System Monitoring',
   '/admin/backup': 'Data Backup',
   '/admin/settings': 'Account',
   '/admin/help': 'Help / Guide',

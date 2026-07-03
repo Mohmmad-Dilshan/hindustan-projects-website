@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/node'
 import express from 'express'
 import cookieParser from 'cookie-parser'
 import compression from 'compression'
@@ -7,8 +8,18 @@ import { errorHandler } from './middleware/errorHandler.js'
 import { notFound } from './middleware/notFound.js'
 import { requestLogger } from './middleware/logger.js'
 
+// Initialize Sentry Node SDK for backend crash tracking (optional)
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV || 'development',
+    tracesSampleRate: 0.1,
+  })
+}
+
 // ── Route imports ──────────────────────────────────────────────
 import healthRouter from './routes/health.route.js'
+import monitoringRouter from './routes/monitoring.route.js'
 import servicesRouter from './routes/services.route.js'
 import projectsRouter from './routes/projects.route.js'
 import teamRouter from './routes/team.route.js'
@@ -70,8 +81,14 @@ app.use('/api/admin/backup', hideAdminRoutes, backupRouter)
 app.use('/api/admin/social', hideAdminRoutes, socialRouter)
 app.use('/api/chatbot', chatbotRouter)
 app.use('/api', contentRouter)
+app.use('/api', monitoringRouter)
 app.use('/sitemap.xml', sitemapRouter)
 app.get('/sitemap.xml', sitemapRouter)
+
+// ── Sentry Express Error Handler (must be registered before custom error handler) ──
+if (process.env.SENTRY_DSN) {
+  Sentry.setupExpressErrorHandler(app)
+}
 
 // ── 6. 404 + Error handlers ───────────────────────────────────
 app.use(notFound)

@@ -20,7 +20,10 @@ function ScrollToTop() {
   return null
 }
 
+import { useTrafficTracker } from '@/hooks/useTrafficTracker'
+
 export default function RootLayout() {
+  useTrafficTracker() // Track page visit count on each navigation
   const location = useLocation()
   const { data: settingsData } = useSiteSettings()
   const cfg = settingsData?.data || {}

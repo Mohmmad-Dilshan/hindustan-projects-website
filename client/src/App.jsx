@@ -60,6 +60,7 @@ const AdminTasksPage = lazy(() => import('@/pages/admin/AdminTasksPage'))
 const AdminNotesPage = lazy(() => import('@/pages/admin/AdminNotesPage'))
 const AdminCalendarPage = lazy(() => import('@/pages/admin/AdminCalendarPage'))
 const AdminActivitiesPage = lazy(() => import('@/pages/admin/AdminActivitiesPage'))
+const AdminMonitoringPage = lazy(() => import('@/pages/admin/AdminMonitoringPage'))
 
 export default function App() {
   return (
@@ -248,6 +249,14 @@ export default function App() {
             element={
               <Suspense fallback={<PageFallback />}>
                 <AdminActivitiesPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="monitoring"
+            element={
+              <Suspense fallback={<PageFallback />}>
+                <AdminMonitoringPage />
               </Suspense>
             }
           />

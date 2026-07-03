@@ -592,5 +592,26 @@
       "details": "Updated task 'Build Backend Controllers & Routes' (Status: IN_PROGRESS)",
       "createdAt": "2026-07-03T15:44:56.216Z"
     }
+  ],
+  "mockSocialPostDrafts": [],
+  "mockChatbotInquiries": [],
+  "mockErrorLogs": [],
+  "mockPageVisits": [
+    {
+      "id": "visit-1783094986141",
+      "createdAt": "2026-07-03T16:09:46.141Z",
+      "path": "/",
+      "referrer": "http://localhost:5173/",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "ipHash": "cebd1d5dedda3fb7981967654fc3792302251615f006d39d59b6bc8cb50d7dfc"
+    },
+    {
+      "id": "visit-1783094987242",
+      "createdAt": "2026-07-03T16:09:47.242Z",
+      "path": "/services",
+      "referrer": "http://localhost:5173/services",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "ipHash": "cebd1d5dedda3fb7981967654fc3792302251615f006d39d59b6bc8cb50d7dfc"
+    }
   ]
 }

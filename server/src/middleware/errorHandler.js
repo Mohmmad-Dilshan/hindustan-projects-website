@@ -22,6 +22,15 @@ export const errorHandler = (err, _req, res, _next) => {
     console.error(err.stack)
   }
 
+  // Log backend server crashes (5xx errors) to custom ErrorLog table
+  if (statusCode >= 500) {
+    import('../controllers/monitoring.controller.js')
+      .then((m) => {
+        m.recordBackendError(message, _req?.originalUrl, _req?.headers?.['user-agent'])
+      })
+      .catch((e) => console.error('[errorHandler] recordBackendError import failed:', e.message))
+  }
+
   res.status(statusCode).json({
     status: 'error',
     message,

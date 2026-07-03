@@ -50,7 +50,16 @@ export const deleteFaq = async (req, res, next) => {
 export const getSettings = async (_req, res, next) => {
   try {
     const rows = await prisma.siteSetting.findMany()
-    const settings = Object.fromEntries(rows.map((r) => [r.key, r.value]))
+    const settings = {}
+    for (const r of rows) {
+      if (r.key.startsWith('sys_')) {
+        if (r.key === 'sys_sentry_dsn' || r.key === 'sys_ga_measurement_id') {
+          settings[r.key] = r.value
+        }
+      } else {
+        settings[r.key] = r.value
+      }
+    }
     res.json({ status: 'ok', data: settings })
   } catch (err) {
     next(err)

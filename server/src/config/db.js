@@ -1116,6 +1116,12 @@ const mockPrisma = {
 
 const MOCK_DB_PATH = path.join(process.cwd(), 'mock_db.json')
 
+// Add mock datasets for social drafts, chatbot inquiries, error logs, and page visits
+let mockSocialPostDrafts = []
+let mockChatbotInquiries = []
+let mockErrorLogs = []
+let mockPageVisits = []
+
 // Helper to save all mock data arrays to disk
 function saveMockDb() {
   try {
@@ -1137,6 +1143,10 @@ function saveMockDb() {
       mockWorkTasks,
       mockQuickNotes,
       mockActivityLogs,
+      mockSocialPostDrafts,
+      mockChatbotInquiries,
+      mockErrorLogs,
+      mockPageVisits,
     }
     fs.writeFileSync(MOCK_DB_PATH, JSON.stringify(data, null, 2), 'utf8')
   } catch (err) {
@@ -1210,6 +1220,32 @@ function loadMockDb() {
         mockActivityLogs = data.mockActivityLogs.map((act) => ({
           ...act,
           createdAt: new Date(act.createdAt),
+        }))
+      }
+      if (data.mockSocialPostDrafts) {
+        mockSocialPostDrafts = data.mockSocialPostDrafts.map((d) => ({
+          ...d,
+          createdAt: new Date(d.createdAt),
+          updatedAt: new Date(d.updatedAt),
+        }))
+      }
+      if (data.mockChatbotInquiries) {
+        mockChatbotInquiries = data.mockChatbotInquiries.map((i) => ({
+          ...i,
+          createdAt: new Date(i.createdAt),
+          updatedAt: new Date(i.updatedAt),
+        }))
+      }
+      if (data.mockErrorLogs) {
+        mockErrorLogs = data.mockErrorLogs.map((e) => ({
+          ...e,
+          createdAt: new Date(e.createdAt),
+        }))
+      }
+      if (data.mockPageVisits) {
+        mockPageVisits = data.mockPageVisits.map((v) => ({
+          ...v,
+          createdAt: new Date(v.createdAt),
         }))
       }
 
@@ -1309,10 +1345,7 @@ for (const modelKey of Object.keys(mockPrisma)) {
   }
 }
 
-// Add mock models for SocialPostDraft and ChatbotInquiry
-let mockSocialPostDrafts = []
-let mockChatbotInquiries = []
-
+// Add mock models for SocialPostDraft, ChatbotInquiry, ErrorLog, and PageVisit
 mockPrisma.socialPostDraft = {
   findMany: async (args) => {
     let list = mockSocialPostDrafts
@@ -1325,12 +1358,14 @@ mockPrisma.socialPostDraft = {
   create: async (args) => {
     const item = { id: `draft-${Date.now()}`, ...args.data, status: 'DRAFT', createdAt: new Date(), updatedAt: new Date() }
     mockSocialPostDrafts.push(item)
+    saveMockDb()
     return item
   },
   update: async (args) => {
     const idx = mockSocialPostDrafts.findIndex((d) => d.id === args.where.id)
     if (idx !== -1) {
       mockSocialPostDrafts[idx] = { ...mockSocialPostDrafts[idx], ...args.data, updatedAt: new Date() }
+      saveMockDb()
       return mockSocialPostDrafts[idx]
     }
     throw new Error('Draft not found')
@@ -1340,6 +1375,7 @@ mockPrisma.socialPostDraft = {
     if (idx !== -1) {
       const deleted = mockSocialPostDrafts[idx]
       mockSocialPostDrafts = mockSocialPostDrafts.filter((d) => d.id !== args.where.id)
+      saveMockDb()
       return deleted
     }
     throw new Error('Draft not found')
@@ -1357,12 +1393,14 @@ mockPrisma.chatbotInquiry = {
   create: async (args) => {
     const item = { id: `chat-${Date.now()}`, ...args.data, isAnswered: false, createdAt: new Date(), updatedAt: new Date() }
     mockChatbotInquiries.push(item)
+    saveMockDb()
     return item
   },
   update: async (args) => {
     const idx = mockChatbotInquiries.findIndex((i) => i.id === args.where.id)
     if (idx !== -1) {
       mockChatbotInquiries[idx] = { ...mockChatbotInquiries[idx], ...args.data, updatedAt: new Date() }
+      saveMockDb()
       return mockChatbotInquiries[idx]
     }
     throw new Error('Inquiry not found')
@@ -1372,9 +1410,63 @@ mockPrisma.chatbotInquiry = {
     if (idx !== -1) {
       const deleted = mockChatbotInquiries[idx]
       mockChatbotInquiries = mockChatbotInquiries.filter((i) => i.id !== args.where.id)
+      saveMockDb()
       return deleted
     }
     throw new Error('Inquiry not found')
+  }
+}
+
+mockPrisma.errorLog = {
+  findMany: async (args) => {
+    let list = mockErrorLogs
+    if (args?.where?.source) {
+      list = list.filter((e) => e.source === args.where.source)
+    }
+    // Sort newest first
+    list = [...list].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    return applyPagination(list, args)
+  },
+  count: async (args) => mockErrorLogs.length,
+  create: async (args) => {
+    const item = {
+      id: `err-${Date.now()}`,
+      createdAt: new Date(),
+      ...args.data,
+    }
+    mockErrorLogs.push(item)
+    saveMockDb()
+    return item
+  },
+  delete: async (args) => {
+    const idx = mockErrorLogs.findIndex((e) => e.id === args.where.id)
+    if (idx !== -1) {
+      const deleted = mockErrorLogs[idx]
+      mockErrorLogs = mockErrorLogs.filter((e) => e.id !== args.where.id)
+      saveMockDb()
+      return deleted
+    }
+    throw new Error('ErrorLog not found')
+  }
+}
+
+mockPrisma.pageVisit = {
+  findMany: async (args) => {
+    let list = mockPageVisits
+    // Sort newest first
+    list = [...list].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    return applyPagination(list, args)
+  },
+  count: async (args) => mockPageVisits.length,
+  create: async (args) => {
+    const item = {
+      id: `visit-${Date.now()}`,
+      createdAt: new Date(),
+      ...args.data,
+    }
+    mockPageVisits.push(item)
+    saveMockDb()
+    return item
   }
 }
 

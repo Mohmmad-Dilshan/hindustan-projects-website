@@ -27,26 +27,29 @@ export const askQuestion = async (req, res, next) => {
     let answer = null
     let isAnswered = false
 
-    // ── STEP 1: Match against DB FAQ table ────────────────────────
-    const faqs = await prisma.faq.findMany({
-      where: { isActive: true },
-      orderBy: { order: 'asc' },
-    })
+    // ── STEP 1: Match against DB FAQ table (graceful fallback if DB is sleeping) ─
+    try {
+      const faqs = await prisma.faq.findMany({
+        where: { isActive: true },
+        orderBy: { order: 'asc' },
+      })
 
-    for (const faq of faqs) {
-      const faqKeywords = normalize(faq.question)
-        .split(/\s+/)
-        .filter((w) => w.length > 3) // only meaningful words
+      for (const faq of faqs) {
+        const faqKeywords = normalize(faq.question)
+          .split(/\s+/)
+          .filter((w) => w.length > 3)
 
-      const matchCount = faqKeywords.filter((kw) => clean.includes(kw)).length
-      const matchRatio = faqKeywords.length > 0 ? matchCount / faqKeywords.length : 0
+        const matchCount = faqKeywords.filter((kw) => clean.includes(kw)).length
+        const matchRatio = faqKeywords.length > 0 ? matchCount / faqKeywords.length : 0
 
-      // Match if ≥40% of keywords match OR any single keyword matches exactly
-      if (matchRatio >= 0.4 || faqKeywords.some((kw) => kw.length > 4 && clean.includes(kw))) {
-        answer = faq.answer
-        isAnswered = true
-        break
+        if (matchRatio >= 0.4 || faqKeywords.some((kw) => kw.length > 4 && clean.includes(kw))) {
+          answer = faq.answer
+          isAnswered = true
+          break
+        }
       }
+    } catch {
+      // DB might be sleeping (Neon free tier) — skip to keyword rules
     }
 
     // ── STEP 2: Fallback keyword rules ────────────────────────────
@@ -79,14 +82,14 @@ export const askQuestion = async (req, res, next) => {
       }
     }
 
-    // ── STEP 3: Save to DB for admin review ───────────────────────
-    const inquiry = await prisma.chatbotInquiry.create({
-      data: {
-        question: trimmed,
-        answer,
-        isAnswered,
-      },
-    })
+    // ── STEP 3: Save to DB for admin review (non-blocking) ───────
+    try {
+      await prisma.chatbotInquiry.create({
+        data: { question: trimmed, answer, isAnswered },
+      })
+    } catch {
+      // DB sleeping — skip saving, still return answer to user
+    }
 
     // ── STEP 4: Return response ────────────────────────────────────
     const fallback =
@@ -96,7 +99,6 @@ export const askQuestion = async (req, res, next) => {
       status: 'ok',
       answered: isAnswered,
       answer: isAnswered ? answer : fallback,
-      data: inquiry,
     })
   } catch (err) {
     next(err)

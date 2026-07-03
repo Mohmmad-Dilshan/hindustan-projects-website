@@ -23,9 +23,20 @@ export const env = {
 
 // Validate required env vars at startup
 const required = ['DATABASE_URL', 'JWT_SECRET']
+
+if (process.env.NODE_ENV === 'production') {
+  required.push(
+    'ADMIN_SECRET_PATH',
+    'CLOUDINARY_CLOUD_NAME',
+    'CLOUDINARY_API_KEY',
+    'CLOUDINARY_API_SECRET',
+    'INTEGRATION_MASTER_KEY'
+  )
+}
+
 for (const key of required) {
-  if (!env[key]) {
-    console.error(`Missing required environment variable: ${key}`)
+  if (!env[key] && !process.env[key]) {
+    console.error(`[CRITICAL] Missing required environment variable: ${key}`)
     process.exit(1)
   }
 }

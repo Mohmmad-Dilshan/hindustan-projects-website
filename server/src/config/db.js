@@ -2,7 +2,18 @@ import { PrismaClient } from '@prisma/client'
 import fs from 'fs'
 import path from 'path'
 
+let dbUrl = process.env.DATABASE_URL
+if (dbUrl && !dbUrl.includes('connection_limit')) {
+  const separator = dbUrl.includes('?') ? '&' : '?'
+  dbUrl = `${dbUrl}${separator}connection_limit=20&pool_timeout=10`
+}
+
 const realPrisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: dbUrl,
+    },
+  },
   log: process.env.NODE_ENV === 'development' ? ['query', 'warn', 'error'] : ['error'],
 })
 
@@ -22,6 +33,11 @@ let mockAdmin = {
   passwordHash:
     process.env.MOCK_ADMIN_HASH || '$2b$10$W4FZyhOY50gqDQJrvqERbeZPWyyr7dKdvRwzO2vwua7nPmuoqECKO',
   role: 'SUPER_ADMIN',
+  loginAttempts: 0,
+  lockoutUntil: null,
+  refreshToken: null,
+  twoFactorSecret: null,
+  twoFactorEnabled: false,
 }
 
 let mockServices = [
@@ -1297,12 +1313,17 @@ for (const modelKey of Object.keys(mockPrisma)) {
 let activeClient = realPrisma
 
 try {
-  console.log('Checking local database connection (localhost:5432)...')
+  console.log('Checking database connection...')
   await realPrisma.$connect()
   console.log('Database connected successfully.')
 } catch (e) {
-  console.warn('⚠️ Database is offline. Starting server in MOCK client mode.')
-  activeClient = mockPrisma
+  if (process.env.NODE_ENV === 'production') {
+    console.error('❌ CRITICAL: Database connection failed in production mode:', e.message)
+    process.exit(1)
+  } else {
+    console.warn('⚠️ Database is offline. Starting server in MOCK client mode.')
+    activeClient = mockPrisma
+  }
 }
 
 export default activeClient

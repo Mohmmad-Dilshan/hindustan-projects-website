@@ -66,102 +66,9 @@ export default function App() {
     <>
       <GlobalClickRipple />
       <Routes>
-        {/* ── Public site ── */}
-        <Route element={<RootLayout />}>
-          <Route path="/" element={<HomePage />} />
-          <Route
-            path="/services"
-            element={
-              <Suspense fallback={<PageFallback />}>
-                <ServicesPage />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/services/:slug"
-            element={
-              <Suspense fallback={<PageFallback />}>
-                <ServiceDetailPage />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/about"
-            element={
-              <Suspense fallback={<PageFallback />}>
-                <AboutPage />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/portfolio"
-            element={
-              <Suspense fallback={<PageFallback />}>
-                <PortfolioPage />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/careers"
-            element={
-              <Suspense fallback={<PageFallback />}>
-                <CareersPage />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/careers/:slug"
-            element={
-              <Suspense fallback={<PageFallback />}>
-                <JobDetailPage />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/contact"
-            element={
-              <Suspense fallback={<PageFallback />}>
-                <ContactPage />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/privacy-policy"
-            element={
-              <Suspense fallback={<PageFallback />}>
-                <PrivacyPolicyPage />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/terms-of-service"
-            element={
-              <Suspense fallback={<PageFallback />}>
-                <TermsOfServicePage />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/refund-policy"
-            element={
-              <Suspense fallback={<PageFallback />}>
-                <RefundPolicyPage />
-              </Suspense>
-            }
-          />
-          <Route
-            path="*"
-            element={
-              <Suspense fallback={<PageFallback />}>
-                <NotFoundPage />
-              </Suspense>
-            }
-          />
-        </Route>
-
         {/* ── Admin ── */}
         <Route
-          path="/admin/login"
+          path="/:adminSecret"
           element={
             <Suspense fallback={<AdminFallback />}>
               <AdminLoginPage />
@@ -349,6 +256,99 @@ export default function App() {
             element={
               <Suspense fallback={<PageFallback />}>
                 <AdminDashboardPage />
+              </Suspense>
+            }
+          />
+        </Route>
+
+        {/* ── Public site ── */}
+        <Route element={<RootLayout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route
+            path="/services"
+            element={
+              <Suspense fallback={<PageFallback />}>
+                <ServicesPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/services/:slug"
+            element={
+              <Suspense fallback={<PageFallback />}>
+                <ServiceDetailPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/about"
+            element={
+              <Suspense fallback={<PageFallback />}>
+                <AboutPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/portfolio"
+            element={
+              <Suspense fallback={<PageFallback />}>
+                <PortfolioPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/careers"
+            element={
+              <Suspense fallback={<PageFallback />}>
+                <CareersPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/careers/:slug"
+            element={
+              <Suspense fallback={<PageFallback />}>
+                <JobDetailPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/contact"
+            element={
+              <Suspense fallback={<PageFallback />}>
+                <ContactPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/privacy-policy"
+            element={
+              <Suspense fallback={<PageFallback />}>
+                <PrivacyPolicyPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/terms-of-service"
+            element={
+              <Suspense fallback={<PageFallback />}>
+                <TermsOfServicePage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/refund-policy"
+            element={
+              <Suspense fallback={<PageFallback />}>
+                <RefundPolicyPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="*"
+            element={
+              <Suspense fallback={<PageFallback />}>
+                <NotFoundPage />
               </Suspense>
             }
           />

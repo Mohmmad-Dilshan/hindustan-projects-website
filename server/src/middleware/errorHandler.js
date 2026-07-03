@@ -2,8 +2,20 @@
  * Global error handling middleware
  */
 export const errorHandler = (err, _req, res, _next) => {
-  const statusCode = err.statusCode || err.status || 500
-  const message = err.message || 'Internal Server Error'
+  let statusCode = err.statusCode || err.status || 500
+  let message = err.message || 'Internal Server Error'
+
+  // Catch database connection pool timeout / exhaustion errors
+  if (
+    err.code === 'P2024' ||
+    message.includes('connection pool') ||
+    message.includes('too many connections') ||
+    message.includes('Timed out waiting for a free connection')
+  ) {
+    statusCode = 503
+    message = 'The server is temporarily busy and unable to connect to the database. Please try again in a few moments.'
+    res.setHeader('Retry-After', '5')
+  }
 
   console.error(`[Error] ${statusCode} - ${message}`)
   if (process.env.NODE_ENV === 'development') {

@@ -5,17 +5,7 @@
 import { Router } from 'express'
 import { body } from 'express-validator'
 import { verifyToken, requireRole } from '../middleware/auth.js'
-import { authLimiter, validateRequest } from '../middleware/security.js'
-import {
-  adminLogin,
-  adminLogout,
-  getMe,
-  getDashboardStats,
-  changePassword,
-  changeEmail,
-  changeMasterKey,
-  getMasterKeyHint,
-} from '../controllers/admin.controller.js'
+import { adminLoginLimiter, validateRequest } from '../middleware/security.js'
 import { getLeads, updateLeadStatus, deleteLead } from '../controllers/leads.controller.js'
 import {
   listServices,
@@ -76,6 +66,20 @@ import { listTasks, createTask, updateTask, deleteTask } from '../controllers/ta
 import { listNotes, createNote, updateNote, deleteNote } from '../controllers/notes.controller.js'
 import { listActivities } from '../controllers/activities.controller.js'
 import {
+  adminLogin,
+  adminLogout,
+  getMe,
+  getDashboardStats,
+  changePassword,
+  changeEmail,
+  changeMasterKey,
+  getMasterKeyHint,
+  adminRefreshToken,
+  setup2FA,
+  verify2FA,
+  login2FA,
+} from '../controllers/admin.controller.js'
+import {
   getIntegrationConfig,
   updateIntegrationConfig,
   testSmtpConnection,
@@ -87,23 +91,38 @@ import {
 
 const router = Router()
 
-// ── Auth ───────────────────────────────────────────────────────
+// Dynamic admin login route based on secret path
+const secretPath = process.env.ADMIN_SECRET_PATH || 'secure-hp-portal-2026'
+
+// ── Auth & Session ─────────────────────────────────────────────
 router.post(
-  '/login',
-  authLimiter,
-  [body('email').isEmail().normalizeEmail(), body('password').notEmpty().isLength({ min: 6 })],
+  `/${secretPath}/login`,
+  adminLoginLimiter,
+  [body('email').isEmail().normalizeEmail(), body('password').notEmpty()],
   validateRequest,
   adminLogin
 )
 
 router.post('/logout', adminLogout)
+router.post('/refresh-token', adminRefreshToken)
+
+// 2FA Endpoints
+router.post('/2fa/setup', verifyToken, setup2FA)
+router.post('/2fa/verify', verifyToken, verify2FA)
+router.post('/2fa/login', login2FA)
+
 router.get('/me', verifyToken, getMe)
 router.post(
   '/change-password',
   verifyToken,
   [
     body('currentPassword').notEmpty(),
-    body('newPassword').isLength({ min: 8 }).withMessage('Min 8 characters required'),
+    body('newPassword')
+      .isLength({ min: 12 }).withMessage('New password must be at least 12 characters long')
+      .matches(/[A-Z]/).withMessage('New password must contain at least one uppercase letter')
+      .matches(/[a-z]/).withMessage('New password must contain at least one lowercase letter')
+      .matches(/[0-9]/).withMessage('New password must contain at least one number')
+      .matches(/[^A-Za-z0-9]/).withMessage('New password must contain at least one special character'),
   ],
   validateRequest,
   changePassword

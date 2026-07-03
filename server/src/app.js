@@ -1,9 +1,11 @@
 import express from 'express'
 import cookieParser from 'cookie-parser'
+import compression from 'compression'
 
-import { helmetConfig, corsOptions, apiLimiter } from './middleware/security.js'
+import { helmetConfig, corsOptions, apiLimiter, globalLimiter, requestTimeout, enforceHttps } from './middleware/security.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { notFound } from './middleware/notFound.js'
+import { requestLogger } from './middleware/logger.js'
 
 // ── Route imports ──────────────────────────────────────────────
 import healthRouter from './routes/health.route.js'
@@ -18,8 +20,24 @@ import contentRouter from './routes/content.route.js'
 import sitemapRouter from './routes/sitemap.route.js'
 import careersRouter from './routes/careers.route.js'
 import backupRouter from './routes/backup.route.js'
+import { hideAdminRoutes } from './middleware/auth.js'
 
 const app = express()
+
+// Disable Express signature header
+app.disable('x-powered-by')
+
+// Enable gzip/brotli response compression
+app.use(compression())
+
+// Redirect HTTP to HTTPS in production
+app.use(enforceHttps)
+
+// Enable console request logging
+app.use(requestLogger)
+
+// ── 0. Request Timeout (10 seconds) ───────────────────────────
+app.use(requestTimeout)
 
 // ── 1. Security headers (helmet) ──────────────────────────────
 app.use(helmetConfig)
@@ -32,8 +50,9 @@ app.use(express.json({ limit: '10kb' })) // limit body size → prevent payload 
 app.use(express.urlencoded({ extended: true, limit: '10kb' }))
 app.use(cookieParser()) // needed for httpOnly JWT cookies
 
-// ── 4. General API rate limiter ───────────────────────────────
-app.use('/api', apiLimiter)
+// ── 4. Global API rate limiters ───────────────────────────────
+app.use('/api', globalLimiter) // 100 requests per minute
+app.use('/api', apiLimiter) // 500 requests per 15 mins (secondary relaxed defense)
 
 // ── 5. Routes ─────────────────────────────────────────────────
 app.use('/api/health', healthRouter)
@@ -41,11 +60,11 @@ app.use('/api/services', servicesRouter)
 app.use('/api/projects', projectsRouter)
 app.use('/api/team', teamRouter)
 app.use('/api/contact', contactRouter)
-app.use('/api/admin', adminRouter)
-app.use('/api/upload', uploadRouter)
+app.use('/api/admin', hideAdminRoutes, adminRouter)
+app.use('/api/upload', hideAdminRoutes, uploadRouter)
 app.use('/api/testimonials', testimonialsRouter)
 app.use('/api/careers', careersRouter)
-app.use('/api/admin/backup', backupRouter)
+app.use('/api/admin/backup', hideAdminRoutes, backupRouter)
 app.use('/api', contentRouter)
 app.use('/sitemap.xml', sitemapRouter)
 app.get('/sitemap.xml', sitemapRouter)

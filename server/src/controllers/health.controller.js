@@ -1,11 +1,34 @@
+import prisma from '../config/db.js'
+
 /**
  * GET /api/health
- * Basic health check endpoint
+ * Enhanced health check endpoint reporting DB status and memory usage
  */
-export const healthCheck = (_req, res) => {
-  res.status(200).json({
-    status: 'ok',
+export const healthCheck = async (_req, res) => {
+  let dbStatus = 'healthy'
+  try {
+    // Fast database query check
+    await prisma.$queryRaw`SELECT 1`
+  } catch (err) {
+    dbStatus = 'unhealthy'
+  }
+
+  const memory = process.memoryUsage()
+
+  const formattedMemory = {
+    rss: `${Math.round((memory.rss / 1024 / 1024) * 100) / 100} MB`,
+    heapTotal: `${Math.round((memory.heapTotal / 1024 / 1024) * 100) / 100} MB`,
+    heapUsed: `${Math.round((memory.heapUsed / 1024 / 1024) * 100) / 100} MB`,
+    external: `${Math.round((memory.external / 1024 / 1024) * 100) / 100} MB`,
+  }
+
+  const isHealthy = dbStatus === 'healthy'
+
+  res.status(isHealthy ? 200 : 503).json({
+    status: isHealthy ? 'ok' : 'error',
     timestamp: new Date().toISOString(),
     service: 'hindustan-projects-api',
+    database: dbStatus,
+    memoryUsage: formattedMemory,
   })
 }

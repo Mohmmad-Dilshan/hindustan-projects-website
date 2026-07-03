@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -185,6 +185,7 @@ export default function ContactPage() {
       phone: '',
       serviceInterested: '',
       message: '',
+      _hp: '',
     },
   })
 
@@ -194,12 +195,13 @@ export default function ContactPage() {
       const timeDiff = Date.now() - parseInt(lastSubmit, 10)
       const oneDay = 24 * 60 * 60 * 1000
       if (timeDiff < oneDay) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setLocalLockout(true)
       }
     }
   }, [])
 
-  const onSubmit = async (data) => {
+  const onSubmit = useCallback(async (data) => {
     // Check local lockout before calling API
     const lastSubmit = localStorage.getItem('last_submit_lead')
     if (lastSubmit && Date.now() - parseInt(lastSubmit, 10) < 24 * 60 * 60 * 1000) {
@@ -228,7 +230,7 @@ export default function ContactPage() {
       await api.post('/contact', {
         ...data,
         recaptchaToken,
-        _hp: '', // honeypot
+        _hp: data._hp || '', // honeypot
       })
 
       localStorage.setItem('last_submit_lead', Date.now().toString())
@@ -239,7 +241,7 @@ export default function ContactPage() {
       setSubmitState('error')
       setApiError(err.message || 'Something went wrong. Please try again.')
     }
-  }
+  }, [reset])
 
   const toggleFaq = (idx) => {
     setActiveFaq(activeFaq === idx ? null : idx)
@@ -633,6 +635,17 @@ export default function ContactPage() {
                           <p className="text-sm font-semibold text-brand-red">{apiError}</p>
                         </div>
                       )}
+
+                      {/* Honeypot field */}
+                      <div style={{ display: 'none' }} aria-hidden="true">
+                        <input
+                          type="text"
+                          tabIndex="-1"
+                          autoComplete="off"
+                          placeholder="Do not fill this"
+                          {...register('_hp')}
+                        />
+                      </div>
 
                       {/* Submit Button */}
                       <div className="pt-2">

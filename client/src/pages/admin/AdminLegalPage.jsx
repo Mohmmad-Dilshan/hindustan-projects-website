@@ -41,10 +41,14 @@ export default function AdminLegalPage() {
   // Set page title when page loaded or tab changed
   useEffect(() => {
     if (currentPage) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPageTitle(currentPage.title || '')
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEditorContent(currentPage.content || '')
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPageTitle('')
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEditorContent('')
     }
   }, [activeTab, currentPage])

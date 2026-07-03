@@ -6,7 +6,7 @@ import {
   submitApplication,
 } from '../controllers/careers.controller.js'
 import { uploadResume } from '../utils/cloudinary.js'
-import { validateRequest, contactLimiter } from '../middleware/security.js'
+import { validateRequest, careersLimiter } from '../middleware/security.js'
 
 const router = Router()
 
@@ -19,13 +19,34 @@ router.get('/:slug', getJobBySlug)
 // POST /api/careers/:slug/apply — submit application (validated + rate limited)
 router.post(
   '/:slug/apply',
-  contactLimiter, // Reuse strict contact submission limiter
+  careersLimiter, // Enforces 3 applications per 15 minutes per IP
   uploadResume.single('resume'),
   [
-    body('fullName').notEmpty().trim().withMessage('Full Name is required'),
-    body('email').isEmail().normalizeEmail().withMessage('Valid email address is required'),
-    body('phone').notEmpty().trim().withMessage('Phone number is required'),
-    body('coverLetter').optional().trim(),
+    body('fullName')
+      .notEmpty()
+      .trim()
+      .isLength({ min: 2, max: 100 })
+      .withMessage('Full Name must be between 2 and 100 characters')
+      .escape(),
+    body('email')
+      .notEmpty()
+      .isEmail()
+      .normalizeEmail()
+      .withMessage('Valid email address is required'),
+    body('phone')
+      .notEmpty()
+      .trim()
+      .matches(/^[+\d\s\-().]{7,20}$/)
+      .withMessage('Please provide a valid phone number.')
+      .escape(),
+    body('coverLetter')
+      .optional({ checkFalsy: true })
+      .trim()
+      .isLength({ max: 5000 })
+      .withMessage('Cover letter must not exceed 5000 characters')
+      .escape(),
+    body('recaptchaToken').notEmpty().withMessage('reCAPTCHA token is required'),
+    body('_hp').optional().isLength({ max: 0 }).withMessage('Invalid submission'),
   ],
   validateRequest,
   submitApplication

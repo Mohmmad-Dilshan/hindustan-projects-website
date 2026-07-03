@@ -2,6 +2,7 @@
  * adminCareers.controller.js — Admin CRUD for Job Postings and Applications
  */
 import prisma from '../config/db.js'
+import { deleteCacheByPrefix } from '../utils/cache.js'
 
 // ── Job Postings CRUD ──────────────────────────────────────────
 
@@ -45,6 +46,7 @@ export const createJobPosting = async (req, res, next) => {
         isActive: isActive ?? true,
       },
     })
+    deleteCacheByPrefix('jobs:')
     res.status(201).json({ status: 'ok', data: job })
   } catch (err) {
     next(err)
@@ -82,6 +84,7 @@ export const updateJobPosting = async (req, res, next) => {
         isActive,
       },
     })
+    deleteCacheByPrefix('jobs:')
     res.json({ status: 'ok', data: job })
   } catch (err) {
     next(err)
@@ -94,6 +97,7 @@ export const deleteJobPosting = async (req, res, next) => {
     await prisma.jobPosting.delete({
       where: { id },
     })
+    deleteCacheByPrefix('jobs:')
     res.json({ status: 'ok', message: 'Job posting deleted successfully' })
   } catch (err) {
     next(err)

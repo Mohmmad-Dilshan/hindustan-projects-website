@@ -44,12 +44,10 @@ async function sendViaSMTP({ to, subject, html, text }) {
 }
 
 /**
- * sendEmail — unified send function.
+ * sendEmailDirect — unified direct send function.
  * Automatically picks Resend → SMTP → console based on env config.
- *
- * @param {{ to: string, subject: string, html: string, text?: string }} options
  */
-export async function sendEmail({ to, subject, html, text }) {
+async function sendEmailDirect({ to, subject, html, text }) {
   const strategy = getStrategy()
 
   if (strategy === 'console') {
@@ -66,6 +64,43 @@ export async function sendEmail({ to, subject, html, text }) {
   }
 
   return sendViaSMTP({ to, subject, html, text })
+}
+
+// ── In-Memory Throttled Email Queue ────────────────────────────
+const emailQueue = []
+let processingQueue = false
+
+async function processEmailQueue() {
+  if (processingQueue || emailQueue.length === 0) return
+  processingQueue = true
+
+  while (emailQueue.length > 0) {
+    const { options, resolve, reject } = emailQueue.shift()
+    try {
+      const result = await sendEmailDirect(options)
+      resolve(result)
+    } catch (err) {
+      console.error('[mailer queue error]:', err.message)
+      reject(err)
+    }
+    // Throttle: wait 1 second between email attempts to prevent rate limit issues
+    await new Promise((res) => setTimeout(res, 1000))
+  }
+
+  processingQueue = false
+}
+
+/**
+ * sendEmail — unified queued send function.
+ * Throttles outbound emails to 1 email/sec to prevent SMTP service exhaustion.
+ *
+ * @param {{ to: string, subject: string, html: string, text?: string }} options
+ */
+export async function sendEmail(options) {
+  return new Promise((resolve, reject) => {
+    emailQueue.push({ options, resolve, reject })
+    processEmailQueue()
+  })
 }
 
 // ── Email templates ────────────────────────────────────────────

@@ -77,6 +77,15 @@ export const corsOptions = cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 })
 
+// Helper to log rate-limit-triggered blocks to console for Render dashboard logging
+const makeLimitHandler = (limiterName) => (req, res, next, options) => {
+  const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress
+  console.warn(
+    `[SECURITY_ALERT] RATE_LIMIT_BLOCKED | Limiter: ${limiterName} | IP: ${ip} | Path: ${req.originalUrl} | Method: ${req.method}`
+  )
+  res.status(options.statusCode).json(options.message)
+}
+
 // ── 3. General API rate limiter ────────────────────────────────
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -85,6 +94,7 @@ export const apiLimiter = rateLimit({
   legacyHeaders: false,
   skip: (req) => process.env.NODE_ENV === 'development', // Skip entirely in dev
   message: { status: 'error', message: 'Too many requests, please try again later.' },
+  handler: makeLimitHandler('API'),
 })
 
 // ── 4. Strict limiter for contact form ────────────────────────
@@ -97,9 +107,36 @@ export const contactLimiter = rateLimit({
     status: 'error',
     message: 'Too many contact requests. Please wait before submitting again.',
   },
+  handler: makeLimitHandler('Contact'),
 })
 
-// ── 5. Strict limiter for admin auth routes ───────────────────
+// ── 5. Careers Apply Rate Limiter ─────────────────────────────
+export const careersLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 3, // max 3 submissions per IP per 15 min
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    status: 'error',
+    message: 'Too many job applications from this IP. Please try again later.',
+  },
+  handler: makeLimitHandler('Careers'),
+})
+
+// ── 6. Admin Login Route Rate Limiter ──────────────────────────
+export const adminLoginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // max 5 attempts per IP per 15 min
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    status: 'error',
+    message: 'Too many login attempts from this IP. Please try again after 15 minutes.',
+  },
+  handler: makeLimitHandler('AdminLogin'),
+})
+
+// ── 7. Strict limiter for admin auth routes (settings update) ─
 export const authLimiter = rateLimit({
   windowMs: 30 * 60 * 1000, // 30 minutes window
   max: process.env.NODE_ENV === 'development' ? 500 : 50, // much more relaxed
@@ -107,6 +144,7 @@ export const authLimiter = rateLimit({
   legacyHeaders: false,
   skip: (req) => process.env.NODE_ENV === 'development', // skip entirely in dev
   message: { status: 'error', message: 'Too many login attempts. Please try again later.' },
+  handler: makeLimitHandler('AdminAuth'),
 })
 
 // ── 6. express-validator result checker ───────────────────────
@@ -128,6 +166,47 @@ export const validateRequest = (req, res, next) => {
         message: e.msg,
       })),
     })
+  }
+  next()
+}
+
+// ── Global API Rate Limiter (100 requests per minute) ─────────
+export const globalLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 100, // max 100 requests per minute
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => process.env.NODE_ENV === 'development', // skip in dev
+  message: {
+    status: 'error',
+    message: 'Too many requests. Please slow down and try again in a minute.',
+  },
+  handler: makeLimitHandler('Global'),
+})
+
+// ── Request Timeout (Terminate gracefully if request takes > 10s) ──
+export const requestTimeout = (req, res, next) => {
+  const timer = setTimeout(() => {
+    if (!res.headersSent) {
+      res.status(503).json({
+        status: 'error',
+        message: 'Request timed out. The server took too long to respond.',
+      })
+    }
+  }, 10000) // 10 seconds
+
+  res.on('finish', () => clearTimeout(timer))
+  res.on('close', () => clearTimeout(timer))
+  next()
+}
+
+// ── HTTPS Enforcement Middleware ──────────────────────────────
+export const enforceHttps = (req, res, next) => {
+  if (
+    process.env.NODE_ENV === 'production' &&
+    req.headers['x-forwarded-proto'] !== 'https'
+  ) {
+    return res.redirect(301, `https://${req.headers.host}${req.url}`)
   }
   next()
 }

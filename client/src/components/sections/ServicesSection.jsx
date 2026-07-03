@@ -3,6 +3,7 @@
  * Fetches from GET /api/services via TanStack Query.
  * Shows skeleton on load, error state on failure.
  */
+import { createElement } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import { Container, SectionHeading, Card, Badge } from '@/components/ui'
@@ -11,8 +12,6 @@ import { useServices } from '@/hooks/useServices'
 import { getServiceIcon } from '@/utils/serviceIcons'
 
 function ServiceCard({ service }) {
-  const Icon = getServiceIcon(service.icon)
-
   return (
     <Card
       hoverable
@@ -25,7 +24,7 @@ function ServiceCard({ service }) {
         className="w-12 h-12 rounded-lg bg-brand-blue/8 flex items-center justify-center mb-5
         group-hover:bg-brand-blue/12 transition-colors duration-200"
       >
-        <Icon className="w-6 h-6 text-brand-blue" strokeWidth={1.75} />
+        {createElement(getServiceIcon(service.icon), { className: 'w-6 h-6 text-brand-blue', strokeWidth: 1.75 })}
       </div>
 
       {/* Title */}

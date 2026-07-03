@@ -1,8 +1,18 @@
 import './config/env.js' // load & validate env vars first
+import { logger } from './utils/logger.js'
+
+// ── Process-Level Crash Protection ─────────────────────────────
+process.on('uncaughtException', (error) => {
+  logger.error('CRITICAL: Uncaught Exception:', error)
+})
+
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('CRITICAL: Unhandled Rejection at:', promise, 'reason:', reason)
+})
+
 import { env } from './config/env.js'
 import app from './app.js'
 import prisma from './config/db.js'
-import { logger } from './utils/logger.js'
 
 // Map of DB integration keys → process.env names
 const INTEGRATION_ENV_MAP = {

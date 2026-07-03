@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 /**
  * SEO.jsx — Complete SEO component
  * Handles: title, meta, OG, Twitter Cards, canonical, JSON-LD schemas

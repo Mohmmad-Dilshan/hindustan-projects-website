@@ -1,10 +1,17 @@
 import prisma from '../config/db.js'
+import { getCache, setCache, deleteCacheByPrefix } from '../utils/cache.js'
 
 // GET /api/legal/:pageType
 export const getLegalPage = async (req, res, next) => {
   try {
     const { pageType } = req.params
     const cleanType = String(pageType).toUpperCase()
+    const cacheKey = `legal:type:${cleanType}`
+    
+    const cached = getCache(cacheKey)
+    if (cached) {
+      return res.json({ status: 'ok', data: cached })
+    }
 
     const page = await prisma.legalPage.findUnique({
       where: { pageType: cleanType },
@@ -23,12 +30,16 @@ export const getLegalPage = async (req, res, next) => {
       }
     }
 
+    const responseData = {
+      ...page,
+      adminEmail,
+    }
+
+    setCache(cacheKey, responseData, 600) // 10 min cache
+
     res.json({
       status: 'ok',
-      data: {
-        ...page,
-        adminEmail,
-      },
+      data: responseData,
     })
   } catch (err) {
     next(err)
@@ -88,6 +99,8 @@ export const updateLegalPage = async (req, res, next) => {
         lastUpdated: new Date(),
       },
     })
+
+    deleteCacheByPrefix('legal:')
 
     res.json({ status: 'ok', data: page })
   } catch (err) {

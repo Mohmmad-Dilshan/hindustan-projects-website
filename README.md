@@ -69,13 +69,13 @@ hindustan-projects-website/
 
 ---
 
-## 🔐 Admin Dashboard (`/admin`)
+## 🔐 Admin Dashboard (Stealth Custom URL `/admin-[SECRET_PATH]`)
 
-Protected by JWT + SUPER_ADMIN/ADMIN role checks.
+Protected by JWT + 2FA + SUPER_ADMIN/ADMIN role checks. Direct queries to generic `/admin`, `/admin/login` or unauthorized `/api/admin/*` endpoints return a **404 Not Found** status code to hide the dashboard from crawlers and scanner bots.
 
 | Route | Description |
 |---|---|
-| `/admin/login` | Admin login |
+| `/admin-[SECRET_PATH]` | Branded admin login |
 | `/admin/dashboard` | Stats overview |
 | `/admin/leads` | Contact form leads — view, filter, update status |
 | `/admin/services` | Services CRUD |
@@ -105,15 +105,19 @@ GET  /api/team
 GET  /api/testimonials
 GET  /api/careers
 GET  /api/careers/:slug
-POST /api/contact          (rate limited, honeypot, reCAPTCHA)
-POST /api/careers/:slug/apply
+POST /api/contact                 (rate limited, honeypot, reCAPTCHA v3)
+POST /api/careers/:slug/apply      (rate limited, honeypot, reCAPTCHA v3)
 GET  /sitemap.xml
 ```
 
 ### Admin (JWT required)
 ```
-POST   /api/admin/login
+POST   /api/admin/${ADMIN_SECRET_PATH}/login  (5 attempts/15min rate limit, DB lockout)
 POST   /api/admin/logout
+POST   /api/admin/refresh-token
+POST   /api/admin/2fa/setup                   (OTP Enrollment)
+POST   /api/admin/2fa/verify                  (OTP Validation)
+POST   /api/admin/2fa/login                   (2FA short token auth)
 GET    /api/admin/me
 GET    /api/admin/stats
 GET    /api/admin/leads
@@ -130,9 +134,9 @@ GET    /api/admin/team
 POST   /api/admin/team
 PATCH  /api/admin/team/:id
 DELETE /api/admin/team/:id
-POST   /api/upload            (Cloudinary image upload)
-GET    /api/admin/integrations        (SUPER_ADMIN only)
-PATCH  /api/admin/integrations        (SUPER_ADMIN only)
+POST   /api/upload                            (Cloudinary image upload)
+GET    /api/admin/integrations                (SUPER_ADMIN only)
+PATCH  /api/admin/integrations                (SUPER_ADMIN only)
 POST   /api/admin/integrations/verify-key
 GET    /api/admin/integrations/check-unlock
 POST   /api/admin/integrations/test-smtp
@@ -140,8 +144,8 @@ POST   /api/admin/integrations/test-cloudinary
 POST   /api/admin/integrations/test-database
 POST   /api/admin/change-password
 POST   /api/admin/change-email
-POST   /api/admin/change-master-key   (SUPER_ADMIN only)
-GET    /api/admin/master-key-hint     (SUPER_ADMIN only)
+POST   /api/admin/change-master-key           (SUPER_ADMIN only)
+GET    /api/admin/master-key-hint             (SUPER_ADMIN only)
 ```
 
 ---
@@ -260,7 +264,7 @@ GET http://localhost:5000/api/health
 | 7 | Admin Dashboard (CMS) | ✅ Complete |
 | 8 | Image Upload & Cloudinary | ✅ Complete |
 | 9 | SEO, Performance & Security | ✅ Complete |
-| 10 | Deployment | 🔲 Pending |
+| 10 | Deployment & Hardening | ✅ Complete |
 
 ---
 

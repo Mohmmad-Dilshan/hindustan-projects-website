@@ -114,15 +114,17 @@ export default function AdminLayout() {
   const currentTitle = PAGE_TITLES[location.pathname] || 'Admin'
 
   useEffect(() => {
+    const secretPath = localStorage.getItem('admin_secret_path') || 'invalid'
     api
       .get('/admin/me')
       .then((r) => setAdmin(r.data))
-      .catch(() => navigate('/admin/login', { replace: true }))
+      .catch(() => navigate(`/admin-${secretPath}`, { replace: true }))
   }, [navigate])
 
   const handleLogout = async () => {
+    const secretPath = localStorage.getItem('admin_secret_path') || 'invalid'
     await api.post('/admin/logout', {})
-    navigate('/admin/login', { replace: true })
+    navigate(`/admin-${secretPath}`, { replace: true })
   }
 
   if (!admin) {

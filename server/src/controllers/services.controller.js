@@ -1,4 +1,5 @@
 import prisma from '../config/db.js'
+import { getCache, setCache } from '../utils/cache.js'
 
 // Cache duration constants
 const CACHE_SHORT = 'public, max-age=300, stale-while-revalidate=60' // 5 min
@@ -10,6 +11,13 @@ const CACHE_LONG = 'public, max-age=3600, stale-while-revalidate=300' // 1 hour
  */
 export const getAllServices = async (_req, res, next) => {
   try {
+    const cacheKey = 'services:all'
+    const cached = getCache(cacheKey)
+    if (cached) {
+      res.setHeader('Cache-Control', CACHE_SHORT)
+      return res.json({ status: 'ok', data: cached })
+    }
+
     const services = await prisma.service.findMany({
       where: { isActive: true },
       orderBy: { order: 'asc' },
@@ -22,6 +30,7 @@ export const getAllServices = async (_req, res, next) => {
         order: true,
       },
     })
+    setCache(cacheKey, services, 600) // 10 min cache
     res.setHeader('Cache-Control', CACHE_SHORT)
     res.json({ status: 'ok', data: services })
   } catch (err) {
@@ -36,6 +45,13 @@ export const getAllServices = async (_req, res, next) => {
 export const getServiceBySlug = async (req, res, next) => {
   try {
     const { slug } = req.params
+    const cacheKey = `services:slug:${slug}`
+    const cached = getCache(cacheKey)
+    if (cached) {
+      res.setHeader('Cache-Control', CACHE_LONG)
+      return res.json({ status: 'ok', data: cached })
+    }
+
     const service = await prisma.service.findUnique({
       where: { slug },
     })
@@ -44,6 +60,7 @@ export const getServiceBySlug = async (req, res, next) => {
       return res.status(404).json({ status: 'error', message: 'Service not found.' })
     }
 
+    setCache(cacheKey, service, 600) // 10 min cache
     res.setHeader('Cache-Control', CACHE_LONG)
     res.json({ status: 'ok', data: service })
   } catch (err) {

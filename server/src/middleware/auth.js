@@ -64,3 +64,49 @@ export const requireRole =
     }
     next()
   }
+
+/**
+ * Stealth filter - makes all /api/admin routes return a generic 404 Not Found 
+ * if the request lacks a valid token.
+ */
+export const hideAdminRoutes = (req, res, next) => {
+  const secretPath = process.env.ADMIN_SECRET_PATH || 'secure-hp-portal-2026'
+  const cleanUrl = req.originalUrl.split('?')[0]
+
+  // Public/login paths allowed to bypass the stealth 404 filter
+  const allowedPaths = [
+    `/api/admin/${secretPath}/login`,
+    `/api/admin/logout`,
+    `/api/admin/refresh-token`,
+    `/api/admin/2fa/login`,
+  ]
+
+  if (allowedPaths.includes(cleanUrl)) {
+    return next()
+  }
+
+  // Extract access token
+  const tokenFromCookie = req.cookies?.adminToken
+  const authHeader = req.headers['authorization']
+  const tokenFromHeader =
+    authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null
+  const token = tokenFromCookie || tokenFromHeader
+
+  if (!token) {
+    return res.status(404).json({
+      status: 'error',
+      message: `Cannot ${req.method} ${req.originalUrl}`,
+    })
+  }
+
+  try {
+    jwt.verify(token, process.env.JWT_SECRET)
+    next()
+  } catch (err) {
+    // Return 404 so expired/invalid tokens don't confirm route existence
+    return res.status(404).json({
+      status: 'error',
+      message: `Cannot ${req.method} ${req.originalUrl}`,
+    })
+  }
+}

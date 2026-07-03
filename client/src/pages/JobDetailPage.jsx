@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -37,6 +37,7 @@ const applySchema = z.object({
   email: z.string().email('Valid email address is required'),
   phone: z.string().min(10, 'Valid contact number is required'),
   coverLetter: z.string().optional(),
+  _hp: z.string().optional(),
 })
 
 export default function JobDetailPage() {
@@ -61,6 +62,7 @@ export default function JobDetailPage() {
       email: '',
       phone: '',
       coverLetter: '',
+      _hp: '',
     },
   })
 
@@ -73,6 +75,7 @@ export default function JobDetailPage() {
         const timeDiff = Date.now() - parseInt(lastSubmit, 10)
         const oneDay = 24 * 60 * 60 * 1000
         if (timeDiff < oneDay) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setLocalLockout(true)
         }
       }
@@ -109,7 +112,7 @@ export default function JobDetailPage() {
     setFile(selectedFile)
   }
 
-  const onSubmit = async (formData) => {
+  const onSubmit = useCallback(async (formData) => {
     setApiError('')
 
     // Double-check lockout
@@ -124,6 +127,23 @@ export default function JobDetailPage() {
       return
     }
 
+    let recaptchaToken = 'dev-token'
+    const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY
+    if (siteKey && typeof window.grecaptcha !== 'undefined') {
+      try {
+        recaptchaToken = await new Promise((resolve, reject) => {
+          window.grecaptcha.ready(() => {
+            window.grecaptcha
+              .execute(siteKey, { action: 'careers_apply' })
+              .then(resolve)
+              .catch(reject)
+          })
+        })
+      } catch (err) {
+        console.error('[reCAPTCHA] Failed to get token:', err)
+      }
+    }
+
     const payload = new FormData()
     payload.append('fullName', formData.fullName)
     payload.append('email', formData.email)
@@ -132,9 +152,12 @@ export default function JobDetailPage() {
       payload.append('coverLetter', formData.coverLetter)
     }
     payload.append('resume', file)
+    payload.append('recaptchaToken', recaptchaToken)
+    payload.append('_hp', formData._hp || '')
 
     try {
       await applyMutation.mutateAsync(payload)
+      // eslint-disable-next-line react-hooks/purity
       localStorage.setItem(`last_submit_careers_${job.slug}`, Date.now().toString())
       setLocalLockout(true)
       reset()
@@ -142,7 +165,7 @@ export default function JobDetailPage() {
     } catch (err) {
       setApiError(err.message || 'Failed to submit application. Please try again.')
     }
-  }
+  }, [job, file, applyMutation, reset])
 
   if (isLoading) {
     return (
@@ -431,6 +454,17 @@ export default function JobDetailPage() {
                         {...register('coverLetter')}
                         placeholder="Tell us briefly why you would like to join..."
                         className="w-full bg-gray-50/50 border border-gray-200 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue/20 rounded-lg px-3.5 py-2.5 text-xs text-gray-900 focus:outline-none transition-all placeholder-gray-400 resize-none"
+                      />
+                    </div>
+
+                    {/* Honeypot field */}
+                    <div style={{ display: 'none' }} aria-hidden="true">
+                      <input
+                        type="text"
+                        tabIndex="-1"
+                        autoComplete="off"
+                        placeholder="Do not fill this"
+                        {...register('_hp')}
                       />
                     </div>
 

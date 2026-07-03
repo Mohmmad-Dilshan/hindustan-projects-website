@@ -1,6 +1,7 @@
 /**
  * /services/:slug — Premium individual service detail page
  */
+import { createElement } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -375,7 +376,6 @@ export default function ServiceDetailPage() {
 
   // Use DB fields if available, fall back to SERVICE_CONFIG for icon/color only
   const config = SERVICE_CONFIG[slug] || SERVICE_CONFIG['web-development']
-  const ServiceIcon = getServiceIcon(service?.icon || 'Globe')
 
   // Rich detail — prefer DB, fallback to SERVICE_CONFIG
   const keyFeatures = service?.keyFeatures?.length ? service.keyFeatures : config.keyFeatures
@@ -462,7 +462,7 @@ export default function ServiceDetailPage() {
                 <div
                   className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${config.color} flex items-center justify-center shadow-xl shrink-0`}
                 >
-                  <ServiceIcon className="w-8 h-8 text-white" strokeWidth={1.6} />
+                  {createElement(getServiceIcon(service?.icon || 'Globe'), { className: 'w-8 h-8 text-white', strokeWidth: 1.6 })}
                 </div>
                 <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">
                   {service.title}
@@ -651,7 +651,7 @@ export default function ServiceDetailPage() {
                   <div
                     className={`w-12 h-12 rounded-xl bg-gradient-to-br ${config.color} flex items-center justify-center mb-4 shadow-lg`}
                   >
-                    <ServiceIcon className="w-6 h-6 text-white" strokeWidth={1.6} />
+                    {createElement(getServiceIcon(service?.icon || 'Globe'), { className: 'w-6 h-6 text-white', strokeWidth: 1.6 })}
                   </div>
                   <h3
                     className="font-heading text-xl font-bold mb-2"

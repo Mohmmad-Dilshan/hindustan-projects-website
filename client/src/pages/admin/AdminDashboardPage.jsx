@@ -1,6 +1,7 @@
 /**
  * Admin Dashboard — Overview stats + quick actions (premium polish)
  */
+import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import {
@@ -69,7 +70,17 @@ function getGreeting() {
   return 'Good Evening'
 }
 
+function useClock() {
+  const [now, setNow] = useState(new Date())
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000)
+    return () => clearInterval(id)
+  }, [])
+  return now
+}
+
 export default function AdminDashboardPage() {
+  const now = useClock()
   const { data, isLoading, isError } = useQuery({
     queryKey: ['admin-stats'],
     queryFn: () => api.get('/admin/stats').then(r => r.data),
@@ -88,19 +99,31 @@ export default function AdminDashboardPage() {
             style={{ backgroundImage: 'linear-gradient(to right,#fff 1px,transparent 1px),linear-gradient(to bottom,#fff 1px,transparent 1px)', backgroundSize: '28px 28px' }} />
           <div className="absolute top-0 right-0 w-48 h-48 bg-brand-red/15 rounded-full blur-3xl" />
 
-          <div className="relative">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-              <span className="text-white/50 text-xs font-medium">All systems operational</span>
-              <span className="text-white/20 text-xs">·</span>
-              <span className="text-white/40 text-xs font-medium">IT Services, Bhilwara</span>
+          <div className="relative flex items-end justify-between gap-4 flex-wrap">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                <span className="text-white/50 text-xs font-medium">All systems operational</span>
+                <span className="text-white/20 text-xs">·</span>
+                <span className="text-white/40 text-xs font-medium">IT Services, Bhilwara</span>
+              </div>
+              <h1 className="font-heading text-2xl font-bold text-white mb-1" style={{ color: '#fff' }}>
+                {getGreeting()} 👋
+              </h1>
+              <p className="text-white/60 text-sm">
+                Here's an overview of your <span className="text-white/80 font-semibold">Hindustan Projects</span> website.
+              </p>
             </div>
-            <h1 className="font-heading text-2xl font-bold text-white mb-1" style={{ color: '#fff' }}>
-              {getGreeting()} 👋
-            </h1>
-            <p className="text-white/60 text-sm">
-              Here's an overview of your <span className="text-white/80 font-semibold">Hindustan Projects</span> website.
-            </p>
+
+            {/* Real-time clock */}
+            <div className="text-right shrink-0">
+              <p className="font-heading text-3xl font-bold text-white tabular-nums tracking-tight leading-none">
+                {now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
+              </p>
+              <p className="text-white/40 text-xs mt-1 font-medium">
+                {now.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+              </p>
+            </div>
           </div>
         </div>
 

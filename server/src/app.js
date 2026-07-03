@@ -17,6 +17,7 @@ import testimonialsRouter from './routes/testimonials.route.js'
 import contentRouter from './routes/content.route.js'
 import sitemapRouter from './routes/sitemap.route.js'
 import careersRouter from './routes/careers.route.js'
+import backupRouter from './routes/backup.route.js'
 
 const app = express()
 
@@ -44,6 +45,7 @@ app.use('/api/admin', adminRouter)
 app.use('/api/upload', uploadRouter)
 app.use('/api/testimonials', testimonialsRouter)
 app.use('/api/careers', careersRouter)
+app.use('/api/admin/backup', backupRouter)
 app.use('/api', contentRouter)
 app.use('/sitemap.xml', sitemapRouter)
 app.get('/sitemap.xml', sitemapRouter)

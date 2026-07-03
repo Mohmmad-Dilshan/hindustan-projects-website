@@ -54,6 +54,7 @@ const AdminHelpPage         = lazy(() => import('@/pages/admin/AdminHelpPage'))
 const AdminCareersPage      = lazy(() => import('@/pages/admin/AdminCareersPage'))
 const AdminLegalPage        = lazy(() => import('@/pages/admin/AdminLegalPage'))
 const AdminIntegrationPage  = lazy(() => import('@/pages/admin/AdminIntegrationPage'))
+const AdminBackupPage       = lazy(() => import('@/pages/admin/AdminBackupPage'))
 
 export default function App() {
   return (
@@ -123,6 +124,7 @@ export default function App() {
           <Route path="careers"      element={<Suspense fallback={<PageFallback />}><AdminCareersPage /></Suspense>} />
           <Route path="legal"        element={<Suspense fallback={<PageFallback />}><AdminLegalPage /></Suspense>} />
           <Route path="integrations" element={<Suspense fallback={<PageFallback />}><AdminIntegrationPage /></Suspense>} />
+          <Route path="backup"       element={<Suspense fallback={<PageFallback />}><AdminBackupPage /></Suspense>} />
           <Route path="help"         element={<Suspense fallback={<PageFallback />}><AdminHelpPage /></Suspense>} />
           <Route index element={<Suspense fallback={<PageFallback />}><AdminDashboardPage /></Suspense>} />
         </Route>

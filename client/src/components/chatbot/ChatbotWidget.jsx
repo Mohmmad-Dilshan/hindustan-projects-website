@@ -99,7 +99,7 @@ export function ChatbotWidget() {
     }
   }
 
-  const showQuickButtons = messages.length <= 1
+  const showQuickButtons = true
 
   return (
     <div className="fixed bottom-6 right-6 z-50" style={{ fontFamily: 'inherit' }}>

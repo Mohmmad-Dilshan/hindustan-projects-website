@@ -1,6 +1,7 @@
 import { useLegalPage } from '@/hooks/useContent'
 import { Container, SEO } from '@/components/ui'
 import { Calendar, ShieldAlert } from 'lucide-react'
+import DOMPurify from 'dompurify'
 
 export default function TermsOfServicePage() {
   const { data: page, isLoading, error } = useLegalPage('TERMS_OF_SERVICE')
@@ -53,7 +54,7 @@ export default function TermsOfServicePage() {
             ) : (
               <div 
                 className="prose prose-slate max-w-none prose-headings:font-heading prose-headings:font-bold prose-headings:text-brand-blue prose-p:leading-relaxed prose-li:leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: page.content }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(page.content) }}
               />
             )}
           </div>

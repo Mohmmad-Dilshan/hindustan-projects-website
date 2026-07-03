@@ -5,6 +5,8 @@ import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import prisma from '../config/db.js'
 import { env } from '../config/env.js'
+import { setAdminCookie, clearAdminCookie } from '../utils/authCookie.js'
+import { verifyMasterKey, resolveMasterKey } from '../utils/masterKey.js'
 
 // ── POST /api/admin/login ──────────────────────────────────────
 export const adminLogin = async (req, res, next) => {
@@ -28,12 +30,7 @@ export const adminLogin = async (req, res, next) => {
     )
 
     // httpOnly cookie — not accessible from JS
-    res.cookie('adminToken', token, {
-      httpOnly: true,
-      secure: env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    })
+    setAdminCookie(res, token)
 
     return res.json({
       status: 'ok',
@@ -46,7 +43,7 @@ export const adminLogin = async (req, res, next) => {
 
 // ── POST /api/admin/logout ─────────────────────────────────────
 export const adminLogout = (_req, res) => {
-  res.clearCookie('adminToken', { httpOnly: true, sameSite: 'strict' })
+  clearAdminCookie(res)
   return res.json({ status: 'ok', message: 'Logged out.' })
 }
 
@@ -106,12 +103,7 @@ export const changeEmail = async (req, res, next) => {
       { expiresIn: env.JWT_EXPIRES_IN || '7d' },
     )
 
-    res.cookie('adminToken', token, {
-      httpOnly: true,
-      secure: env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    })
+    setAdminCookie(res, token)
 
     res.json({
       status: 'ok',
@@ -124,11 +116,12 @@ export const changeEmail = async (req, res, next) => {
 }
 
 // ── GET /api/admin/master-key-hint ───────────────────────────
-// Returns the current master key in full (SUPER_ADMIN only).
+// Returns the current master key for display in Account Settings.
+// Full key is returned (SUPER_ADMIN only, requires valid JWT cookie).
 export const getMasterKeyHint = async (req, res, next) => {
   try {
+    const currentMaster = await resolveMasterKey()
     const dbRow = await prisma.siteSetting.findUnique({ where: { key: 'sys_integration_master_key' } })
-    const currentMaster = dbRow?.value || env.INTEGRATION_MASTER_KEY || ''
 
     res.json({
       status: 'ok',
@@ -149,21 +142,10 @@ export const changeMasterKey = async (req, res, next) => {
       return res.status(400).json({ status: 'error', message: 'New key must be at least 8 characters.' })
     }
 
-    // Get current master key — from DB first, fallback to env
-    const { timingSafeEqual } = await import('crypto')
-    const dbRow = await prisma.siteSetting.findUnique({ where: { key: 'sys_integration_master_key' } })
-    const currentMaster = dbRow?.value || env.INTEGRATION_MASTER_KEY || (env.JWT_SECRET ? env.JWT_SECRET.slice(-8) : null)
+    const { match, masterKey } = await verifyMasterKey(currentKey)
 
-    if (!currentMaster) {
+    if (!masterKey) {
       return res.status(500).json({ status: 'error', message: 'Master key not configured on server.' })
-    }
-
-    // Constant-time compare
-    const inputBuf  = Buffer.from((currentKey || '').trim())
-    const masterBuf = Buffer.from(currentMaster)
-    let match = false
-    if (inputBuf.length === masterBuf.length) {
-      try { match = timingSafeEqual(inputBuf, masterBuf) } catch { match = false }
     }
 
     if (!match) {

@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { FileText, Save, AlertTriangle, CheckCircle2, AlertCircle, Bold, Heading2, List, Link as LinkIcon, Sparkles } from 'lucide-react'
 import { api } from '@/utils/api'
 import { SEO } from '@/components/ui'
+import DOMPurify from 'dompurify'
 
 const PAGES = [
   { type: 'PRIVACY_POLICY', label: 'Privacy Policy' },
@@ -190,7 +191,7 @@ export default function AdminLegalPage() {
                       setEditorContent(editorRef.current.innerHTML)
                     }
                   }}
-                  dangerouslySetInnerHTML={{ __html: currentPage?.content || '' }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentPage?.content || '') }}
                   className="p-6 min-h-[350px] max-h-[500px] overflow-y-auto focus:outline-none prose prose-slate max-w-none prose-headings:font-heading prose-headings:font-bold prose-headings:text-brand-blue prose-p:leading-relaxed"
                   style={{ minHeight: '350px' }}
                 />

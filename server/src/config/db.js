@@ -18,7 +18,8 @@ const applyPagination = (list, args) => {
 let mockAdmin = {
   id: 'admin-mock-1',
   email: 'admin@hindustanprojects.com',
-  passwordHash: '$2b$10$W4FZyhOY50gqDQJrvqERbeZPWyyr7dKdvRwzO2vwua7nPmuoqECKO', // bcrypt hash of "admin123"
+  // Dev-only mock hash — never used in production (real DB is used when DATABASE_URL points to Neon/Postgres)
+  passwordHash: process.env.MOCK_ADMIN_HASH || '$2b$10$W4FZyhOY50gqDQJrvqERbeZPWyyr7dKdvRwzO2vwua7nPmuoqECKO',
   role: 'SUPER_ADMIN'
 }
 

@@ -334,9 +334,12 @@ async function main() {
   }
   console.log('Seeded ' + jobs.length + ' job postings')
 
-  // Admin
+  // Admin — requires SEED_ADMIN_PASSWORD env var (never falls back to hardcoded value)
   const adminEmail    = process.env.SEED_ADMIN_EMAIL    || 'admin@hindustanprojects.com'
-  const adminPassword = process.env.SEED_ADMIN_PASSWORD || 'ChangeMe@123'
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD
+  if (!adminPassword) {
+    throw new Error('SEED_ADMIN_PASSWORD env var is required to run the seed. Set it in your .env file.')
+  }
   const passwordHash  = await bcrypt.hash(adminPassword, 12)
   const adminRecord = await prisma.admin.upsert({
     where: { email: adminEmail },

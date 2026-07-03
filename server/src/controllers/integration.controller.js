@@ -20,6 +20,7 @@
 import prisma from '../config/db.js'
 import { env } from '../config/env.js'
 import { timingSafeEqual } from 'crypto'
+import { verifyMasterKey } from '../utils/masterKey.js'
 
 // Keys that must be masked in GET responses
 const MASKED_KEYS = new Set([
@@ -233,10 +234,13 @@ export const testSmtpConnection = async (req, res, next) => {
       message: `Test email sent to ${targetEmail} via ${usingResend ? 'Resend' : 'SMTP'}.`,
     })
   } catch (err) {
-    res.status(500).json({
-      status: 'error',
-      message: `Email test failed: ${err.message}`,
-    })
+    // Sanitize error — never forward raw provider errors (may contain credentials)
+    const safeMsg = err.message?.includes('Invalid login')
+      ? 'Authentication failed. Check your email credentials.'
+      : err.message?.includes('ECONNREFUSED') || err.message?.includes('ETIMEDOUT')
+      ? 'Could not connect to email server. Check HOST and PORT settings.'
+      : 'Email test failed. Check your configuration and try again.'
+    res.status(500).json({ status: 'error', message: safeMsg })
   }
 }
 
@@ -260,10 +264,11 @@ export const testCloudinaryConnection = async (req, res, next) => {
 
     res.json({ status: 'ok', message: 'Cloudinary connection verified successfully.' })
   } catch (err) {
-    res.status(500).json({
-      status: 'error',
-      message: `Cloudinary test failed: ${err.message}`,
-    })
+    // Sanitize — never leak API keys from error messages
+    const safeMsg = err.message?.includes('401') || err.message?.includes('Invalid')
+      ? 'Authentication failed. Check your Cloudinary API Key and Secret.'
+      : 'Cloudinary connection failed. Verify your credentials and try again.'
+    res.status(500).json({ status: 'error', message: safeMsg })
   }
 }
 
@@ -299,25 +304,10 @@ export const verifyIntegrationKey = async (req, res, next) => {
       return res.status(400).json({ status: 'error', message: 'Key is required.' })
     }
 
-    // Check DB first (updated via Account Settings), then fallback to .env
-    const dbRow = await prisma.siteSetting.findUnique({ where: { key: 'sys_integration_master_key' } })
-    const masterKey = dbRow?.value || env.INTEGRATION_MASTER_KEY || (env.JWT_SECRET ? env.JWT_SECRET.slice(-8) : null)
+    const { match, masterKey } = await verifyMasterKey(key)
 
     if (!masterKey) {
       return res.status(500).json({ status: 'error', message: 'Master key not configured on server.' })
-    }
-
-    // Constant-time comparison to prevent timing attacks
-    const inputBuf  = Buffer.from(key.trim())
-    const masterBuf = Buffer.from(masterKey)
-
-    let match = false
-    if (inputBuf.length === masterBuf.length) {
-      try {
-        match = timingSafeEqual(inputBuf, masterBuf)
-      } catch {
-        match = key.trim() === masterKey
-      }
     }
 
     if (!match) {

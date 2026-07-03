@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Pencil, Trash2, X, Check, HelpCircle, ChevronDown } from 'lucide-react'
+import { Plus, Pencil, Trash2, X, Check, HelpCircle, ChevronDown, MessageCircle, CheckCircle2, AlertCircle } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { api } from '@/utils/api'
 import { SEO } from '@/components/ui'
@@ -105,6 +105,17 @@ export default function AdminFaqPage() {
     mutationFn: (id) => api.delete(`/admin/faqs/${id}`),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-faqs'] }),
   })
+
+  // ── Chatbot Inquiries ──────────────────────────────────────────
+  const { data: inquiries = [], isLoading: inqLoading } = useQuery({
+    queryKey: ['chatbot-inquiries'],
+    queryFn: () => api.get('/chatbot/admin/inquiries').then((r) => r.data.data),
+  })
+  const deleteInq = useMutation({
+    mutationFn: (id) => api.delete(`/chatbot/admin/inquiries/${id}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['chatbot-inquiries'] }),
+  })
+  const unansweredCount = inquiries.filter((i) => !i.isAnswered).length
 
   return (
     <>
@@ -266,6 +277,76 @@ export default function AdminFaqPage() {
                 </div>
               </div>
             ))
+          )}
+        </div>
+
+        {/* ── Chatbot Inquiries Section ── */}
+        <div className="mt-10 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
+              <MessageCircle className="w-5 h-5 text-indigo-600" />
+            </div>
+            <div>
+              <h2 className="font-heading text-lg font-bold text-gray-900 flex items-center gap-2">
+                Chatbot Inquiries
+                {unansweredCount > 0 && (
+                  <span className="text-[11px] px-2 py-0.5 bg-red-100 text-red-600 font-bold rounded-full">
+                    {unansweredCount} unanswered
+                  </span>
+                )}
+              </h2>
+              <p className="text-sm text-gray-400">
+                Questions submitted by website visitors through the chatbot. Unanswered ones help you improve your FAQs.
+              </p>
+            </div>
+          </div>
+
+          {inqLoading ? (
+            <div className="bg-white border border-gray-100 rounded-xl p-6 animate-pulse">
+              <div className="h-4 bg-gray-100 rounded w-1/2 mb-3" />
+              <div className="h-4 bg-gray-100 rounded w-2/3" />
+            </div>
+          ) : inquiries.length === 0 ? (
+            <div className="bg-white border border-gray-100 rounded-xl py-12 flex flex-col items-center gap-2">
+              <MessageCircle className="w-10 h-10 text-gray-200" />
+              <p className="text-sm font-semibold text-gray-500">No chatbot inquiries yet</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {inquiries.map((inq) => (
+                <div
+                  key={inq.id}
+                  className={`bg-white border rounded-xl px-4 py-3 flex items-start gap-3 ${
+                    inq.isAnswered ? 'border-gray-100' : 'border-amber-200 bg-amber-50/30'
+                  }`}
+                >
+                  <div className="mt-0.5 shrink-0">
+                    {inq.isAnswered ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    ) : (
+                      <AlertCircle className="w-4 h-4 text-amber-500" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-800 truncate">{inq.question}</p>
+                    {inq.answer && (
+                      <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">{inq.answer}</p>
+                    )}
+                    <p className="text-[10px] text-gray-300 mt-1">
+                      {new Date(inq.createdAt).toLocaleString('en-IN')}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (window.confirm('Delete this inquiry?')) deleteInq.mutate(inq.id)
+                    }}
+                    className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all shrink-0"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </div>

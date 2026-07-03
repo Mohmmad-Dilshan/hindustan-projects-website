@@ -398,11 +398,11 @@
   "mockAdmin": {
     "id": "admin-mock-1",
     "email": "admin@hindustanprojects.com",
-    "passwordHash": "$2b$10$W4FZyhOY50gqDQJrvqERbeZPWyyr7dKdvRwzO2vwua7nPmuoqECKO",
+    "passwordHash": "$2b$10$fZ2B7atugVJqvWhkBxEXs.f.PwxNQhWT.WA/GOvx8K3tkQY6O5RCm",
     "role": "SUPER_ADMIN",
-    "loginAttempts": 5,
-    "lockoutUntil": "2026-07-03T14:54:10.535Z",
-    "refreshToken": null,
+    "loginAttempts": 1,
+    "lockoutUntil": null,
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluLW1vY2stMSIsImlhdCI6MTc4MzA5MjI5MCwiZXhwIjoxNzgzNjk3MDkwfQ.OAiSc0SpR-VvhR35QJL_SNlJrHdnBycN56DR1JI7lRI",
     "twoFactorSecret": null,
     "twoFactorEnabled": false
   },
@@ -483,6 +483,15 @@
       "entity": "ClientProject",
       "details": "Created project 'E-Commerce Website' for client 'Ramesh Textiles'",
       "createdAt": "2026-07-03T14:25:11.486Z"
+    },
+    {
+      "id": "act-1783092287598",
+      "adminId": "admin-mock-1",
+      "adminEmail": "admin@hindustanprojects.com",
+      "action": "LOGIN_ATTEMPT",
+      "entity": "Admin",
+      "details": "Successful credentials check from IP ::1",
+      "createdAt": "2026-07-03T15:24:47.598Z"
     }
   ]
 }

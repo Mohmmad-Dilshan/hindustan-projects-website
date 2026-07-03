@@ -126,9 +126,10 @@ export const careersLimiter = rateLimit({
 // ── 6. Admin Login Route Rate Limiter ──────────────────────────
 export const adminLoginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // max 5 attempts per IP per 15 min
+  max: process.env.NODE_ENV === 'development' ? 1000 : 10, // 10 attempts in prod
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => process.env.NODE_ENV === 'development', // never block in dev
   message: {
     status: 'error',
     message: 'Too many login attempts from this IP. Please try again after 15 minutes.',

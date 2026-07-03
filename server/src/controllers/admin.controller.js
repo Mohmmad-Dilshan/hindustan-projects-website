@@ -123,7 +123,66 @@ export const changeEmail = async (req, res, next) => {
   }
 }
 
-// ── GET /api/admin/stats ───────────────────────────────────────
+// ── GET /api/admin/master-key-hint ───────────────────────────
+// Returns the current master key in full (SUPER_ADMIN only).
+export const getMasterKeyHint = async (req, res, next) => {
+  try {
+    const dbRow = await prisma.siteSetting.findUnique({ where: { key: 'sys_integration_master_key' } })
+    const currentMaster = dbRow?.value || env.INTEGRATION_MASTER_KEY || ''
+
+    res.json({
+      status: 'ok',
+      key: currentMaster || null,
+      source: dbRow?.value ? 'database' : 'env',
+    })
+  } catch (err) {
+    next(err)
+  }
+}
+
+// ── POST /api/admin/change-master-key ────────────────────────
+export const changeMasterKey = async (req, res, next) => {
+  try {
+    const { currentKey, newKey } = req.body
+
+    if (!newKey || typeof newKey !== 'string' || newKey.trim().length < 8) {
+      return res.status(400).json({ status: 'error', message: 'New key must be at least 8 characters.' })
+    }
+
+    // Get current master key — from DB first, fallback to env
+    const { timingSafeEqual } = await import('crypto')
+    const dbRow = await prisma.siteSetting.findUnique({ where: { key: 'sys_integration_master_key' } })
+    const currentMaster = dbRow?.value || env.INTEGRATION_MASTER_KEY || (env.JWT_SECRET ? env.JWT_SECRET.slice(-8) : null)
+
+    if (!currentMaster) {
+      return res.status(500).json({ status: 'error', message: 'Master key not configured on server.' })
+    }
+
+    // Constant-time compare
+    const inputBuf  = Buffer.from((currentKey || '').trim())
+    const masterBuf = Buffer.from(currentMaster)
+    let match = false
+    if (inputBuf.length === masterBuf.length) {
+      try { match = timingSafeEqual(inputBuf, masterBuf) } catch { match = false }
+    }
+
+    if (!match) {
+      return res.status(401).json({ status: 'error', message: 'Current master key is incorrect.' })
+    }
+
+    // Save new key to DB and update process.env
+    await prisma.siteSetting.upsert({
+      where:  { key: 'sys_integration_master_key' },
+      update: { value: newKey.trim() },
+      create: { key: 'sys_integration_master_key', value: newKey.trim() },
+    })
+    process.env.INTEGRATION_MASTER_KEY = newKey.trim()
+
+    res.json({ status: 'ok', message: 'Integration master key updated successfully.' })
+  } catch (err) {
+    next(err)
+  }
+}
 export const getDashboardStats = async (_req, res, next) => {
   try {
     const [

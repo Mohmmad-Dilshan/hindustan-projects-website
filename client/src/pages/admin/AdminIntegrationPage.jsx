@@ -1,18 +1,175 @@
 /**
  * AdminIntegrationPage — Manage third-party API keys & service credentials
- * Cloudinary, SMTP Email, Google reCAPTCHA
- * Only accessible to SUPER_ADMIN role.
+ * Cloudinary, SMTP Email, Google reCAPTCHA, Database URL, JWT Secret
+ *
+ * Protected by TWO layers:
+ *  1. Server: SUPER_ADMIN role check on all /api/admin/integrations routes
+ *  2. Client: Master Key lock gate — must enter INTEGRATION_MASTER_KEY before
+ *     the page content is shown. Unlock token stored in sessionStorage (cleared
+ *     when tab/browser is closed).
  */
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import {
   Cloud, Mail, ShieldCheck, Eye, EyeOff, CheckCircle2,
   AlertCircle, Loader2, Plug, TestTube2, ExternalLink,
-  RefreshCw, Lock, Info,
+  RefreshCw, Lock, Info, Database, KeyRound, Unlock, ShieldAlert,
 } from 'lucide-react'
 import { api } from '@/utils/api'
 import { SEO } from '@/components/ui'
+
+const UNLOCK_TOKEN_KEY = 'integration_unlock_token'
+
+// ── Lock Gate Component ───────────────────────────────────────
+function LockGate({ onUnlocked }) {
+  const [key, setKey] = useState('')
+  const [show, setShow] = useState(false)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [shake, setShake] = useState(false)
+  const inputRef = useRef(null)
+
+  useEffect(() => {
+    // Auto-focus input on mount
+    setTimeout(() => inputRef.current?.focus(), 100)
+
+    // Check if a valid unlock token already exists in sessionStorage
+    const existing = sessionStorage.getItem(UNLOCK_TOKEN_KEY)
+    if (existing) {
+      api.get(`/admin/integrations/check-unlock?token=${encodeURIComponent(existing)}`)
+        .then(r => { if (r.valid) onUnlocked(existing) })
+        .catch(() => sessionStorage.removeItem(UNLOCK_TOKEN_KEY))
+    }
+  }, [onUnlocked])
+
+  const triggerShake = () => {
+    setShake(true)
+    setTimeout(() => setShake(false), 600)
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!key.trim()) {
+      setError('Please enter the master key.')
+      triggerShake()
+      return
+    }
+    setLoading(true)
+    setError('')
+    try {
+      const r = await api.post('/admin/integrations/verify-key', { key: key.trim() })
+      sessionStorage.setItem(UNLOCK_TOKEN_KEY, r.unlockToken)
+      onUnlocked(r.unlockToken)
+    } catch (err) {
+      setError(err.message || 'Incorrect key. Access denied.')
+      setKey('')
+      triggerShake()
+      inputRef.current?.focus()
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="min-h-[70vh] flex items-center justify-center px-4">
+      <div className="w-full max-w-md">
+        {/* Lock icon header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-brand-blue/10 border-2 border-brand-blue/20 mb-4">
+            <ShieldAlert className="w-9 h-9 text-brand-blue" />
+          </div>
+          <h1 className="font-heading text-2xl font-bold text-gray-900 mb-1">
+            Integration Settings
+          </h1>
+          <p className="text-sm text-gray-500">
+            This page is locked. Enter the master key to access integration credentials.
+          </p>
+        </div>
+
+        {/* Lock form */}
+        <div
+          className={`bg-white border border-gray-200 rounded-2xl shadow-lg p-7 transition-all duration-150
+            ${shake ? 'animate-[shake_0.5s_ease-in-out]' : ''}`}
+          style={shake ? { animation: 'shake 0.5s ease-in-out' } : {}}
+        >
+          {/* Shake keyframe via inline style tag */}
+          <style>{`
+            @keyframes shake {
+              0%, 100% { transform: translateX(0); }
+              15% { transform: translateX(-8px); }
+              30% { transform: translateX(8px); }
+              45% { transform: translateX(-6px); }
+              60% { transform: translateX(6px); }
+              75% { transform: translateX(-4px); }
+              90% { transform: translateX(4px); }
+            }
+          `}</style>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="text-xs font-semibold text-gray-600 block mb-1.5">
+                Master Key
+              </label>
+              <div className="relative">
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                  <Lock className="w-4 h-4" />
+                </div>
+                <input
+                  ref={inputRef}
+                  type={show ? 'text' : 'password'}
+                  value={key}
+                  onChange={e => { setKey(e.target.value); setError('') }}
+                  placeholder="Enter integration master key"
+                  autoComplete="off"
+                  className={`w-full pl-10 pr-11 py-3 text-sm border rounded-xl font-mono
+                    bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 transition-all
+                    ${error
+                      ? 'border-red-400 focus:ring-red-200'
+                      : 'border-gray-200 focus:ring-brand-blue/20 focus:border-brand-blue'
+                    }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShow(v => !v)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  tabIndex={-1}
+                >
+                  {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+
+              {error && (
+                <p className="mt-2 text-xs text-red-600 flex items-center gap-1.5">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  {error}
+                </p>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-brand-blue text-white font-semibold py-3 rounded-xl text-sm
+                hover:bg-brand-blue-dark hover:shadow-lg hover:shadow-brand-blue/20 hover:-translate-y-0.5
+                transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0
+                flex items-center justify-center gap-2"
+            >
+              {loading
+                ? <><Loader2 className="w-4 h-4 animate-spin" /> Verifying…</>
+                : <><Unlock className="w-4 h-4" /> Unlock Page</>
+              }
+            </button>
+          </form>
+        </div>
+
+        <p className="text-center text-xs text-gray-400 mt-4">
+          Access is logged. Unlock expires when you close this tab.
+        </p>
+      </div>
+    </div>
+  )
+}
 
 // ── Helper: masked input field ────────────────────────────────
 function SecretInput({ label, name, placeholder, register, description }) {
@@ -135,12 +292,15 @@ function TestButton({ label, onClick, loading, result }) {
 
 // ── Main page ─────────────────────────────────────────────────
 export default function AdminIntegrationPage() {
+  const [unlocked, setUnlocked] = useState(false)
   const qc = useQueryClient()
   const [saveStatus, setSaveStatus] = useState(null)
   const [smtpTest, setSmtpTest] = useState(null)
   const [smtpTesting, setSmtpTesting] = useState(false)
   const [cloudTest, setCloudTest] = useState(null)
   const [cloudTesting, setCloudTesting] = useState(false)
+  const [dbTest, setDbTest] = useState(null)
+  const [dbTesting, setDbTesting] = useState(false)
 
   // Fetch current config
   const { data, isLoading, isError, refetch } = useQuery({
@@ -161,6 +321,8 @@ export default function AdminIntegrationPage() {
       sys_smtp_pass:  data.sys_smtp_pass  || '',
       sys_smtp_from:  data.sys_smtp_from  || '',
       sys_recaptcha_secret_key: data.sys_recaptcha_secret_key || '',
+      sys_database_url:  data.sys_database_url  || '',
+      sys_jwt_secret:    data.sys_jwt_secret    || '',
     } : {},
   })
 
@@ -207,9 +369,30 @@ export default function AdminIntegrationPage() {
     }
   }
 
+  const handleDbTest = async () => {
+    setDbTesting(true)
+    setDbTest(null)
+    try {
+      const r = await api.post('/admin/integrations/test-database', {})
+      setDbTest({ ok: true, message: r.message })
+    } catch (err) {
+      setDbTest({ ok: false, message: err.message })
+    } finally {
+      setDbTesting(false)
+    }
+  }
+
   return (
     <>
       <SEO title="Integration Settings" noIndex />
+
+      {/* ── Lock Gate — shown until master key is verified ── */}
+      {!unlocked && (
+        <LockGate onUnlocked={() => setUnlocked(true)} />
+      )}
+
+      {/* ── Actual page content — hidden until unlocked ── */}
+      {unlocked && (
       <div className="space-y-6 max-w-3xl">
 
         {/* Page header */}
@@ -226,13 +409,23 @@ export default function AdminIntegrationPage() {
               </p>
             </div>
           </div>
-          <button
-            onClick={() => refetch()}
-            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-brand-blue px-3 py-1.5 rounded-lg border border-gray-200 hover:border-brand-blue/30 transition-all"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-            Refresh
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => { sessionStorage.removeItem(UNLOCK_TOKEN_KEY); setUnlocked(false) }}
+              className="flex items-center gap-1.5 text-xs text-amber-600 hover:text-amber-700 px-3 py-1.5 rounded-lg border border-amber-200 hover:border-amber-300 bg-amber-50 hover:bg-amber-100 transition-all"
+              title="Lock this page again"
+            >
+              <Lock className="w-3.5 h-3.5" />
+              Lock Page
+            </button>
+            <button
+              onClick={() => refetch()}
+              className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-brand-blue px-3 py-1.5 rounded-lg border border-gray-200 hover:border-brand-blue/30 transition-all"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              Refresh
+            </button>
+          </div>
         </div>
 
         {/* Security notice */}
@@ -416,6 +609,85 @@ export default function AdminIntegrationPage() {
               </div>
             </Section>
 
+            {/* ── Database ── */}
+            <Section
+              icon={Database}
+              title="PostgreSQL Database — Neon.tech / Connection URL"
+              accentColor="brand-blue"
+              badge={<StatusBadge active={status.database} />}
+            >
+              <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3 flex items-start gap-2 text-xs text-blue-700">
+                <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                <span>
+                  Your Neon.tech (or any PostgreSQL) connection string. Format:{' '}
+                  <code className="bg-blue-100 px-1 py-0.5 rounded font-mono">
+                    postgresql://user:pass@host/dbname?sslmode=require
+                  </code>
+                  <br />
+                  Get it from{' '}
+                  <a href="https://console.neon.tech" target="_blank" rel="noopener noreferrer"
+                    className="underline font-semibold inline-flex items-center gap-0.5">
+                    console.neon.tech <ExternalLink className="w-3 h-3" />
+                  </a>{' '}
+                  → Your Project → Connection Details.
+                  <br />
+                  <strong>Warning:</strong> Changing this reconnects the database immediately. Make sure the new URL is correct before saving.
+                </span>
+              </div>
+
+              <SecretInput
+                label="Database URL (PostgreSQL Connection String)"
+                name="sys_database_url"
+                placeholder="Leave blank to keep existing"
+                register={register}
+                description="Stored encrypted. Only last 4 characters shown. Leave blank to keep the existing value."
+              />
+
+              <TestButton
+                label="Test Database Connection"
+                onClick={handleDbTest}
+                loading={dbTesting}
+                result={dbTest}
+              />
+            </Section>
+
+            {/* ── JWT Secret ── */}
+            <Section
+              icon={KeyRound}
+              title="JWT Secret — Admin Authentication"
+              accentColor="orange"
+              badge={<StatusBadge active={status.jwt} />}
+            >
+              <div className="bg-orange-50/50 border border-orange-100 rounded-lg p-3 flex items-start gap-2 text-xs text-orange-700">
+                <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                <span>
+                  Used to sign and verify admin login tokens. Must be a long random string (min 32 chars).{' '}
+                  <strong>Changing this will immediately log out all active admin sessions</strong> — everyone will need to log in again.
+                  Generate a strong secret at{' '}
+                  <a href="https://generate-secret.vercel.app/64" target="_blank" rel="noopener noreferrer"
+                    className="underline font-semibold inline-flex items-center gap-0.5">
+                    generate-secret.vercel.app <ExternalLink className="w-3 h-3" />
+                  </a>.
+                </span>
+              </div>
+
+              <SecretInput
+                label="JWT Secret Key"
+                name="sys_jwt_secret"
+                placeholder="Leave blank to keep existing"
+                register={register}
+                description="Min 32 characters recommended. Stored encrypted. Leave blank to keep existing value."
+              />
+
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2 text-xs text-red-700">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                <span>
+                  <strong>Caution:</strong> After saving a new JWT secret, you will be logged out immediately.
+                  Log in again with your admin credentials.
+                </span>
+              </div>
+            </Section>
+
             {/* Save button + status */}
             {saveStatus && (
               <div className={`flex items-center gap-2 text-sm rounded-xl px-4 py-3 border ${
@@ -450,6 +722,7 @@ export default function AdminIntegrationPage() {
           </form>
         )}
       </div>
+      )} {/* end unlocked */}
     </>
   )
 }

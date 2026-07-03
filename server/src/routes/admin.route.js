@@ -6,7 +6,7 @@ import { Router } from 'express'
 import { body } from 'express-validator'
 import { verifyToken, requireRole } from '../middleware/auth.js'
 import { authLimiter, validateRequest } from '../middleware/security.js'
-import { adminLogin, adminLogout, getMe, getDashboardStats, changePassword, changeEmail } from '../controllers/admin.controller.js'
+import { adminLogin, adminLogout, getMe, getDashboardStats, changePassword, changeEmail, changeMasterKey, getMasterKeyHint } from '../controllers/admin.controller.js'
 import { getLeads, updateLeadStatus, deleteLead } from '../controllers/leads.controller.js'
 import { listServices, createService, updateService, deleteService } from '../controllers/adminServices.controller.js'
 import { listProjects, createProject, updateProject, deleteProject } from '../controllers/adminProjects.controller.js'
@@ -24,7 +24,8 @@ import {
 import { listLegalPages, updateLegalPage } from '../controllers/legal.controller.js'
 import {
   getIntegrationConfig, updateIntegrationConfig,
-  testSmtpConnection, testCloudinaryConnection,
+  testSmtpConnection, testCloudinaryConnection, testDatabaseConnection,
+  verifyIntegrationKey, checkUnlockToken,
 } from '../controllers/integration.controller.js'
 
 const router = Router()
@@ -46,6 +47,13 @@ router.post('/change-email', verifyToken, [
   body('newEmail').isEmail().normalizeEmail().withMessage('Valid email required'),
   body('password').notEmpty().withMessage('Password is required'),
 ], validateRequest, changeEmail)
+
+router.post('/change-master-key', verifyToken, requireRole('SUPER_ADMIN'), [
+  body('currentKey').notEmpty().withMessage('Current key is required'),
+  body('newKey').isLength({ min: 8 }).withMessage('New key must be at least 8 characters'),
+], validateRequest, changeMasterKey)
+
+router.get('/master-key-hint', verifyToken, requireRole('SUPER_ADMIN'), getMasterKeyHint)
 
 // ── Dashboard stats ────────────────────────────────────────────
 router.get('/stats', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), getDashboardStats)
@@ -114,10 +122,13 @@ router.get('/applications', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), li
 router.patch('/applications/:id/status', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), updateApplicationStatus)
 router.delete('/applications/:id', verifyToken, requireRole('SUPER_ADMIN'), deleteApplication)
 
-// ── Integration Config (Cloudinary, SMTP, reCAPTCHA) ──────────
-router.get('/integrations',                verifyToken, requireRole('SUPER_ADMIN'), getIntegrationConfig)
-router.patch('/integrations',              verifyToken, requireRole('SUPER_ADMIN'), updateIntegrationConfig)
-router.post('/integrations/test-smtp',     verifyToken, requireRole('SUPER_ADMIN'), testSmtpConnection)
+// ── Integration Config (Cloudinary, SMTP, reCAPTCHA, DB, JWT) ─
+router.get('/integrations',                  verifyToken, requireRole('SUPER_ADMIN'), getIntegrationConfig)
+router.patch('/integrations',                verifyToken, requireRole('SUPER_ADMIN'), updateIntegrationConfig)
+router.post('/integrations/test-smtp',       verifyToken, requireRole('SUPER_ADMIN'), testSmtpConnection)
 router.post('/integrations/test-cloudinary', verifyToken, requireRole('SUPER_ADMIN'), testCloudinaryConnection)
+router.post('/integrations/test-database',   verifyToken, requireRole('SUPER_ADMIN'), testDatabaseConnection)
+router.post('/integrations/verify-key',      verifyToken, requireRole('SUPER_ADMIN'), verifyIntegrationKey)
+router.get('/integrations/check-unlock',     verifyToken, requireRole('SUPER_ADMIN'), checkUnlockToken)
 
 export default router

@@ -1,26 +1,33 @@
 /**
  * integration.controller.js
  *
- * Manages third-party integration credentials (Cloudinary, SMTP, reCAPTCHA)
- * stored securely in the SiteSetting table with a "sys_" prefix.
+ * Manages third-party integration credentials (Cloudinary, SMTP, reCAPTCHA,
+ * Database URL, JWT Secret) stored securely in the SiteSetting table with
+ * a "sys_" prefix.
  *
  * Keys stored:
  *   sys_cloudinary_cloud_name, sys_cloudinary_api_key, sys_cloudinary_api_secret
  *   sys_smtp_host, sys_smtp_port, sys_smtp_user, sys_smtp_pass, sys_smtp_from
  *   sys_recaptcha_secret_key
+ *   sys_database_url
+ *   sys_jwt_secret
  *
- * On GET  — sensitive values (api_secret, smtp_pass, recaptcha) are MASKED
- * On SAVE — values are stored in DB AND applied to process.env at runtime
- *           so Cloudinary / Nodemailer picks them up immediately (no restart needed)
+ * On GET  — sensitive values are MASKED (last 4 chars visible)
+ * On SAVE — values stored in DB AND applied to process.env immediately
+ *           Database URL change triggers Prisma client reconnect
  */
 
 import prisma from '../config/db.js'
+import { env } from '../config/env.js'
+import { timingSafeEqual } from 'crypto'
 
 // Keys that must be masked in GET responses
 const MASKED_KEYS = new Set([
   'sys_cloudinary_api_secret',
   'sys_smtp_pass',
   'sys_recaptcha_secret_key',
+  'sys_database_url',
+  'sys_jwt_secret',
 ])
 
 // Maps DB keys → process.env variable names
@@ -34,6 +41,8 @@ const ENV_MAP = {
   sys_smtp_pass:             'EMAIL_PASS',
   sys_smtp_from:             'EMAIL_FROM',
   sys_recaptcha_secret_key:  'RECAPTCHA_SECRET_KEY',
+  sys_database_url:          'DATABASE_URL',
+  sys_jwt_secret:            'JWT_SECRET',
 }
 
 // All integration keys we manage
@@ -75,6 +84,8 @@ export const getIntegrationConfig = async (_req, res, next) => {
         rows.find(r => r.key === 'sys_smtp_pass')?.value
       ),
       recaptcha: !!rows.find(r => r.key === 'sys_recaptcha_secret_key')?.value,
+      database: !!rows.find(r => r.key === 'sys_database_url')?.value,
+      jwt: !!rows.find(r => r.key === 'sys_jwt_secret')?.value,
     }
 
     res.json({ status: 'ok', data: config })
@@ -141,7 +152,6 @@ export const updateIntegrationConfig = async (req, res, next) => {
     const cloudinaryUpdated = Object.keys(updates).some(k => cloudinaryKeys.includes(k))
     if (cloudinaryUpdated) {
       try {
-        // Dynamic import to avoid circular deps
         const { cloudinary } = await import('../utils/cloudinary.js')
         cloudinary.config({
           cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -150,6 +160,19 @@ export const updateIntegrationConfig = async (req, res, next) => {
         })
       } catch (e) {
         console.warn('[integrations] Could not re-init Cloudinary:', e.message)
+      }
+    }
+
+    // Reconnect Prisma if DATABASE_URL was changed
+    if (updates.sys_database_url && typeof updates.sys_database_url === 'string'
+        && updates.sys_database_url.trim() !== ''
+        && !/^•+/.test(updates.sys_database_url.trim())) {
+      try {
+        await prisma.$disconnect()
+        await prisma.$connect()
+        console.log('[integrations] Prisma reconnected with new DATABASE_URL.')
+      } catch (e) {
+        console.warn('[integrations] Prisma reconnect failed:', e.message)
       }
     }
 
@@ -223,5 +246,99 @@ export const testCloudinaryConnection = async (req, res, next) => {
       status: 'error',
       message: `Cloudinary test failed: ${err.message}`,
     })
+  }
+}
+
+/**
+ * POST /api/admin/integrations/test-database
+ * Verify current DATABASE_URL by running a lightweight query.
+ */
+export const testDatabaseConnection = async (req, res, next) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`
+    res.json({ status: 'ok', message: 'Database connection verified successfully.' })
+  } catch (err) {
+    res.status(500).json({
+      status: 'error',
+      message: `Database test failed: ${err.message}`,
+    })
+  }
+}
+
+/**
+ * POST /api/admin/integrations/verify-key
+ * Verifies the Integration Master Key before unlocking the page.
+ * Returns a short-lived session token stored in sessionStorage on the client.
+ *
+ * If INTEGRATION_MASTER_KEY is not set in .env, falls back to the JWT_SECRET
+ * last 8 chars — so it always works.
+ */
+export const verifyIntegrationKey = async (req, res, next) => {
+  try {
+    const { key } = req.body
+
+    if (!key || typeof key !== 'string' || key.trim() === '') {
+      return res.status(400).json({ status: 'error', message: 'Key is required.' })
+    }
+
+    // Check DB first (updated via Account Settings), then fallback to .env
+    const dbRow = await prisma.siteSetting.findUnique({ where: { key: 'sys_integration_master_key' } })
+    const masterKey = dbRow?.value || env.INTEGRATION_MASTER_KEY || (env.JWT_SECRET ? env.JWT_SECRET.slice(-8) : null)
+
+    if (!masterKey) {
+      return res.status(500).json({ status: 'error', message: 'Master key not configured on server.' })
+    }
+
+    // Constant-time comparison to prevent timing attacks
+    const inputBuf  = Buffer.from(key.trim())
+    const masterBuf = Buffer.from(masterKey)
+
+    let match = false
+    if (inputBuf.length === masterBuf.length) {
+      try {
+        match = timingSafeEqual(inputBuf, masterBuf)
+      } catch {
+        match = key.trim() === masterKey
+      }
+    }
+
+    if (!match) {
+      return res.status(401).json({ status: 'error', message: 'Incorrect key. Access denied.' })
+    }
+
+    // Issue a short-lived unlock token (15 min) signed with JWT_SECRET
+    // Client stores it in sessionStorage — clears on tab/browser close
+    const { default: jwt } = await import('jsonwebtoken')
+    const unlockToken = jwt.sign(
+      { purpose: 'integration_unlock', adminId: req.admin.id },
+      env.JWT_SECRET,
+      { expiresIn: '15m' }
+    )
+
+    res.json({ status: 'ok', unlockToken })
+  } catch (err) {
+    next(err)
+  }
+}
+
+/**
+ * GET /api/admin/integrations/check-unlock
+ * Validates an unlock token. Called on page load to auto-unlock if token is still valid.
+ */
+export const checkUnlockToken = async (req, res, next) => {
+  try {
+    const { token } = req.query
+    if (!token) return res.json({ status: 'ok', valid: false })
+
+    const { default: jwt } = await import('jsonwebtoken')
+    try {
+      const decoded = jwt.verify(token, env.JWT_SECRET)
+      if (decoded.purpose !== 'integration_unlock') throw new Error('Invalid purpose')
+      res.json({ status: 'ok', valid: true })
+    } catch {
+      res.json({ status: 'ok', valid: false })
+    }
+  } catch (err) {
+    next(err)
   }
 }

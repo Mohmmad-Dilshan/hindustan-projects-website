@@ -92,12 +92,14 @@ export default function AdminDashboardPage() {
             <div className="flex items-center gap-2 mb-2">
               <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
               <span className="text-white/50 text-xs font-medium">All systems operational</span>
+              <span className="text-white/20 text-xs">·</span>
+              <span className="text-white/40 text-xs font-medium">IT Services, Bhilwara</span>
             </div>
             <h1 className="font-heading text-2xl font-bold text-white mb-1" style={{ color: '#fff' }}>
               {getGreeting()} 👋
             </h1>
             <p className="text-white/60 text-sm">
-              Here's an overview of your Hindustan Projects website.
+              Here's an overview of your <span className="text-white/80 font-semibold">Hindustan Projects</span> website.
             </p>
           </div>
         </div>

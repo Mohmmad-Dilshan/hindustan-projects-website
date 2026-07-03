@@ -21,17 +21,17 @@ function getStrategy() {
 }
 
 // ── Resend sender ──────────────────────────────────────────────
-async function sendViaResend({ to, subject, html, text }) {
+async function sendViaResend({ to, subject, html, text, attachments }) {
   const resend = new Resend(env.RESEND_API_KEY)
   const from = env.EMAIL_FROM || 'Hindustan Projects <info@hindustanprojects.in>'
 
-  const { data, error } = await resend.emails.send({ from, to, subject, html, text })
+  const { data, error } = await resend.emails.send({ from, to, subject, html, text, attachments })
   if (error) throw new Error(error.message || 'Resend send failed')
   return { messageId: data?.id }
 }
 
 // ── Nodemailer SMTP sender ─────────────────────────────────────
-async function sendViaSMTP({ to, subject, html, text }) {
+async function sendViaSMTP({ to, subject, html, text, attachments }) {
   const transporter = nodemailer.createTransport({
     host: env.EMAIL_HOST || 'smtp.gmail.com',
     port: env.EMAIL_PORT || 587,
@@ -39,7 +39,7 @@ async function sendViaSMTP({ to, subject, html, text }) {
     auth: { user: env.EMAIL_USER, pass: env.EMAIL_PASS },
   })
   const from = env.EMAIL_FROM || `"Hindustan Projects" <${env.EMAIL_USER}>`
-  const info = await transporter.sendMail({ from, to, subject, html, text })
+  const info = await transporter.sendMail({ from, to, subject, html, text, attachments })
   return info
 }
 
@@ -47,7 +47,7 @@ async function sendViaSMTP({ to, subject, html, text }) {
  * sendEmailDirect — unified direct send function.
  * Automatically picks Resend → SMTP → console based on env config.
  */
-async function sendEmailDirect({ to, subject, html, text }) {
+async function sendEmailDirect({ to, subject, html, text, attachments }) {
   const strategy = getStrategy()
 
   if (strategy === 'console') {
@@ -55,15 +55,18 @@ async function sendEmailDirect({ to, subject, html, text }) {
     console.log(`  To:       ${to}`)
     console.log(`  Subject:  ${subject}`)
     console.log(`  Body:     ${text || '(html only)'}`)
+    if (attachments) {
+      console.log(`  Attachments: ${attachments.map((a) => a.filename).join(', ')}`)
+    }
     console.log('─────────────────────────────────────\n')
     return { messageId: 'dev-console-log' }
   }
 
   if (strategy === 'resend') {
-    return sendViaResend({ to, subject, html, text })
+    return sendViaResend({ to, subject, html, text, attachments })
   }
 
-  return sendViaSMTP({ to, subject, html, text })
+  return sendViaSMTP({ to, subject, html, text, attachments })
 }
 
 // ── In-Memory Throttled Email Queue ────────────────────────────
@@ -175,7 +178,7 @@ export function autoReplyTemplate({ name }) {
         <p style="font-size: 16px; color: #1A1A1A;">Hi <strong>${name}</strong>,</p>
 
         <p style="font-size: 15px; color: #374151; line-height: 1.7;">
-          Thank you for reaching out to us! We've received your message and our team will get back to you within <strong>1–2 business days</strong>.
+          Thank you for reaching out to us! We've received your message and our team will contact you within <strong>24 hours</strong>.
         </p>
 
         <p style="font-size: 15px; color: #374151; line-height: 1.7;">
@@ -278,7 +281,7 @@ export function jobApplicantConfirmationTemplate({ name, jobTitle }) {
         </p>
 
         <p style="font-size: 15px; color: #374151; line-height: 1.7;">
-          Our HR team is currently reviewing applications. If your profile matches our requirements, we will contact you within <strong>7 business days</strong> to schedule a technical interview.
+          Our HR team is currently reviewing applications. If your profile matches our requirements, we will contact you within <strong>24 hours</strong>.
         </p>
 
         <p style="font-size: 15px; color: #374151; line-height: 1.7;">
@@ -291,6 +294,188 @@ export function jobApplicantConfirmationTemplate({ name, jobTitle }) {
         </p>
       </div>
     `,
-    text: `Dear ${name},\n\nThank you for applying for the ${jobTitle} position at Hindustan Projects!\n\nWe have successfully received your application. Our recruitment team will review it and get back to you if you are shortlisted.\n\nBest regards,\nHindustan Projects HR Team`,
+    text: `Dear ${name},\n\nThank you for applying for the ${jobTitle} position at Hindustan Projects!\n\nWe have successfully received your application. Our recruitment team will review it and get back to you within 24 hours.\n\nBest regards,\nHindustan Projects HR Team`,
+  }
+}
+
+/**
+ * Admin reminder email for overdue leads.
+ */
+export function leadFollowUpReminderTemplate({ leads, adminUrl }) {
+  const leadsRows = leads.map(lead => `
+    <tr style="border-bottom: 1px solid #e5e7eb;">
+      <td style="padding: 10px; font-size: 14px; font-weight: bold; color: #1A1A1A;">${lead.name}</td>
+      <td style="padding: 10px; font-size: 14px; color: #374151;"><a href="mailto:${lead.email}" style="color: #1A3E8C;">${lead.email}</a><br><span style="font-size: 12px; color: #6B7280;">${lead.phone || 'No phone'}</span></td>
+      <td style="padding: 10px; font-size: 14px; color: #374151;">${lead.serviceInterested || 'Not specified'}</td>
+      <td style="padding: 10px; font-size: 12px; color: #6B7280;">${new Date(lead.createdAt).toLocaleDateString()}</td>
+    </tr>
+  `).join('')
+
+  return {
+    subject: `⚠️ ACTION REQUIRED: ${leads.length} Unresolved Overdue Leads (>24h)`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 650px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <div style="background: #E31E24; padding: 20px; border-radius: 6px 6px 0 0; margin: -20px -20px 20px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 20px;">Overdue Leads Follow-Up Reminder</h1>
+          <p style="color: #ffcccc; margin: 4px 0 0; font-size: 14px;">The following leads have been NEW for over 24 hours</p>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+          <thead>
+            <tr style="background: #f3f4f6; text-align: left; border-bottom: 2px solid #e5e7eb;">
+              <th style="padding: 10px; font-size: 13px; color: #4B5563;">Name</th>
+              <th style="padding: 10px; font-size: 13px; color: #4B5563;">Contact</th>
+              <th style="padding: 10px; font-size: 13px; color: #4B5563;">Service</th>
+              <th style="padding: 10px; font-size: 13px; color: #4B5563;">Created</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${leadsRows}
+          </tbody>
+        </table>
+
+        <div style="margin-top: 30px; text-align: center;">
+          <a href="${adminUrl}" style="display: inline-block; background: #1A3E8C; color: white; padding: 12px 28px; border-radius: 6px; text-decoration: none; font-size: 15px; font-weight: 600; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">Open Admin Panel leads</a>
+        </div>
+      </div>
+    `,
+    text: `Follow-up reminder for ${leads.length} overdue leads. Direct Admin Link: ${adminUrl}`,
+  }
+}
+
+/**
+ * Admin reminder email for stale contacted leads.
+ */
+export function staleLeadFollowUpTemplate({ leads, adminUrl }) {
+  const leadsRows = leads.map(lead => `
+    <tr style="border-bottom: 1px solid #e5e7eb;">
+      <td style="padding: 10px; font-size: 14px; font-weight: bold; color: #1A1A1A;">${lead.name}</td>
+      <td style="padding: 10px; font-size: 14px; color: #374151;"><a href="mailto:${lead.email}" style="color: #1A3E8C;">${lead.email}</a></td>
+      <td style="padding: 10px; font-size: 14px; color: #374151;">${lead.serviceInterested || 'Not specified'}</td>
+      <td style="padding: 10px; font-size: 12px; color: #6B7280;">Last contact: ${new Date(lead.updatedAt).toLocaleDateString()}</td>
+    </tr>
+  `).join('')
+
+  return {
+    subject: `🕒 FOLLOW-UP REMINDER: ${leads.length} Stale Contacted Leads (>3 days)`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 650px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <div style="background: #1A3E8C; padding: 20px; border-radius: 6px 6px 0 0; margin: -20px -20px 20px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 20px;">Stale Leads Reminder</h1>
+          <p style="color: #93c5fd; margin: 4px 0 0; font-size: 14px;">These leads have been in CONTACTED status for more than 3 days</p>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+          <thead>
+            <tr style="background: #f3f4f6; text-align: left; border-bottom: 2px solid #e5e7eb;">
+              <th style="padding: 10px; font-size: 13px; color: #4B5563;">Name</th>
+              <th style="padding: 10px; font-size: 13px; color: #4B5563;">Email</th>
+              <th style="padding: 10px; font-size: 13px; color: #4B5563;">Service</th>
+              <th style="padding: 10px; font-size: 13px; color: #4B5563;">Status Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${leadsRows}
+          </tbody>
+        </table>
+
+        <div style="margin-top: 30px; text-align: center;">
+          <a href="${adminUrl}" style="display: inline-block; background: #E31E24; color: white; padding: 12px 28px; border-radius: 6px; text-decoration: none; font-size: 15px; font-weight: 600;">Open Admin Leads Dashboard</a>
+        </div>
+      </div>
+    `,
+    text: `Stale leads follow-up reminder for ${leads.length} leads. Admin link: ${adminUrl}`,
+  }
+}
+
+/**
+ * Weekly summary report email.
+ */
+export function weeklySummaryReportTemplate({ stats }) {
+  const serviceRows = Object.entries(stats.leadsByService).map(([srv, count]) => `
+    <tr>
+      <td style="padding: 6px 0; font-size: 14px; color: #374151;">${srv}</td>
+      <td style="padding: 6px 0; font-size: 14px; font-weight: bold; color: #1A1A1A; text-align: right;">${count}</td>
+    </tr>
+  `).join('')
+
+  const statusRows = Object.entries(stats.appsByStatus).map(([status, count]) => `
+    <tr>
+      <td style="padding: 6px 0; font-size: 14px; color: #374151;">${status}</td>
+      <td style="padding: 6px 0; font-size: 14px; font-weight: bold; color: #1A1A1A; text-align: right;">${count}</td>
+    </tr>
+  `).join('')
+
+  return {
+    subject: `📊 Weekly Summary Report — Hindustan Projects`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <div style="background: #1A3E8C; padding: 20px; border-radius: 6px 6px 0 0; margin: -20px -20px 20px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 22px;">Weekly Summary Report</h1>
+          <p style="color: #93c5fd; margin: 4px 0 0; font-size: 14px;">Performance breakdown for the past 7 days</p>
+        </div>
+
+        <div style="margin: 20px 0;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="background: #f0f4ff; padding: 15px; border-radius: 6px; text-align: center; border-left: 4px solid #1A3E8C; width: 45%;">
+                <p style="margin: 0; font-size: 13px; color: #4B5563; text-transform: uppercase;">New Leads</p>
+                <h2 style="margin: 5px 0 0; font-size: 28px; color: #1A3E8C;">${stats.totalNewLeads}</h2>
+              </td>
+              <td style="width: 10%;">&nbsp;</td>
+              <td style="background: #fff0f0; padding: 15px; border-radius: 6px; text-align: center; border-left: 4px solid #E31E24; width: 45%;">
+                <p style="margin: 0; font-size: 13px; color: #4B5563; text-transform: uppercase;">Job Apps</p>
+                <h2 style="margin: 5px 0 0; font-size: 28px; color: #E31E24;">${stats.totalNewApplications}</h2>
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <h3 style="color: #1A3E8C; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; margin-top: 25px;">Breakdown of Leads by Service</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+          ${serviceRows || '<tr><td style="color: #6B7280; font-size: 14px; padding: 10px 0;">No new leads this week</td></tr>'}
+        </table>
+
+        <h3 style="color: #1A3E8C; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; margin-top: 25px;">Breakdown of Job Applications by Status</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+          ${statusRows || '<tr><td style="color: #6B7280; font-size: 14px; padding: 10px 0;">No active job applications</td></tr>'}
+        </table>
+
+        <p style="margin-top: 30px; font-size: 12px; color: #9ca3af; text-align: center; border-top: 1px solid #e5e7eb; padding-top: 15px;">
+          This automated report was generated by Hindustan Projects.
+        </p>
+      </div>
+    `,
+    text: `Weekly Summary: New Leads: ${stats.totalNewLeads}, Job Apps: ${stats.totalNewApplications}`,
+  }
+}
+
+/**
+ * Backup failure alert email.
+ */
+export function dbBackupFailureTemplate({ error }) {
+  return {
+    subject: `🚨 CRITICAL ALERT: Database Backup Failure`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #fecaca; border-radius: 8px;">
+        <div style="background: #dc2626; padding: 20px; border-radius: 6px 6px 0 0; margin: -20px -20px 20px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 20px;">Database Backup Failed</h1>
+          <p style="color: #fecaca; margin: 4px 0 0; font-size: 14px;">Immediate administrator attention required</p>
+        </div>
+
+        <p style="font-size: 15px; color: #1a1a1a; margin-top: 20px;">
+          The nightly automated database backup failed to complete successfully. Below is the error trace captured by the system:
+        </p>
+
+        <div style="background: #fef2f2; padding: 15px; border-radius: 6px; border-left: 4px solid #dc2626; margin: 15px 0;">
+          <code style="font-size: 13px; color: #991b1b; word-break: break-all;">${error}</code>
+        </div>
+
+        <p style="font-size: 14px; color: #4B5563;">
+          Please inspect the application logs on the Render Dashboard to diagnose connection timeouts, server memory exhaustion, or SMTP issues.
+        </p>
+      </div>
+    `,
+    text: `CRITICAL: Nightly database backup failed. Error: ${error}`,
   }
 }

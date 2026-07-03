@@ -55,6 +55,7 @@ model Project {
   liveUrl      String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  socialDrafts SocialPostDraft[]
 
   @@index([slug])
   @@index([isFeatured])
@@ -378,5 +379,42 @@ model ActivityLog {
   @@index([adminId])
   @@index([createdAt])
   @@map("activity_logs")
+}
+
+// ─────────────────────────────────────────────────────────────────
+// SocialPostDraft — Pre-formatted social drafts for featured projects
+// ─────────────────────────────────────────────────────────────────
+enum SocialPostStatus {
+  DRAFT
+  POSTED
+}
+
+model SocialPostDraft {
+  id        String           @id @default(cuid())
+  projectId String
+  project   Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  text      String
+  status    SocialPostStatus @default(DRAFT)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([projectId])
+  @@map("social_post_drafts")
+}
+
+// ─────────────────────────────────────────────────────────────────
+// ChatbotInquiry — User questions captured via public FAQ Chatbot
+// ─────────────────────────────────────────────────────────────────
+model ChatbotInquiry {
+  id         String   @id @default(cuid())
+  question   String
+  answer     String?
+  isAnswered Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([isAnswered])
+  @@index([createdAt])
+  @@map("chatbot_inquiries")
 }
 

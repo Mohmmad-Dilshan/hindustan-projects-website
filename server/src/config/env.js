@@ -19,6 +19,10 @@ export const env = {
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
   INTEGRATION_MASTER_KEY: process.env.INTEGRATION_MASTER_KEY,
   RESEND_API_KEY: process.env.RESEND_API_KEY,
+  TWILIO_ACCOUNT_SID: process.env.TWILIO_ACCOUNT_SID,
+  TWILIO_AUTH_TOKEN: process.env.TWILIO_AUTH_TOKEN,
+  TWILIO_WHATSAPP_FROM: process.env.TWILIO_WHATSAPP_FROM,
+  ADMIN_WHATSAPP_TO: process.env.ADMIN_WHATSAPP_TO,
 }
 
 // Validate required env vars at startup

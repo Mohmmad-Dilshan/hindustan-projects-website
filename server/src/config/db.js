@@ -1309,6 +1309,75 @@ for (const modelKey of Object.keys(mockPrisma)) {
   }
 }
 
+// Add mock models for SocialPostDraft and ChatbotInquiry
+let mockSocialPostDrafts = []
+let mockChatbotInquiries = []
+
+mockPrisma.socialPostDraft = {
+  findMany: async (args) => {
+    let list = mockSocialPostDrafts
+    if (args?.where?.projectId) list = list.filter((d) => d.projectId === args.where.projectId)
+    if (args?.where?.status) list = list.filter((d) => d.status === args.where.status)
+    return applyPagination(list, args)
+  },
+  findUnique: async (args) => mockSocialPostDrafts.find((d) => d.id === args.where.id) || null,
+  count: async (args) => mockSocialPostDrafts.length,
+  create: async (args) => {
+    const item = { id: `draft-${Date.now()}`, ...args.data, status: 'DRAFT', createdAt: new Date(), updatedAt: new Date() }
+    mockSocialPostDrafts.push(item)
+    return item
+  },
+  update: async (args) => {
+    const idx = mockSocialPostDrafts.findIndex((d) => d.id === args.where.id)
+    if (idx !== -1) {
+      mockSocialPostDrafts[idx] = { ...mockSocialPostDrafts[idx], ...args.data, updatedAt: new Date() }
+      return mockSocialPostDrafts[idx]
+    }
+    throw new Error('Draft not found')
+  },
+  delete: async (args) => {
+    const idx = mockSocialPostDrafts.findIndex((d) => d.id === args.where.id)
+    if (idx !== -1) {
+      const deleted = mockSocialPostDrafts[idx]
+      mockSocialPostDrafts = mockSocialPostDrafts.filter((d) => d.id !== args.where.id)
+      return deleted
+    }
+    throw new Error('Draft not found')
+  }
+}
+
+mockPrisma.chatbotInquiry = {
+  findMany: async (args) => {
+    let list = mockChatbotInquiries
+    if (args?.where?.isAnswered !== undefined) list = list.filter((i) => i.isAnswered === args.where.isAnswered)
+    return applyPagination(list, args)
+  },
+  findUnique: async (args) => mockChatbotInquiries.find((i) => i.id === args.where.id) || null,
+  count: async (args) => mockChatbotInquiries.length,
+  create: async (args) => {
+    const item = { id: `chat-${Date.now()}`, ...args.data, isAnswered: false, createdAt: new Date(), updatedAt: new Date() }
+    mockChatbotInquiries.push(item)
+    return item
+  },
+  update: async (args) => {
+    const idx = mockChatbotInquiries.findIndex((i) => i.id === args.where.id)
+    if (idx !== -1) {
+      mockChatbotInquiries[idx] = { ...mockChatbotInquiries[idx], ...args.data, updatedAt: new Date() }
+      return mockChatbotInquiries[idx]
+    }
+    throw new Error('Inquiry not found')
+  },
+  delete: async (args) => {
+    const idx = mockChatbotInquiries.findIndex((i) => i.id === args.where.id)
+    if (idx !== -1) {
+      const deleted = mockChatbotInquiries[idx]
+      mockChatbotInquiries = mockChatbotInquiries.filter((i) => i.id !== args.where.id)
+      return deleted
+    }
+    throw new Error('Inquiry not found')
+  }
+}
+
 // ── Smart Connection Resolver ───────────────────────────────
 let activeClient = realPrisma
 

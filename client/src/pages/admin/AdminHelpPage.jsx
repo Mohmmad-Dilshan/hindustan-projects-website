@@ -281,6 +281,49 @@ export default function AdminHelpPage() {
         },
       ],
     },
+    {
+      id: 'automations',
+      title: 'Automation & Scheduled Tasks',
+      subtitle: 'Understand background crons, alerts, backup files, and chatbots',
+      icon: Cpu,
+      steps: [
+        {
+          num: '1',
+          title: 'Auto Lead Follow-Up',
+          desc: 'Runs every 6 hours ("0 */6 * * *"). Scans for NEW leads older than 24 hours and sends a follow-up warning email to the admin.',
+        },
+        {
+          num: '2',
+          title: 'WhatsApp Alerts',
+          desc: 'Sends instant WhatsApp notifications containing details (name, contact info, role/service) to the admin’s phone whenever a lead or career application is submitted.',
+        },
+        {
+          num: '3',
+          title: 'Weekly Summary Report',
+          desc: 'Dispatched every Monday morning at 9:00 AM ("0 9 * * 1"). Compiles total weekly leads, career applications, and service category breakdowns.',
+        },
+        {
+          num: '4',
+          title: 'Stale Leads Follow-Up',
+          desc: 'Runs daily at 8:00 AM ("0 8 * * *"). Reminds the admin to reach out to leads who have been stuck in the CONTACTED stage for over 3 days.',
+        },
+        {
+          num: '5',
+          title: 'Nightly Backup & Alerts',
+          desc: 'Dispatched daily at 2:00 AM ("0 2 * * *"). Compiles a full JSON database snapshot and attaches it to the admin email. If the job fails, it sends an immediate alarm email.',
+        },
+        {
+          num: '6',
+          title: 'Social Drafts Generator',
+          desc: 'When saving a project as Featured, the system generates pre-formatted post drafts. You can copy, edit, and mark these drafts as posted directly on the Dashboard.',
+        },
+        {
+          num: '7',
+          title: 'FAQ Chatbot Widget',
+          desc: 'Answers public website users rule-based pricing/business hours/contact questions. Captured user entries are logged for admin review.',
+        },
+      ],
+    },
   ]
 
   return (

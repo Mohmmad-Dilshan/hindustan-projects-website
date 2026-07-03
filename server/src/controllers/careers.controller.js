@@ -208,6 +208,14 @@ export const submitApplication = async (req, res, next) => {
       },
     })
 
+    // ── Send WhatsApp Notification to Admin (non-blocking) ──
+    const { sendWhatsAppNotification } = await import('../utils/whatsapp.js')
+    const whatsappBody = `💼 *New Job Application!*\n*Role:* ${job.title}\n*Name:* ${fullName}\n*Email:* ${email}\n*Phone:* ${phone}\n*Resume:* ${resumeUrl}`
+    
+    sendWhatsAppNotification(whatsappBody).catch((err) =>
+      console.error('[WhatsApp] Job application notification trigger failed:', err.message)
+    )
+
     // ── Send Email Notifications ─────────────────────────────────
     // 1. Email to Admin
     const adminEmail = env.ADMIN_EMAIL || 'info@hindustanprojects.com'

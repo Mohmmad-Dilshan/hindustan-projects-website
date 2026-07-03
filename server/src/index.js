@@ -1,5 +1,6 @@
 import './config/env.js' // load & validate env vars first
 import { logger } from './utils/logger.js'
+import { initScheduler } from './config/scheduler.js'
 
 // ── Process-Level Crash Protection ─────────────────────────────
 process.on('uncaughtException', (error) => {
@@ -77,6 +78,9 @@ const startServer = async () => {
 
     // Load admin-saved integration keys from DB
     await loadIntegrationConfig()
+
+    // Initialize cron automation scheduler
+    initScheduler()
 
     app.listen(env.PORT, () => {
       logger.info(`Server running on http://localhost:${env.PORT} [${env.NODE_ENV}]`)

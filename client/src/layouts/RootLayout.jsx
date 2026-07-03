@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import PageTransition from '@/components/ui/PageTransition'
+import { ChatbotWidget } from '@/components/chatbot/ChatbotWidget'
 
 import { useSiteSettings } from '@/hooks/useContent'
 
@@ -38,13 +39,13 @@ export default function RootLayout() {
       </main>
       <Footer />
 
-      {/* Floating WhatsApp Chat Widget */}
+      {/* Floating WhatsApp Chat Widget (moved to bottom-24) */}
       <a
         href={`https://wa.me/${whatsappNum}?text=${encodeURIComponent(cfg.whatsappMessage || 'Hi! I visited your website and want to discuss a project.')}`}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat on WhatsApp"
-        className="fixed bottom-6 right-6 z-50 bg-[#25D366] hover:bg-[#20ba5a] text-white p-3.5 rounded-full shadow-[0_8px_30px_rgba(37,211,102,0.4)] hover:scale-115 active:scale-95 transition-all duration-300 group flex items-center justify-center cursor-pointer"
+        className="fixed bottom-24 right-6 z-50 bg-[#25D366] hover:bg-[#20ba5a] text-white p-3.5 rounded-full shadow-[0_8px_30px_rgba(37,211,102,0.4)] hover:scale-115 active:scale-95 transition-all duration-300 group flex items-center justify-center cursor-pointer"
       >
         {/* Pulsing ring animation */}
         <span className="absolute inset-0 rounded-full bg-[#25D366]/50 animate-ping opacity-75 -z-10" />
@@ -59,6 +60,9 @@ export default function RootLayout() {
           WhatsApp
         </span>
       </a>
+
+      {/* Public FAQ Chatbot widget */}
+      <ChatbotWidget />
     </div>
   )
 }

@@ -112,6 +112,14 @@ export const submitContact = async (req, res, next) => {
 
     const emailTarget = env.EMAIL_FROM ? env.EMAIL_FROM.replace(/.*<(.+)>/, '$1') : env.EMAIL_USER
 
+    // ── 6. Send WhatsApp Notification to Admin (non-blocking) ──
+    const { sendWhatsAppNotification } = await import('../utils/whatsapp.js')
+    const whatsappBody = `🆕 *New Lead Received!*\n*Name:* ${name}\n*Email:* ${email}\n*Phone:* ${phone || 'Not provided'}\n*Service:* ${serviceInterested || 'Not specified'}\n*Message:* ${message.slice(0, 100)}${message.length > 100 ? '...' : ''}`
+    
+    sendWhatsAppNotification(whatsappBody).catch((err) =>
+      console.error('[WhatsApp] Notification trigger failed:', err.message)
+    )
+
     // Fire-and-forget with error logging
     Promise.all([
       emailTarget

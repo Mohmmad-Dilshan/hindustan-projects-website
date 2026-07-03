@@ -27,6 +27,7 @@ import {
 } from 'lucide-react'
 import { api } from '@/utils/api'
 import { SEO } from '@/components/ui'
+import { SocialDraftsSection } from '@/components/admin/SocialDraftsSection'
 
 function StatCard({ icon: Icon, label, value, color, bg, to, trend }) {
   const inner = (
@@ -559,6 +560,9 @@ export default function AdminDashboardPage() {
             </ul>
           </div>
         </div>
+
+        {/* Automated Social Media Drafts */}
+        <SocialDraftsSection />
       </div>
     </>
   )

@@ -20,6 +20,8 @@ import contentRouter from './routes/content.route.js'
 import sitemapRouter from './routes/sitemap.route.js'
 import careersRouter from './routes/careers.route.js'
 import backupRouter from './routes/backup.route.js'
+import socialRouter from './routes/social.route.js'
+import chatbotRouter from './routes/chatbot.route.js'
 import { hideAdminRoutes } from './middleware/auth.js'
 
 const app = express()
@@ -65,6 +67,8 @@ app.use('/api/upload', hideAdminRoutes, uploadRouter)
 app.use('/api/testimonials', testimonialsRouter)
 app.use('/api/careers', careersRouter)
 app.use('/api/admin/backup', hideAdminRoutes, backupRouter)
+app.use('/api/admin/social', hideAdminRoutes, socialRouter)
+app.use('/api/chatbot', chatbotRouter)
 app.use('/api', contentRouter)
 app.use('/sitemap.xml', sitemapRouter)
 app.get('/sitemap.xml', sitemapRouter)

@@ -3,6 +3,33 @@
  */
 import prisma from '../config/db.js'
 
+/**
+ * Automatically generates a pre-formatted social media post draft when a project is marked featured.
+ */
+async function generateSocialDraft(project) {
+  if (!project.isFeatured) return
+
+  // Check if a draft already exists for this project
+  const existing = await prisma.socialPostDraft.findFirst({
+    where: { projectId: project.id },
+  })
+  if (existing) return
+
+  const techHashtags = project.technologies && project.technologies.length > 0
+    ? project.technologies.map((t) => `#${t.replace(/[^a-zA-Z0-9]/g, '')}`).join(' ')
+    : '#TechSolutions'
+
+  const caption = `🚀 NEW FEATURED PROJECT: ${project.title} 🚀\n\nWe are thrilled to showcase our latest work! We recently delivered this high-performance ${project.category} solution for our esteemed client, ${project.clientName}.\n\n🛠️ Technologies: ${project.technologies?.join(', ') || 'Modern Stack'}\n\n🔗 Live link: ${project.liveUrl || 'https://hindustanprojects.com'}\n\n#HindustanProjects #WebDevelopment #SoftwareEngineering #Portfolio ${techHashtags}`
+
+  await prisma.socialPostDraft.create({
+    data: {
+      projectId: project.id,
+      text: caption,
+      status: 'DRAFT',
+    },
+  })
+}
+
 export const listProjects = async (_req, res, next) => {
   try {
     const projects = await prisma.project.findMany({ orderBy: { createdAt: 'desc' } })
@@ -40,6 +67,11 @@ export const createProject = async (req, res, next) => {
         liveUrl,
       },
     })
+    if (project.isFeatured) {
+      await generateSocialDraft(project).catch((err) =>
+        console.error('[SocialDraft] Generation failed:', err.message)
+      )
+    }
     res.status(201).json({ status: 'ok', data: project })
   } catch (err) {
     next(err)
@@ -50,6 +82,11 @@ export const updateProject = async (req, res, next) => {
   try {
     const { id } = req.params
     const project = await prisma.project.update({ where: { id }, data: req.body })
+    if (project.isFeatured) {
+      await generateSocialDraft(project).catch((err) =>
+        console.error('[SocialDraft] Generation failed:', err.message)
+      )
+    }
     res.json({ status: 'ok', data: project })
   } catch (err) {
     next(err)

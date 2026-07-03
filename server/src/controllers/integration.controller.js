@@ -30,6 +30,7 @@ const MASKED_KEYS = new Set([
   'sys_database_url',
   'sys_jwt_secret',
   'sys_resend_api_key',
+  'sys_twilio_auth_token',
 ])
 
 // Maps DB keys → process.env variable names
@@ -46,6 +47,10 @@ const ENV_MAP = {
   sys_database_url: 'DATABASE_URL',
   sys_jwt_secret: 'JWT_SECRET',
   sys_resend_api_key: 'RESEND_API_KEY',
+  sys_twilio_account_sid: 'TWILIO_ACCOUNT_SID',
+  sys_twilio_auth_token: 'TWILIO_AUTH_TOKEN',
+  sys_twilio_whatsapp_from: 'TWILIO_WHATSAPP_FROM',
+  sys_admin_whatsapp_to: 'ADMIN_WHATSAPP_TO',
 }
 
 // All integration keys we manage
@@ -87,6 +92,12 @@ export const getIntegrationConfig = async (_req, res, next) => {
       recaptcha: !!rows.find((r) => r.key === 'sys_recaptcha_secret_key')?.value,
       database: !!rows.find((r) => r.key === 'sys_database_url')?.value,
       jwt: !!rows.find((r) => r.key === 'sys_jwt_secret')?.value,
+      twilio: !!(
+        config.sys_twilio_account_sid &&
+        config.sys_twilio_whatsapp_from &&
+        config.sys_admin_whatsapp_to &&
+        rows.find((r) => r.key === 'sys_twilio_auth_token')?.value
+      ),
     }
 
     res.json({ status: 'ok', data: config })

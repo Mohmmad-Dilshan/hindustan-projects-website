@@ -363,6 +363,10 @@ export default function AdminIntegrationPage() {
           sys_recaptcha_secret_key: data.sys_recaptcha_secret_key || '',
           sys_database_url: data.sys_database_url || '',
           sys_jwt_secret: data.sys_jwt_secret || '',
+          sys_twilio_account_sid: data.sys_twilio_account_sid || '',
+          sys_twilio_auth_token: data.sys_twilio_auth_token || '',
+          sys_twilio_whatsapp_from: data.sys_twilio_whatsapp_from || '',
+          sys_admin_whatsapp_to: data.sys_admin_whatsapp_to || '',
         }
       : {},
   })
@@ -709,6 +713,61 @@ export default function AdminIntegrationPage() {
                     need to be kept secret.
                   </p>
                 </div>
+              </Section>
+
+              {/* ── Twilio WhatsApp ── */}
+              <Section
+                icon={Plug}
+                title="Twilio WhatsApp — Automation Alerts"
+                accentColor="blue"
+                badge={<StatusBadge active={status.twilio} />}
+              >
+                <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3 flex items-start gap-2 text-xs text-blue-700">
+                  <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                  <span>
+                    Used to send WhatsApp notifications for new leads and career applications. Get your sandbox/production credentials from{' '}
+                    <a
+                      href="https://console.twilio.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline font-semibold inline-flex items-center gap-0.5"
+                    >
+                      console.twilio.com <ExternalLink className="w-3 h-3" />
+                    </a>. Leave them empty to disable WhatsApp alerts.
+                  </span>
+                </div>
+
+                <PlainInput
+                  label="Twilio Account SID"
+                  name="sys_twilio_account_sid"
+                  placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                  register={register}
+                  description="Your primary Twilio Account Identifier."
+                />
+
+                <SecretInput
+                  label="Twilio Auth Token"
+                  name="sys_twilio_auth_token"
+                  placeholder="Leave blank to keep existing"
+                  register={register}
+                  description="Your secret authentication token. Stored encrypted."
+                />
+
+                <PlainInput
+                  label="Twilio WhatsApp From Number"
+                  name="sys_twilio_whatsapp_from"
+                  placeholder="whatsapp:+14155238886"
+                  register={register}
+                  description="Your Twilio Sandbox number or approved WhatsApp Business sender. Must start with whatsapp:."
+                />
+
+                <PlainInput
+                  label="Admin Target WhatsApp Number"
+                  name="sys_admin_whatsapp_to"
+                  placeholder="whatsapp:+919876543210"
+                  register={register}
+                  description="The administrator's WhatsApp number to receive notifications. Must start with whatsapp:."
+                />
               </Section>
 
               {/* ── Database ── */}

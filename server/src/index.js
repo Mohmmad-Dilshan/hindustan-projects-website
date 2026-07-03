@@ -26,6 +26,10 @@ const INTEGRATION_ENV_MAP = {
   sys_smtp_pass: 'EMAIL_PASS',
   sys_smtp_from: 'EMAIL_FROM',
   sys_recaptcha_secret_key: 'RECAPTCHA_SECRET_KEY',
+  sys_twilio_account_sid: 'TWILIO_ACCOUNT_SID',
+  sys_twilio_auth_token: 'TWILIO_AUTH_TOKEN',
+  sys_twilio_whatsapp_from: 'TWILIO_WHATSAPP_FROM',
+  sys_admin_whatsapp_to: 'ADMIN_WHATSAPP_TO',
 }
 
 /**

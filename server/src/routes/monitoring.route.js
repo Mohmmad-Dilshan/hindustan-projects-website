@@ -4,6 +4,7 @@ import {
   trackPageVisit,
   getMonitoringStats,
   deleteErrorLog,
+  deleteAllErrorLogs,
   logFrontendError,
 } from '../controllers/monitoring.controller.js'
 import { verifyToken, requireRole } from '../middleware/auth.js'
@@ -42,6 +43,13 @@ router.delete(
   verifyToken,
   requireRole('SUPER_ADMIN'),
   deleteErrorLog
+)
+
+router.delete(
+  '/admin/monitoring/errors',
+  verifyToken,
+  requireRole('SUPER_ADMIN'),
+  deleteAllErrorLogs
 )
 
 export default router

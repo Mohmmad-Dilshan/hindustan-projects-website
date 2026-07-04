@@ -149,6 +149,15 @@ export const deleteErrorLog = async (req, res, next) => {
   }
 }
 
+export const deleteAllErrorLogs = async (req, res, next) => {
+  try {
+    await prisma.errorLog.deleteMany({})
+    res.json({ status: 'ok', message: 'All error logs deleted successfully' })
+  } catch (err) {
+    next(err)
+  }
+}
+
 /**
  * POST /api/admin/monitoring/log-frontend-error
  * Endpoint for reporting frontend client rendering/runtime crashes.

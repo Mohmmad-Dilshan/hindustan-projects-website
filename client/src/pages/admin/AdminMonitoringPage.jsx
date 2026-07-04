@@ -48,6 +48,20 @@ export default function AdminMonitoringPage() {
     },
   })
 
+  // 3. Clear all errors mutation
+  const clearAllMutation = useMutation({
+    mutationFn: () => api.delete('/admin/monitoring/errors'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['monitoring-stats'] })
+    },
+  })
+
+  const handleClearAll = () => {
+    if (window.confirm('Are you sure you want to permanently delete ALL error log entries?')) {
+      clearAllMutation.mutate()
+    }
+  }
+
   const stats = data || {}
   const errorLogs = stats.errorLogs || []
   const traffic = stats.traffic || { today: 0, week: 0, month: 0, popularPages: [], chartData: [] }
@@ -307,7 +321,7 @@ export default function AdminMonitoringPage() {
             <div className="space-y-4">
               {/* Filter controls */}
               <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-white p-4 rounded-xl border border-gray-200">
-                <div className="flex gap-2 w-full sm:w-auto">
+                <div className="flex flex-wrap gap-2 w-full sm:w-auto items-center">
                   {['ALL', 'FRONTEND', 'BACKEND'].map((filter) => (
                     <button
                       key={filter}
@@ -321,6 +335,18 @@ export default function AdminMonitoringPage() {
                       {filter}
                     </button>
                   ))}
+
+                  {/* Clear All Logs Button */}
+                  {errorLogs.length > 0 && (
+                    <button
+                      onClick={handleClearAll}
+                      disabled={clearAllMutation.isPending}
+                      className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg cursor-pointer transition-colors disabled:opacity-50"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Clear All ({errorLogs.length})
+                    </button>
+                  )}
                 </div>
                 <div className="relative w-full sm:max-w-xs">
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">

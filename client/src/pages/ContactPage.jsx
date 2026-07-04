@@ -446,8 +446,15 @@ export default function ContactPage() {
                   <iframe
                     title="Hindustan Projects Office Location — Bhilwara, Rajasthan"
                     src={
-                      cfg.googleMapUrl ||
-                      'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d57692.35!2d74.6!3d25.35!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3968a5!2sBhilwara%2C+Rajasthan!5e0!3m2!1sen!2sin!4v1'
+                      (() => {
+                        const raw = cfg.googleMapUrl;
+                        if (!raw) return 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d57692.35!2d74.6!3d25.35!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3968a5!2sBhilwara%2C+Rajasthan!5e0!3m2!1sen!2sin!4v1';
+                        if (raw.includes('src="')) {
+                          const match = raw.match(/src="([^"]+)"/);
+                          return match && match[1] ? match[1] : raw;
+                        }
+                        return raw;
+                      })()
                     }
                     width="100%"
                     height="100%"

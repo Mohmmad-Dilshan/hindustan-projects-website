@@ -134,9 +134,14 @@ export default function FeaturedProjects() {
                         <Badge variant="blue" className="mb-2.5">
                           {p.category}
                         </Badge>
-                        <h3 className="font-heading text-base font-bold text-brand-blue group-hover:text-brand-blue-light transition-colors duration-200 mb-1">
-                          {p.title}
-                        </h3>
+                        <div className="flex items-start justify-between gap-4 mb-1">
+                          <h3 className="font-heading text-base font-bold text-brand-blue group-hover:text-brand-blue-light transition-colors duration-200">
+                            {p.title}
+                          </h3>
+                          <span className="shrink-0 inline-flex items-center gap-1 text-xs font-bold text-brand-red group-hover:translate-x-0.5 transition-transform duration-200 mt-0.5">
+                            View <ArrowRight className="w-3.5 h-3.5" />
+                          </span>
+                        </div>
                         <p className="text-xs text-text-muted">{p.clientName}</p>
                       </div>
                     </Card>

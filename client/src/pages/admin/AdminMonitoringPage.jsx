@@ -468,7 +468,7 @@ export default function AdminMonitoringPage() {
                 <div className="divide-y divide-gray-100">
                   <div className="px-6 py-4 flex items-center justify-between text-sm">
                     <span className="text-gray-500 font-medium">Node Runtime Version</span>
-                    <span className="font-mono text-gray-800">{health.nodeVersion ?? '—'}</span>
+                      <span className="font-mono text-gray-800">{health.nodeVersion ?? '—'}</span>
                   </div>
                   <div className="px-6 py-4 flex items-center justify-between text-sm">
                     <span className="text-gray-500 font-medium">Operating System Platform</span>

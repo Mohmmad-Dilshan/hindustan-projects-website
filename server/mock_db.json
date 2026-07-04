@@ -402,7 +402,7 @@
     "role": "SUPER_ADMIN",
     "loginAttempts": 0,
     "lockoutUntil": null,
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluLW1vY2stMSIsImlhdCI6MTc4MzA5MzM5NiwiZXhwIjoxNzgzNjk4MTk2fQ.vsPTAXXDMjctZQ5XlfAiK6yT4E7EJyzoeoyq2-Afra8",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluLW1vY2stMSIsImlhdCI6MTc4MzA5NTYxMCwiZXhwIjoxNzgzNzAwNDEwfQ.K3-m7PZD1szcHOF6ZRF7VaFjXbZWsVd7Nk4DGoh4Q_U",
     "twoFactorSecret": null,
     "twoFactorEnabled": false
   },
@@ -591,6 +591,15 @@
       "entity": "WorkTask",
       "details": "Updated task 'Build Backend Controllers & Routes' (Status: IN_PROGRESS)",
       "createdAt": "2026-07-03T15:44:56.216Z"
+    },
+    {
+      "id": "act-1783095610617",
+      "adminId": "admin-mock-1",
+      "adminEmail": "admin@hindustanprojects.com",
+      "action": "LOGIN_ATTEMPT",
+      "entity": "Admin",
+      "details": "Successful credentials check from IP ::1",
+      "createdAt": "2026-07-03T16:20:10.617Z"
     }
   ],
   "mockSocialPostDrafts": [],
@@ -611,6 +620,30 @@
       "path": "/services",
       "referrer": "http://localhost:5173/services",
       "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "ipHash": "cebd1d5dedda3fb7981967654fc3792302251615f006d39d59b6bc8cb50d7dfc"
+    },
+    {
+      "id": "visit-1783095862808",
+      "createdAt": "2026-07-03T16:24:22.808Z",
+      "path": "/services",
+      "referrer": null,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0",
+      "ipHash": "cebd1d5dedda3fb7981967654fc3792302251615f006d39d59b6bc8cb50d7dfc"
+    },
+    {
+      "id": "visit-1783095872985",
+      "createdAt": "2026-07-03T16:24:32.985Z",
+      "path": "/about",
+      "referrer": null,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0",
+      "ipHash": "cebd1d5dedda3fb7981967654fc3792302251615f006d39d59b6bc8cb50d7dfc"
+    },
+    {
+      "id": "visit-1783095881309",
+      "createdAt": "2026-07-03T16:24:41.309Z",
+      "path": "/",
+      "referrer": null,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0",
       "ipHash": "cebd1d5dedda3fb7981967654fc3792302251615f006d39d59b6bc8cb50d7dfc"
     }
   ]

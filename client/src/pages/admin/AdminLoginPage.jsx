@@ -30,12 +30,16 @@ export default function AdminLoginPage() {
   const [otpError, setOtpError] = useState('')
   const [otpLoading, setOtpLoading] = useState(false)
 
-  const isValidSecret = adminSecret && adminSecret.startsWith('admin-')
+  const isValidSecret =
+    adminSecret &&
+    adminSecret.startsWith('admin-') &&
+    adminSecret.length > 6 &&
+    adminSecret !== 'admin-invalid'
   const secretPath = isValidSecret ? adminSecret.slice(6).replace(/[./\s]+$/, '') : ''
 
   // Store secretPath on mount to remember it for future redirects
   useEffect(() => {
-    if (secretPath) {
+    if (secretPath && secretPath !== 'invalid') {
       localStorage.setItem('admin_secret_path', secretPath)
     }
   }, [secretPath])

@@ -221,9 +221,13 @@ export default function AdminLayout() {
   }, [navigate])
 
   const handleLogout = async () => {
-    const secretPath = localStorage.getItem('admin_secret_path') || 'invalid'
+    const secretPath = localStorage.getItem('admin_secret_path')
     await api.post('/admin/logout', {})
-    navigate(`/admin-${secretPath}`, { replace: true })
+    if (secretPath && secretPath !== 'invalid') {
+      navigate(`/admin-${secretPath}`, { replace: true })
+    } else {
+      navigate('/', { replace: true })
+    }
   }
 
   if (!admin) {

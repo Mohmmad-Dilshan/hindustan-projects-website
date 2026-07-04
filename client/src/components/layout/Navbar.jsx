@@ -87,7 +87,7 @@ export default function Navbar() {
 
   useEffect(() => {
     const onResize = () => {
-      if (window.innerWidth >= 768) setMenuOpen(false)
+      if (window.innerWidth >= 1024) setMenuOpen(false)
     }
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
@@ -126,7 +126,7 @@ export default function Navbar() {
     >
       <Container>
         <nav
-          className="flex items-center justify-between h-16 md:h-18"
+          className="flex items-center justify-between h-16 lg:h-18"
           aria-label="Main navigation"
         >
           {/* ── Logo ── */}
@@ -135,7 +135,7 @@ export default function Navbar() {
           </Link>
 
           {/* ── Desktop nav links ── */}
-          <ul className="hidden md:flex items-center gap-1" role="list">
+          <ul className="hidden lg:flex items-center gap-1" role="list">
             {NAV_LINKS.map((link) => (
               <li key={link.href}>
                 <Link
@@ -169,7 +169,7 @@ export default function Navbar() {
           </ul>
 
           {/* ── Desktop CTA ── */}
-          <div className="hidden md:block">
+          <div className="hidden lg:block">
             <Button variant="primary" size="sm" as={Link} to="/contact">
               Get a Quote
             </Button>
@@ -179,7 +179,7 @@ export default function Navbar() {
           <button
             type="button"
             onClick={() => setMenuOpen((o) => !o)}
-            className={`md:hidden p-2 rounded-md transition-all duration-150 active:scale-95 focus-visible:outline-none
+            className={`lg:hidden p-2 rounded-md transition-all duration-150 active:scale-95 focus-visible:outline-none
               focus-visible:ring-2 ${
                 isTransparent
                   ? 'text-white hover:bg-white/10 focus-visible:ring-white'
@@ -208,7 +208,7 @@ export default function Navbar() {
       {/* ── Mobile menu ── */}
       <div
         id="mobile-menu"
-        className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+        className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${
           menuOpen ? 'max-h-96 border-t border-gray-100/50 bg-bg-base' : 'max-h-0'
         }`}
       >

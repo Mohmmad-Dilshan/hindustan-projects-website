@@ -115,6 +115,7 @@ export default function AdminLayout() {
   const [admin, setAdmin] = useState(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
+  const [avatarOpen, setAvatarOpen] = useState(false)
 
   const currentTitle = PAGE_TITLES[location.pathname] || 'Admin'
 
@@ -415,12 +416,64 @@ export default function AdminLayout() {
             >
               View Site →
             </a>
-            {/* Avatar */}
-            <div
-              className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-blue to-[#0f2660]
-              flex items-center justify-center text-white font-bold text-sm border-2 border-white shadow-sm"
-            >
-              {admin.email[0].toUpperCase()}
+            {/* Avatar Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setAvatarOpen(!avatarOpen)}
+                className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-blue to-[#0f2660]
+                flex items-center justify-center text-white font-bold text-sm border-2 border-white shadow-sm
+                hover:opacity-90 transition-opacity focus:outline-none"
+              >
+                {admin.email[0].toUpperCase()}
+              </button>
+
+              {avatarOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden flex flex-col py-1">
+                  {/* Profile Header */}
+                  <div className="px-4 py-2.5 border-b border-gray-50">
+                    <p className="text-xs font-bold text-gray-800 truncate">{admin.email}</p>
+                    <p className="text-[10px] font-semibold text-slate-400 uppercase mt-0.5 tracking-wider">
+                      {admin.role === 'SUPER_ADMIN' ? 'Super Admin' : 'Administrator'}
+                    </p>
+                  </div>
+
+                  {/* Links */}
+                  <button
+                    onClick={() => {
+                      setAvatarOpen(false)
+                      navigate('/admin/settings')
+                    }}
+                    className="w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                  >
+                    <Settings className="w-3.5 h-3.5 text-gray-400" />
+                    Account Settings
+                  </button>
+                  <button
+                    onClick={() => {
+                      setAvatarOpen(false)
+                      navigate('/admin/help')
+                    }}
+                    className="w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                  >
+                    <BookOpen className="w-3.5 h-3.5 text-gray-400" />
+                    Help & Guide
+                  </button>
+
+                  <div className="border-t border-gray-50 my-1" />
+
+                  {/* Logout */}
+                  <button
+                    onClick={() => {
+                      setAvatarOpen(false)
+                      handleLogout()
+                    }}
+                    className="w-full text-left px-4 py-2 text-xs text-red-600 hover:bg-red-50/50 transition-colors flex items-center gap-2"
+                  >
+                    <LogOut className="w-3.5 h-3.5 text-red-500" />
+                    Log Out
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </header>

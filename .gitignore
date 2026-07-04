@@ -15,6 +15,9 @@ build/
 # Prisma
 server/src/generated/
 
+# Mock DB (development only — never in production)
+server/mock_db.json
+
 # Logs
 logs/
 *.log

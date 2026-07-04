@@ -473,6 +473,230 @@ function MasterKeyForm() {
   )
 }
 
+// ── Two-Factor Authentication (2FA) Form ──────────────────────
+function TwoFactorForm({ admin, setAdmin }) {
+  const [loading, setLoading] = useState(false)
+  const [setupData, setSetupData] = useState(null) // { secret, qrCode }
+  const [otpCode, setOtpCode] = useState('')
+  const [password, setPassword] = useState('')
+  const [showDisableForm, setShowDisableForm] = useState(false)
+  const [status, setStatus] = useState(null)
+  const [msg, setMsg] = useState('')
+
+  const handleStartSetup = async () => {
+    setLoading(true)
+    setStatus(null)
+    try {
+      const res = await api.post('/admin/2fa/setup')
+      setSetupData(res.data)
+    } catch (err) {
+      setStatus('error')
+      setMsg(err.message || 'Failed to initiate 2FA setup.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleVerifySetup = async (e) => {
+    e.preventDefault()
+    if (!otpCode || otpCode.length !== 6) {
+      setStatus('error')
+      setMsg('Please enter a valid 6-digit verification code.')
+      return
+    }
+    setLoading(true)
+    setStatus(null)
+    try {
+      const res = await api.post('/admin/2fa/verify', { token: otpCode })
+      setStatus('success')
+      setMsg(res.message || '2FA enabled successfully!')
+      setSetupData(null)
+      setOtpCode('')
+      setAdmin({ ...admin, twoFactorEnabled: true })
+    } catch (err) {
+      setStatus('error')
+      setMsg(err.message || 'Failed to verify code.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDisable2FA = async (e) => {
+    e.preventDefault()
+    if (!password) {
+      setStatus('error')
+      setMsg('Please enter your password to disable 2FA.')
+      return
+    }
+    setLoading(true)
+    setStatus(null)
+    try {
+      const res = await api.post('/admin/2fa/disable', { password })
+      setStatus('success')
+      setMsg(res.message || '2FA disabled successfully.')
+      setPassword('')
+      setShowDisableForm(false)
+      setAdmin({ ...admin, twoFactorEnabled: false })
+    } catch (err) {
+      setStatus('error')
+      setMsg(err.message || 'Failed to disable 2FA.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCancelSetup = () => {
+    setSetupData(null)
+    setOtpCode('')
+    setStatus(null)
+    setMsg('')
+  }
+
+  const isEnabled = admin?.twoFactorEnabled
+
+  return (
+    <div className="bg-white border border-gray-100 border-l-4 border-l-brand-blue rounded-xl p-6 shadow-sm space-y-4">
+      <div className="flex items-center gap-2">
+        <div className="w-7 h-7 rounded-lg bg-brand-blue/10 flex items-center justify-center">
+          <ShieldCheck className="w-3.5 h-3.5 text-brand-blue" />
+        </div>
+        <h2 className="font-heading text-base font-semibold text-gray-800">
+          Two-Factor Authentication (2FA)
+        </h2>
+      </div>
+
+      {isEnabled ? (
+        <div className="space-y-4">
+          <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl p-4">
+            <ShieldCheck className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+            <div>
+              <h3 className="text-sm font-semibold text-green-850 font-heading">2FA is Enabled</h3>
+              <p className="text-xs text-green-700 leading-relaxed mt-1">
+                Your account is secured with a secondary OTP verification code upon login.
+              </p>
+            </div>
+          </div>
+
+          {showDisableForm ? (
+            <form onSubmit={handleDisable2FA} className="space-y-3 pt-2">
+              <div>
+                <label className="text-xs font-semibold text-gray-600 block mb-1.5">
+                  Confirm Password to Disable 2FA
+                </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter current password"
+                  className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue/25 focus:border-brand-blue transition-all"
+                />
+              </div>
+
+              <StatusAlert status={status} msg={msg} />
+
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 bg-red-650 hover:bg-red-750 text-white font-semibold py-2.5 rounded-xl text-xs transition-colors disabled:opacity-60 cursor-pointer"
+                >
+                  {loading ? 'Disabling...' : 'Confirm Disable'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowDisableForm(false)
+                    setStatus(null)
+                    setMsg('')
+                  }}
+                  className="flex-1 border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold py-2.5 rounded-xl text-xs transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          ) : (
+            <button
+              onClick={() => setShowDisableForm(true)}
+              className="w-full bg-red-50 hover:bg-red-100 text-red-650 font-semibold py-2.5 rounded-xl text-sm transition-colors cursor-pointer"
+            >
+              Disable 2FA
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="flex items-start gap-3 bg-gray-50 border border-gray-200 rounded-xl p-4">
+            <Info className="w-5 h-5 text-gray-500 shrink-0 mt-0.5" />
+            <div>
+              <h3 className="text-sm font-semibold text-gray-750 font-heading">2FA is Disabled</h3>
+              <p className="text-xs text-gray-500 leading-relaxed mt-1">
+                Enabling 2FA adds an extra layer of protection. You will need a 6-digit code from Google Authenticator to log in.
+              </p>
+            </div>
+          </div>
+
+          {setupData ? (
+            <div className="space-y-4 border-t border-gray-100 pt-4">
+              <div className="flex flex-col items-center justify-center p-3 bg-gray-50 rounded-xl border border-gray-200">
+                <p className="text-xs font-semibold text-gray-700 mb-3 text-center">
+                  1. Scan this QR Code with Google Authenticator
+                </p>
+                <img src={setupData.qrCode} alt="2FA QR Code" className="w-40 h-40 border border-gray-200 rounded-lg p-1 bg-white" />
+                <p className="text-[10px] text-gray-500 mt-2 text-center select-all">
+                  Key: <code className="font-mono font-bold text-gray-700">{setupData.secret}</code>
+                </p>
+              </div>
+
+              <form onSubmit={handleVerifySetup} className="space-y-3">
+                <div>
+                  <label className="text-xs font-semibold text-gray-600 block mb-1.5">
+                    2. Enter 6-digit verification code from Authenticator app
+                  </label>
+                  <input
+                    type="text"
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    placeholder="e.g. 123456"
+                    className="w-full text-center tracking-widest font-mono font-bold text-lg px-3.5 py-2.5 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue/25 focus:border-brand-blue transition-all"
+                  />
+                </div>
+
+                <StatusAlert status={status} msg={msg} />
+
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex-1 bg-brand-blue hover:bg-brand-blue-hover text-white font-semibold py-2.5 rounded-xl text-xs transition-colors disabled:opacity-60 cursor-pointer"
+                  >
+                    {loading ? 'Verifying...' : 'Verify & Enable'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCancelSetup}
+                    className="flex-1 border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold py-2.5 rounded-xl text-xs transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          ) : (
+            <button
+              onClick={handleStartSetup}
+              disabled={loading}
+              className="w-full bg-brand-blue hover:bg-brand-blue-hover text-white font-semibold py-2.5 rounded-xl text-sm transition-all shadow-sm hover:shadow cursor-pointer"
+            >
+              {loading ? 'Initiating Setup...' : 'Setup Two-Factor Authentication'}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Page ──────────────────────────────────────────────────────
 export default function AdminSettingsPage() {
   const { admin, setAdmin } = useOutletContext()
@@ -528,6 +752,9 @@ export default function AdminSettingsPage() {
 
         {/* Change Password */}
         <PasswordForm />
+
+        {/* Two-Factor Authentication (2FA) */}
+        <TwoFactorForm admin={admin} setAdmin={setAdmin} />
 
         {/* Integration Master Key — only show for SUPER_ADMIN */}
         {admin?.role === 'SUPER_ADMIN' && <MasterKeyForm />}

@@ -303,6 +303,40 @@ export const verify2FA = async (req, res, next) => {
   }
 }
 
+// ── POST /api/admin/2fa/disable ────────────────────────────────
+export const disable2FA = async (req, res, next) => {
+  try {
+    const { password } = req.body
+    if (!password) {
+      return res.status(400).json({ status: 'error', message: 'Password is required to disable 2FA' })
+    }
+
+    const admin = await prisma.admin.findUnique({ where: { id: req.admin.id } })
+    if (!admin) {
+      return res.status(404).json({ status: 'error', message: 'Admin not found' })
+    }
+
+    const valid = await bcrypt.compare(password, admin.passwordHash)
+    if (!valid) {
+      return res.status(401).json({ status: 'error', message: 'Incorrect password' })
+    }
+
+    // Disable 2FA
+    await prisma.admin.update({
+      where: { id: admin.id },
+      data: {
+        twoFactorEnabled: false,
+        twoFactorSecret: null,
+      },
+    })
+
+    return res.json({ status: 'ok', message: 'Two-Factor Authentication disabled successfully' })
+  } catch (err) {
+    next(err)
+  }
+}
+
+
 // ── POST /api/admin/2fa/login ──────────────────────────────────
 export const login2FA = async (req, res, next) => {
   try {
@@ -353,8 +387,19 @@ export const login2FA = async (req, res, next) => {
 }
 
 // ── GET /api/admin/me ──────────────────────────────────────────
-export const getMe = (req, res) => {
-  res.json({ status: 'ok', data: req.admin })
+export const getMe = async (req, res, next) => {
+  try {
+    const admin = await prisma.admin.findUnique({
+      where: { id: req.admin.id },
+      select: { id: true, email: true, role: true, twoFactorEnabled: true },
+    })
+    if (!admin) {
+      return res.status(404).json({ status: 'error', message: 'Admin not found.' })
+    }
+    res.json({ status: 'ok', data: admin })
+  } catch (err) {
+    next(err)
+  }
 }
 
 // ── POST /api/admin/change-password ───────────────────────────

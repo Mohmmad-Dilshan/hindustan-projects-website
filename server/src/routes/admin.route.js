@@ -78,6 +78,7 @@ import {
   setup2FA,
   verify2FA,
   login2FA,
+  disable2FA,
 } from '../controllers/admin.controller.js'
 import {
   getIntegrationConfig,
@@ -110,6 +111,8 @@ router.post('/refresh-token', adminRefreshToken)
 router.post('/2fa/setup', verifyToken, setup2FA)
 router.post('/2fa/verify', verifyToken, verify2FA)
 router.post('/2fa/login', login2FA)
+router.post('/2fa/disable', verifyToken, disable2FA)
+
 
 router.get('/me', verifyToken, getMe)
 router.post(

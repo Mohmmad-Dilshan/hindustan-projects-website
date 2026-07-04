@@ -54,8 +54,7 @@ export default function WhyUsSection() {
             <img
               src={imageUrl}
               alt="IT professional consulting with a client on business strategy"
-              className="w-full h-64 sm:h-[380px] lg:h-[460px] object-cover rounded-2xl
-                shadow-[0_16px_48px_0_rgba(26,62,140,0.15)]"
+              className="w-full h-auto rounded-2xl shadow-[0_16px_48px_0_rgba(26,62,140,0.15)]"
               loading="lazy"
             />
 

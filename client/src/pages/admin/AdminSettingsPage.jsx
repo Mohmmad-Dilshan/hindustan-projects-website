@@ -593,8 +593,6 @@ function TwoFactorForm({ admin, setAdmin }) {
                 />
               </div>
 
-              <StatusAlert status={status} msg={msg} />
-
               <div className="flex gap-2">
                 <button
                   type="submit"
@@ -698,8 +696,6 @@ function TwoFactorForm({ admin, setAdmin }) {
                   />
                 </div>
 
-                <StatusAlert status={status} msg={msg} />
-
                 <div className="flex gap-2">
                   <button
                     type="submit"
@@ -729,6 +725,9 @@ function TwoFactorForm({ admin, setAdmin }) {
           )}
         </div>
       )}
+      
+      {/* Global Status Alert for 2FA actions */}
+      <StatusAlert status={status} msg={msg} />
     </div>
   )
 }

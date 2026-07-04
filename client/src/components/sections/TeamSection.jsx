@@ -41,9 +41,19 @@ function Avatar({ name }) {
   )
 }
 
-function TeamCard({ member }) {
+function TeamCard({ member, index }) {
+  const getStickyClass = (idx) => {
+    const classes = [
+      'sticky sm:relative top-[80px] sm:top-auto z-10 sm:z-auto shadow-[0_8px_30px_rgba(26,62,140,0.06)] scale-[0.91] sm:scale-100 origin-top transition-all duration-300',
+      'sticky sm:relative top-[96px] sm:top-auto z-20 sm:z-auto shadow-[0_12px_36px_rgba(26,62,140,0.09)] scale-[0.94] sm:scale-100 origin-top transition-all duration-300',
+      'sticky sm:relative top-[112px] sm:top-auto z-30 sm:z-auto shadow-[0_16px_40px_rgba(26,62,140,0.12)] scale-[0.97] sm:scale-100 origin-top transition-all duration-300',
+      'sticky sm:relative top-[128px] sm:top-auto z-40 sm:z-auto shadow-[0_20px_48px_rgba(26,62,140,0.15)] scale-[1] sm:scale-100 origin-top transition-all duration-300',
+    ]
+    return classes[idx] || 'sticky sm:relative top-[128px] sm:top-auto z-40 sm:z-auto shadow-[0_20px_48px_rgba(26,62,140,0.15)] scale-[1] sm:scale-100 origin-top transition-all duration-300'
+  }
+
   return (
-    <motion.div variants={fadeUp}>
+    <motion.div variants={fadeUp} className={getStickyClass(index)}>
       <Card className="relative overflow-hidden p-6 text-center group border border-slate-100 bg-white hover:border-brand-blue/20 hover:shadow-[0_12px_30px_rgba(26,62,140,0.12)] transition-all duration-300 rounded-2xl">
         {/* Subtle background glow inside the card top */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-gradient-to-b from-brand-blue/5 to-transparent blur-2xl rounded-full pointer-events-none" />
@@ -178,7 +188,7 @@ export default function TeamSection() {
         >
           {isLoading
             ? Array.from({ length: 4 }).map((_, i) => <ServiceCardSkeleton key={i} />)
-            : members.map((m) => <TeamCard key={m.id} member={m} />)}
+            : members.map((m, index) => <TeamCard key={m.id} member={m} index={index} />)}
         </motion.div>
       </Container>
     </section>

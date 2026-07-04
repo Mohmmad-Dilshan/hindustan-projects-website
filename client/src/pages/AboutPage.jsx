@@ -454,19 +454,28 @@ export default function AboutPage() {
               ? Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="h-64 bg-gray-100 rounded-2xl animate-pulse" />
                 ))
-              : team.map((member) => {
+              : team.map((member, index) => {
                   const initials = member.name
                     .split(' ')
                     .map((n) => n[0])
                     .slice(0, 2)
                     .join('')
                     .toUpperCase()
+                  const getStickyClass = (idx) => {
+                    const classes = [
+                      'sticky sm:relative top-[80px] sm:top-auto z-10 sm:z-auto shadow-[0_8px_30px_rgba(26,62,140,0.06)] scale-[0.91] sm:scale-100 origin-top transition-all duration-300',
+                      'sticky sm:relative top-[96px] sm:top-auto z-20 sm:z-auto shadow-[0_12px_36px_rgba(26,62,140,0.09)] scale-[0.94] sm:scale-100 origin-top transition-all duration-300',
+                      'sticky sm:relative top-[112px] sm:top-auto z-30 sm:z-auto shadow-[0_16px_40px_rgba(26,62,140,0.12)] scale-[0.97] sm:scale-100 origin-top transition-all duration-300',
+                      'sticky sm:relative top-[128px] sm:top-auto z-40 sm:z-auto shadow-[0_20px_48px_rgba(26,62,140,0.15)] scale-[1] sm:scale-100 origin-top transition-all duration-300',
+                    ]
+                    return classes[idx] || 'sticky sm:relative top-[128px] sm:top-auto z-40 sm:z-auto shadow-[0_20px_48px_rgba(26,62,140,0.15)] scale-[1] sm:scale-100 origin-top transition-all duration-300'
+                  }
                   return (
                     <div
                       key={member.id}
-                      className="group relative overflow-hidden bg-white rounded-2xl border border-slate-100 p-6 text-center
+                      className={`group relative overflow-hidden bg-white rounded-2xl border border-slate-100 p-6 text-center
                         hover:border-brand-blue/20 hover:shadow-[0_12px_30px_rgba(26,62,140,0.12)]
-                        hover:-translate-y-1.5 transition-all duration-300"
+                        hover:-translate-y-1.5 transition-all duration-300 ${getStickyClass(index)}`}
                     >
                       {/* Subtle background glow inside the card top */}
                       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-gradient-to-b from-brand-blue/5 to-transparent blur-2xl rounded-full pointer-events-none" />

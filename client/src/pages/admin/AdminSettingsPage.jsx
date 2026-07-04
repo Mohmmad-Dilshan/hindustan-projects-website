@@ -482,6 +482,7 @@ function TwoFactorForm({ admin, setAdmin }) {
   const [showDisableForm, setShowDisableForm] = useState(false)
   const [status, setStatus] = useState(null)
   const [msg, setMsg] = useState('')
+  const [copiedSecret, setCopiedSecret] = useState(false)
 
   const handleStartSetup = async () => {
     setLoading(true)
@@ -638,14 +639,49 @@ function TwoFactorForm({ admin, setAdmin }) {
 
           {setupData ? (
             <div className="space-y-4 border-t border-gray-100 pt-4">
-              <div className="flex flex-col items-center justify-center p-3 bg-gray-50 rounded-xl border border-gray-200">
-                <p className="text-xs font-semibold text-gray-700 mb-3 text-center">
-                  1. Scan this QR Code with Google Authenticator
+              <div className="flex flex-col items-center justify-center p-5 bg-gray-50 rounded-xl border border-gray-200">
+                <p className="text-xs font-bold text-gray-700 mb-3 text-center">
+                  1. Scan QR Code inside Authenticator App
                 </p>
-                <img src={setupData.qrCode} alt="2FA QR Code" className="w-40 h-40 border border-gray-200 rounded-lg p-1 bg-white" />
-                <p className="text-[10px] text-gray-500 mt-2 text-center select-all">
-                  Key: <code className="font-mono font-bold text-gray-700">{setupData.secret}</code>
-                </p>
+                <img src={setupData.qrCode} alt="2FA QR Code" className="w-44 h-44 border border-gray-200 rounded-xl p-2 bg-white shadow-sm" />
+                
+                {/* Visual guidance alert box */}
+                <div className="mt-4 px-3.5 py-2.5 bg-brand-blue/5 border border-brand-blue/15 rounded-lg text-left max-w-sm">
+                  <div className="flex gap-2 items-start">
+                    <Info className="w-4 h-4 text-brand-blue shrink-0 mt-0.5" />
+                    <div className="text-[11px] text-gray-600 leading-relaxed">
+                      <p className="font-bold text-brand-blue">Important Scanning Note:</p>
+                      <p className="mt-0.5">Do NOT scan this with your normal phone camera or a web browser (it will show a blank/invalid link).</p>
+                      <p className="mt-1">Instead, open <span className="font-bold text-gray-800">Google Authenticator</span> or <span className="font-bold text-gray-800">Authy</span>, tap the <span className="font-bold text-gray-800 font-mono">+</span> button, and scan the QR code from inside that app.</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Manual entry / copy key */}
+                <div className="mt-4 w-full max-w-xs flex flex-col items-center">
+                  <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Or enter key manually</span>
+                  <div className="flex w-full items-center gap-1.5 bg-white border border-gray-200 rounded-lg p-1.5 pl-3 shadow-inner">
+                    <code className="flex-1 font-mono font-extrabold text-xs text-brand-blue truncate select-all">
+                      {setupData.secret}
+                    </code>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(setupData.secret)
+                        setCopiedSecret(true)
+                        setTimeout(() => setCopiedSecret(false), 2000)
+                      }}
+                      className="p-1.5 hover:bg-gray-50 rounded-md text-gray-400 hover:text-brand-blue transition-colors shrink-0"
+                      title="Copy Key"
+                    >
+                      {copiedSecret ? (
+                        <Check className="w-3.5 h-3.5 text-green-600" />
+                      ) : (
+                        <Copy className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
               </div>
 
               <form onSubmit={handleVerifySetup} className="space-y-3">

@@ -21,6 +21,7 @@ function ScrollToTop() {
 }
 
 import { useTrafficTracker } from '@/hooks/useTrafficTracker'
+import WelcomePopup from '@/components/ui/WelcomePopup'
 
 export default function RootLayout() {
   useTrafficTracker() // Track page visit count on each navigation
@@ -41,6 +42,9 @@ export default function RootLayout() {
         </PageTransition>
       </main>
       <Footer />
+      
+      {/* Premium First-time Visitor Welcome Modal */}
+      <WelcomePopup />
 
       {/* Floating WhatsApp Chat Widget (moved to bottom-24) */}
       <a

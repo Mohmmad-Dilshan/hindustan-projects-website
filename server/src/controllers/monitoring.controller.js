@@ -104,6 +104,7 @@ export const getMonitoringStats = async (req, res, next) => {
       memoryUsed: Math.round(memory.heapUsed / 1024 / 1024), // in MB
       memoryTotal: Math.round(memory.heapTotal / 1024 / 1024), // in MB
       platform: process.platform,
+      nodeVersion: process.version, // server-side — safe here
       cpuLoad: os.loadavg(),
     }
 

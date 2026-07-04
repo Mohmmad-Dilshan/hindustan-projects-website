@@ -8,6 +8,7 @@ import { ShieldCheck, Clock, HeadphonesIcon, TrendingUp, ArrowRight } from 'luci
 import { Link } from 'react-router-dom'
 import { Container } from '@/components/ui'
 import { fadeUp, staggerContainer, viewportOnce } from '@/utils/motion'
+import { useSiteSettings } from '@/hooks/useContent'
 
 const REASONS = [
   {
@@ -33,6 +34,10 @@ const REASONS = [
 ]
 
 export default function WhyUsSection() {
+  const { data: settingsData } = useSiteSettings()
+  const cfg = settingsData?.data || {}
+  const imageUrl = cfg.why_choose_us_image_url || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=700&q=80&auto=format&fit=crop'
+
   return (
     <section className="py-20 bg-white overflow-hidden" aria-labelledby="whyus-heading">
       <Container>
@@ -47,9 +52,9 @@ export default function WhyUsSection() {
           >
             {/* Main large image */}
             <img
-              src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=700&q=80&auto=format&fit=crop"
+              src={imageUrl}
               alt="IT professional consulting with a client on business strategy"
-              className="w-full h-[460px] object-cover rounded-2xl
+              className="w-full h-64 sm:h-[380px] lg:h-[460px] object-cover rounded-2xl
                 shadow-[0_16px_48px_0_rgba(26,62,140,0.15)]"
               loading="lazy"
             />

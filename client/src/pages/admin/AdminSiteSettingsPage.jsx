@@ -143,6 +143,12 @@ const FIELD_GROUPS = [
         isImage: true,
         Icon: Globe,
       },
+      {
+        key: 'why_choose_us_image_url',
+        label: 'Why Choose Us Section Image (Leave blank to use default corporate layout)',
+        isImage: true,
+        Icon: Globe,
+      },
     ],
   },
   {

@@ -31,7 +31,7 @@ export default function AdminLoginPage() {
   const [otpLoading, setOtpLoading] = useState(false)
 
   const isValidSecret = adminSecret && adminSecret.startsWith('admin-')
-  const secretPath = isValidSecret ? adminSecret.slice(6) : ''
+  const secretPath = isValidSecret ? adminSecret.slice(6).replace(/[./\s]+$/, '') : ''
 
   // Store secretPath on mount to remember it for future redirects
   useEffect(() => {

@@ -7,6 +7,7 @@ import { Plus, Pencil, Trash2, X, Check, Star, MessageSquareQuote } from 'lucide
 import { useForm } from 'react-hook-form'
 import { api } from '@/utils/api'
 import { SEO } from '@/components/ui'
+import ImageUploader from '@/components/ui/ImageUploader'
 
 const inputCls =
   'w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue/25 focus:border-brand-blue transition-all'
@@ -41,7 +42,7 @@ function StarRating({ rating }) {
 }
 
 function TestimonialForm({ initial, onSave, onCancel, loading }) {
-  const { register, handleSubmit } = useForm({
+  const { register, handleSubmit, watch, setValue } = useForm({
     defaultValues: initial ?? {
       name: '',
       role: '',
@@ -50,8 +51,11 @@ function TestimonialForm({ initial, onSave, onCancel, loading }) {
       rating: 5,
       order: 0,
       isActive: true,
+      avatarUrl: '',
     },
   })
+
+  const avatarUrl = watch('avatarUrl')
 
   return (
     <form onSubmit={handleSubmit(onSave)} className="space-y-5">
@@ -97,7 +101,7 @@ function TestimonialForm({ initial, onSave, onCancel, loading }) {
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
           Review Details
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="text-xs font-semibold text-gray-600 block mb-1.5">Rating (1–5)</label>
             <input
@@ -118,14 +122,17 @@ function TestimonialForm({ initial, onSave, onCancel, loading }) {
               className={inputCls}
             />
           </div>
-          <div>
-            <label className="text-xs font-semibold text-gray-600 block mb-1.5">
-              Avatar URL <span className="text-gray-400 font-normal">(optional)</span>
-            </label>
-            <input {...register('avatarUrl')} placeholder="https://..." className={inputCls} />
-          </div>
         </div>
+        
         <div className="mt-3">
+          <ImageUploader
+            label="Avatar Image (Drag & Drop or click to upload)"
+            value={avatarUrl}
+            onChange={(url) => setValue('avatarUrl', url, { shouldDirty: true })}
+          />
+        </div>
+
+        <div className="mt-4">
           <label className="text-xs font-semibold text-gray-600 block mb-1.5">
             Review Text <span className="text-red-400">*</span>
           </label>

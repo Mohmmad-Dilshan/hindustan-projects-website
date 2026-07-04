@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Phone, Mail } from 'lucide-react'
 import HeroSection from '@/components/sections/HeroSection'
 import ServicesSection from '@/components/sections/ServicesSection'
+import ShowcaseSection from '@/components/sections/ShowcaseSection'
 import ProcessSection from '@/components/sections/ProcessSection'
 import WhyUsSection from '@/components/sections/WhyUsSection'
 import StatsSection from '@/components/sections/StatsSection'
@@ -89,6 +90,7 @@ export default function HomePage() {
       </section>
 
       <ServicesSection />
+      <ShowcaseSection />
       <ProcessSection />
       <WhyUsSection />
       <StatsSection />

@@ -208,9 +208,9 @@ export default function HeroSection() {
               custom={0.6}
               initial="hidden"
               animate="visible"
-              className="hidden lg:flex justify-center items-end relative self-end lg:col-span-5 h-full pt-2"
+              className="flex justify-center items-end relative self-end lg:col-span-5 h-full pt-8 lg:pt-2 w-full max-w-md mx-auto lg:max-w-none"
             >
-              <div className="relative w-full max-w-lg self-end mt-auto">
+              <div className="relative w-full max-w-xs sm:max-w-md lg:max-w-lg self-end mt-auto px-4 sm:px-0">
                 {/* Glowing background aura behind the arch portal */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4/5 h-4/5 rounded-full bg-brand-blue-light/10 blur-3xl -z-10" />
 
@@ -219,26 +219,26 @@ export default function HeroSection() {
                   <img
                     src={professionalHero}
                     alt="Hindustan Projects Corporate Professional"
-                    className="w-full h-auto max-h-[460px] lg:max-h-[485px] object-cover block"
+                    className="w-full h-auto max-h-[320px] sm:max-h-[460px] lg:max-h-[485px] object-cover block"
                     style={{ display: 'block', marginBottom: '-1px' }}
                   />
                 </div>
 
                 {/* Floating Badge 1: 5+ Years Experience */}
-                <div className="absolute z-20 top-12 -right-6 bg-white/95 backdrop-blur-md rounded-xl px-4 py-2.5 shadow-xl border border-black/5 transition-transform duration-300 hover:scale-105">
-                  <div className="flex items-center gap-2">
-                    <span className="text-brand-red-light text-lg font-bold">5+</span>
+                <div className="absolute z-20 top-8 sm:top-12 -right-2 sm:-right-6 bg-white/95 backdrop-blur-md rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 shadow-xl border border-black/5 transition-transform duration-300 hover:scale-105">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <span className="text-brand-red-light text-base sm:text-lg font-bold">5+</span>
                     <div>
-                      <p className="font-heading text-xs font-bold text-brand-blue">Years of</p>
-                      <p className="text-[10px] text-text-muted">Excellence</p>
+                      <p className="font-heading text-[10px] sm:text-xs font-bold text-brand-blue leading-none">Years of</p>
+                      <p className="text-[8px] sm:text-[10px] text-text-muted mt-0.5 leading-none">Excellence</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Floating Badge 2: 50+ Projects Delivered */}
-                <div className="absolute z-20 bottom-12 -left-6 bg-brand-red rounded-xl px-4 py-2.5 shadow-xl transition-transform duration-300 hover:scale-105 border border-white/10">
-                  <p className="font-heading text-xs font-bold text-white">50+ Projects</p>
-                  <p className="text-[10px] text-white/75">Delivered Successfully</p>
+                <div className="absolute z-20 bottom-8 sm:bottom-12 -left-2 sm:-left-6 bg-brand-red rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 shadow-xl transition-transform duration-300 hover:scale-105 border border-white/10">
+                  <p className="font-heading text-[10px] sm:text-xs font-bold text-white leading-none">50+ Projects</p>
+                  <p className="text-[8px] sm:text-[10px] text-white/75 mt-0.5 leading-none">Delivered Successfully</p>
                 </div>
               </div>
             </motion.div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Container, Button } from '@/components/ui'
@@ -69,6 +69,7 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const location = useLocation()
+  const headerRef = useRef(null)
 
   const isActive = (href) => {
     if (href === '/') return location.pathname === '/'
@@ -76,7 +77,10 @@ export default function Navbar() {
   }
 
   useEffect(() => {
-    const onScroll = () => setIsScrolled(window.scrollY > 10)
+    const onScroll = () => {
+      setIsScrolled(window.scrollY > 10)
+      setMenuOpen(false) // Auto-close mobile menu on scroll
+    }
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
@@ -89,11 +93,31 @@ export default function Navbar() {
     return () => window.removeEventListener('resize', onResize)
   }, [])
 
+  // Auto-close mobile menu on clicking outside header
+  useEffect(() => {
+    if (!menuOpen) return
+
+    const handleClickOutside = (event) => {
+      if (headerRef.current && !headerRef.current.contains(event.target)) {
+        setMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('touchstart', handleClickOutside)
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('touchstart', handleClickOutside)
+    }
+  }, [menuOpen])
+
   const isHomepage = location.pathname === '/'
   const isTransparent = isHomepage && !isScrolled && !menuOpen
 
   return (
     <header
+      ref={headerRef}
       className={`fixed top-0 inset-x-0 z-50 transition-all duration-350 ${
         isTransparent
           ? 'bg-transparent border-b border-white/10'

@@ -32,6 +32,25 @@ hindustan-projects-website/
         ├── middleware/       # Auth, security, error handling
         ├── config/          # DB, env config
         └── utils/           # Mailer (Resend/SMTP), Cloudinary, Logger
+
+---
+
+## 🌟 Premium CMS & CRM Features
+
+The dashboard contains premium custom capabilities designed to make client operations seamless:
+
+- **Sales Pipeline Leads CRM:**
+  - Track client budgets (`estimatedBudget`) and custom internal agent follow-up `notes`.
+  - Smart status indicators with deal valuation badge tags.
+  - Live autosave functionality utilizing blur events with subtle pulsating status indicators.
+- **Multi-Format Database Backups:**
+  - Download full or partial database backups in three formats: **JSON**, **SQL scripts** (PostgreSQL-compatible transactional restores), and **Interactive HTML Reports** (offline database reader document with filtering and pagination).
+- **System Telemetry & Monitoring Dashboard:**
+  - Real-time CPU, database, and memory usage tracking.
+  - Client-side and server-side runtime crash catcher reporting directly to the CMS.
+  - Quick action to clean up environment logs by purging all errors at once.
+- **Glassmorphism Consultation Offer Modal:**
+  - Responsive welcome popup with entrance delays, frequency-capping using `localStorage`, and custom styling.
 ```
 
 ---
@@ -146,6 +165,11 @@ POST   /api/admin/change-password
 POST   /api/admin/change-email
 POST   /api/admin/change-master-key           (SUPER_ADMIN only)
 GET    /api/admin/master-key-hint             (SUPER_ADMIN only)
+GET    /api/admin/backup/tables               (SUPER_ADMIN only)
+GET    /api/admin/backup                      (Download DB backup in JSON/SQL/HTML - SUPER_ADMIN only)
+GET    /api/admin/monitoring/stats            (System resources, traffic & errors - SUPER_ADMIN only)
+DELETE /api/admin/monitoring/errors/:id       (SUPER_ADMIN only)
+DELETE /api/admin/monitoring/errors           (Clear all error logs - SUPER_ADMIN only)
 ```
 
 ---

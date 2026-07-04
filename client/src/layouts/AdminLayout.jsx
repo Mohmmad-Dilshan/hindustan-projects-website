@@ -34,6 +34,7 @@ import {
   Activity,
 } from 'lucide-react'
 import { api } from '@/utils/api'
+import { useQuery } from '@tanstack/react-query'
 
 const NAV_GROUPS = [
   {
@@ -113,8 +114,65 @@ export default function AdminLayout() {
   const location = useLocation()
   const [admin, setAdmin] = useState(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [notifOpen, setNotifOpen] = useState(false)
 
   const currentTitle = PAGE_TITLES[location.pathname] || 'Admin'
+
+  // Fetch leads and chatbot inquiries
+  const { data: leads = [] } = useQuery({
+    queryKey: ['admin-leads', ''], // shares cache with Leads Page statusFilter=''
+    queryFn: () => api.get('/admin/leads').then((r) => r.data),
+    enabled: !!admin,
+    refetchInterval: 30000, // poll every 30s
+  })
+
+  const { data: inquiries = [] } = useQuery({
+    queryKey: ['chatbot-inquiries'],
+    queryFn: () => api.get('/chatbot/admin/inquiries').then((r) => r.data.data),
+    enabled: !!admin,
+    refetchInterval: 30000, // poll every 30s
+  })
+
+  // Format notifications
+  const newLeads = leads.filter((l) => l.status === 'NEW')
+  const newInquiries = inquiries.filter((i) => !i.isAnswered)
+  const totalUnread = newLeads.length + newInquiries.length
+
+  const formatTimeAgo = (dateStr) => {
+    const d = new Date(dateStr)
+    const diffMs = Date.now() - d.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMins / 60)
+    if (diffMins < 1) return 'Just now'
+    if (diffMins < 60) return `${diffMins}m ago`
+    if (diffHours < 24) return `${diffHours}h ago`
+    return d.toLocaleDateString()
+  }
+
+  const notificationItems = [
+    ...newLeads.map((l) => ({
+      id: `lead-${l.id}`,
+      title: `Lead: ${l.name}`,
+      description: l.message,
+      time: new Date(l.createdAt).getTime(),
+      timeLabel: formatTimeAgo(l.createdAt),
+      icon: MessageSquare,
+      iconColor: 'text-blue-600',
+      iconBg: 'bg-blue-50',
+      to: '/admin/leads',
+    })),
+    ...newInquiries.map((i) => ({
+      id: `inquiry-${i.id}`,
+      title: 'Chatbot Inquiry',
+      description: i.question,
+      time: new Date(i.createdAt).getTime(),
+      timeLabel: formatTimeAgo(i.createdAt),
+      icon: HelpCircle,
+      iconColor: 'text-purple-600',
+      iconBg: 'bg-purple-50',
+      to: '/admin/faqs',
+    })),
+  ].sort((a, b) => b.time - a.time)
 
   useEffect(() => {
     const secretPath = localStorage.getItem('admin_secret_path') || 'invalid'
@@ -281,13 +339,71 @@ export default function AdminLayout() {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Bell placeholder */}
-            <button
-              className="relative w-9 h-9 rounded-lg flex items-center justify-center
-              hover:bg-gray-100 text-gray-500 transition-colors"
-            >
-              <Bell className="w-4.5 h-4.5" />
-            </button>
+             {/* Bell Notifications */}
+            <div className="relative">
+              <button
+                onClick={() => setNotifOpen(!notifOpen)}
+                className={`relative w-9 h-9 rounded-lg flex items-center justify-center
+                hover:bg-gray-100 transition-colors ${notifOpen ? 'bg-gray-100 text-brand-blue' : 'text-gray-500'}`}
+                aria-label="Notifications"
+              >
+                <Bell className="w-4.5 h-4.5" />
+                {totalUnread > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-red-500 text-[9px] font-bold text-white rounded-full flex items-center justify-center animate-pulse">
+                    {totalUnread}
+                  </span>
+                )}
+              </button>
+
+              {/* Notifications Dropdown */}
+              {notifOpen && (
+                <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden flex flex-col">
+                  <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50/60 shrink-0">
+                    <span className="text-xs font-bold text-gray-700 uppercase tracking-wide">Notifications</span>
+                    {totalUnread > 0 && (
+                      <span className="text-[10px] font-semibold text-brand-blue bg-brand-blue/10 px-2 py-0.5 rounded-full">
+                        {totalUnread} new
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="max-h-[300px] overflow-y-auto divide-y divide-gray-50">
+                    {notificationItems.length === 0 ? (
+                      <div className="p-8 text-center text-gray-400">
+                        <Bell className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                        <p className="text-xs">No new notifications</p>
+                      </div>
+                    ) : (
+                      notificationItems.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            setNotifOpen(false)
+                            navigate(item.to)
+                          }}
+                          className="w-full text-left p-3.5 hover:bg-gray-50/60 transition-colors flex gap-3 items-start"
+                        >
+                          <div className={`p-2 rounded-lg shrink-0 ${item.iconBg}`}>
+                            <item.icon className={`w-4 h-4 ${item.iconColor}`} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-start gap-1">
+                              <p className="text-xs font-bold text-gray-800 truncate">{item.title}</p>
+                              <span className="text-[9px] text-gray-400 whitespace-nowrap shrink-0">
+                                {item.timeLabel}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-gray-500 line-clamp-2 mt-0.5 leading-relaxed">
+                              {item.description}
+                            </p>
+                          </div>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
             {/* View site */}
             <a
               href="/"

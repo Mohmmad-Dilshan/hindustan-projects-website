@@ -10,11 +10,18 @@ const BASE = 'https://hindustanprojects.com'
 
 router.get('/', async (_req, res, next) => {
   try {
-    const services = await prisma.service.findMany({
-      where: { isActive: true },
-      select: { slug: true, updatedAt: true },
-      orderBy: { order: 'asc' },
-    })
+    const [services, blogPosts] = await Promise.all([
+      prisma.service.findMany({
+        where: { isActive: true },
+        select: { slug: true, updatedAt: true },
+        orderBy: { order: 'asc' },
+      }),
+      prisma.blogPost.findMany({
+        where: { status: 'PUBLISHED' },
+        select: { slug: true, publishedAt: true, updatedAt: true },
+        orderBy: { publishedAt: 'desc' },
+      }),
+    ])
 
     const staticPages = [
       { path: '/', priority: '1.0', freq: 'weekly' },
@@ -23,6 +30,7 @@ router.get('/', async (_req, res, next) => {
       { path: '/portfolio', priority: '0.7', freq: 'weekly' },
       { path: '/contact', priority: '0.8', freq: 'monthly' },
       { path: '/careers', priority: '0.6', freq: 'weekly' },
+      { path: '/blog', priority: '0.8', freq: 'daily' },
       { path: '/privacy-policy', priority: '0.3', freq: 'yearly' },
       { path: '/terms-of-service', priority: '0.3', freq: 'yearly' },
       { path: '/refund-policy', priority: '0.3', freq: 'yearly' },
@@ -35,7 +43,14 @@ router.get('/', async (_req, res, next) => {
       lastmod: s.updatedAt.toISOString().split('T')[0],
     }))
 
-    const allPages = [...staticPages, ...servicePages]
+    const blogPages = blogPosts.map((p) => ({
+      path: `/blog/${p.slug}`,
+      priority: '0.7',
+      freq: 'monthly',
+      lastmod: (p.updatedAt || p.publishedAt)?.toISOString().split('T')[0],
+    }))
+
+    const allPages = [...staticPages, ...servicePages, ...blogPages]
     const today = new Date().toISOString().split('T')[0]
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>

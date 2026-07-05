@@ -28,6 +28,8 @@ const ServicesPage = lazy(() => import('@/pages/ServicesPage'))
 const ServiceDetailPage = lazy(() => import('@/pages/ServiceDetailPage'))
 const AboutPage = lazy(() => import('@/pages/AboutPage'))
 const PortfolioPage = lazy(() => import('@/pages/PortfolioPage'))
+const BlogPage = lazy(() => import('@/pages/BlogPage'))
+const BlogPostPage = lazy(() => import('@/pages/BlogPostPage'))
 const ContactPage = lazy(() => import('@/pages/ContactPage'))
 const CareersPage = lazy(() => import('@/pages/CareersPage'))
 const JobDetailPage = lazy(() => import('@/pages/JobDetailPage'))
@@ -61,6 +63,8 @@ const AdminNotesPage = lazy(() => import('@/pages/admin/AdminNotesPage'))
 const AdminCalendarPage = lazy(() => import('@/pages/admin/AdminCalendarPage'))
 const AdminActivitiesPage = lazy(() => import('@/pages/admin/AdminActivitiesPage'))
 const AdminMonitoringPage = lazy(() => import('@/pages/admin/AdminMonitoringPage'))
+const AdminBlogPage = lazy(() => import('@/pages/admin/AdminBlogPage'))
+const AdminBlogCommentsPage = lazy(() => import('@/pages/admin/AdminBlogCommentsPage'))
 
 export default function App() {
   return (
@@ -245,6 +249,22 @@ export default function App() {
             }
           />
           <Route
+            path="blog"
+            element={
+              <Suspense fallback={<PageFallback />}>
+                <AdminBlogPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="blog-comments"
+            element={
+              <Suspense fallback={<PageFallback />}>
+                <AdminBlogCommentsPage />
+              </Suspense>
+            }
+          />
+          <Route
             path="monitoring"
             element={
               <Suspense fallback={<PageFallback />}>
@@ -303,6 +323,22 @@ export default function App() {
             element={
               <Suspense fallback={<PageFallback />}>
                 <PortfolioPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/blog"
+            element={
+              <Suspense fallback={<PageFallback />}>
+                <BlogPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/blog/:slug"
+            element={
+              <Suspense fallback={<PageFallback />}>
+                <BlogPostPage />
               </Suspense>
             }
           />

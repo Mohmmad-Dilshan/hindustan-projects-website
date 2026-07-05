@@ -384,6 +384,59 @@ model ActivityLog {
 }
 
 // ─────────────────────────────────────────────────────────────────
+// Blog System
+// ─────────────────────────────────────────────────────────────────
+
+enum BlogPostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model BlogPost {
+  id               String         @id @default(cuid())
+  title            String
+  slug             String         @unique
+  excerpt          String         // Short summary for listing/SEO
+  content          String         // Full HTML content
+  featuredImageUrl String?
+  category         String         // e.g. "Web Development", "Digital Marketing"
+  tags             String[]
+  authorName       String         @default("Hindustan Projects")
+  authorId         String?        // Reference to Admin id
+  status           BlogPostStatus @default(DRAFT)
+  metaTitle        String?
+  metaDescription  String?
+  viewCount        Int            @default(0)
+  isFeatured       Boolean        @default(false)
+  publishedAt      DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  comments         BlogComment[]
+
+  @@index([slug])
+  @@index([status, publishedAt])
+  @@index([category])
+  @@index([isFeatured])
+  @@map("blog_posts")
+}
+
+model BlogComment {
+  id          String   @id @default(cuid())
+  blogPostId  String
+  blogPost    BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  name        String
+  email       String
+  comment     String
+  isApproved  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([blogPostId])
+  @@index([isApproved])
+  @@map("blog_comments")
+}
+
+// ─────────────────────────────────────────────────────────────────
 // SocialPostDraft — Pre-formatted social drafts for featured projects
 // ─────────────────────────────────────────────────────────────────
 enum SocialPostStatus {

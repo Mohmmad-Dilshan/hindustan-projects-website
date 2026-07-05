@@ -32,6 +32,7 @@ import {
   Calendar,
   History,
   Activity,
+  Newspaper,
 } from 'lucide-react'
 import { api } from '@/utils/api'
 import { useQuery } from '@tanstack/react-query'
@@ -56,6 +57,13 @@ const NAV_GROUPS = [
       { to: '/admin/milestones', icon: Flag, label: 'Milestones' },
       { to: '/admin/partners', icon: Handshake, label: 'Partners' },
       { to: '/admin/legal', icon: FileText, label: 'Legal Pages' },
+    ],
+  },
+  {
+    label: 'Blog',
+    items: [
+      { to: '/admin/blog', icon: Newspaper, label: 'Blog Posts' },
+      { to: '/admin/blog-comments', icon: MessageSquare, label: 'Comments', badge: 'comments' },
     ],
   },
   {
@@ -107,6 +115,8 @@ const PAGE_TITLES = {
   '/admin/notes': 'Notes',
   '/admin/calendar': 'Calendar',
   '/admin/activities': 'Activity Log',
+  '/admin/blog': 'Blog Posts',
+  '/admin/blog-comments': 'Blog Comments',
 }
 
 export default function AdminLayout() {
@@ -171,6 +181,15 @@ export default function AdminLayout() {
     enabled: !!admin,
     refetchInterval: 30000, // poll every 30s
   })
+
+  // Pending blog comments
+  const { data: pendingCommentsRaw = [] } = useQuery({
+    queryKey: ['admin-blog-comments', 'false'],
+    queryFn: () => api.get('/admin/blog/comments?approved=false').then((r) => r.data),
+    enabled: !!admin,
+    refetchInterval: 60000,
+  })
+  const pendingBlogCommentsCount = Array.isArray(pendingCommentsRaw) ? pendingCommentsRaw.length : 0
 
   // Format notifications
   const newLeads = leads.filter((l) => l.status === 'NEW')
@@ -315,6 +334,11 @@ export default function AdminLayout() {
                         {badge === 'dl' && (
                           <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-400/20 text-emerald-300 border border-emerald-400/30 shrink-0 tracking-wide">
                             ↓
+                          </span>
+                        )}
+                        {badge === 'comments' && pendingBlogCommentsCount > 0 && (
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400/30 text-amber-200 border border-amber-400/30 shrink-0">
+                            {pendingBlogCommentsCount}
                           </span>
                         )}
                       </>

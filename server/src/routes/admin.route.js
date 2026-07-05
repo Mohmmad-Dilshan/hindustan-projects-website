@@ -66,6 +66,16 @@ import { listTasks, createTask, updateTask, deleteTask } from '../controllers/ta
 import { listNotes, createNote, updateNote, deleteNote } from '../controllers/notes.controller.js'
 import { listActivities } from '../controllers/activities.controller.js'
 import {
+  adminListPosts,
+  adminGetPost,
+  adminCreatePost,
+  adminUpdatePost,
+  adminDeletePost,
+  adminListComments,
+  adminApproveComment,
+  adminDeleteComment,
+} from '../controllers/blog.controller.js'
+import {
   adminLogin,
   adminLogout,
   getMe,
@@ -263,6 +273,16 @@ router.delete('/notes/:id', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), de
 
 // ── Activity Logs ──────────────────────────────────────────────
 router.get('/activities', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), listActivities)
+
+// ── Blog Posts ─────────────────────────────────────────────────
+router.get('/blog', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), adminListPosts)
+router.get('/blog/comments', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), adminListComments)
+router.get('/blog/:id', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), adminGetPost)
+router.post('/blog', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), adminCreatePost)
+router.patch('/blog/:id', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), adminUpdatePost)
+router.delete('/blog/:id', verifyToken, requireRole('SUPER_ADMIN'), adminDeletePost)
+router.patch('/blog/comments/:id/approve', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), adminApproveComment)
+router.delete('/blog/comments/:id', verifyToken, requireRole('SUPER_ADMIN'), adminDeleteComment)
 
 // ── Integration Config (Cloudinary, SMTP, reCAPTCHA, DB, JWT) ─
 router.get('/integrations', verifyToken, requireRole('SUPER_ADMIN'), getIntegrationConfig)

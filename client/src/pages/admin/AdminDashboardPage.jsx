@@ -24,6 +24,7 @@ import {
   CheckSquare,
   StickyNote,
   Calendar,
+  Newspaper,
 } from 'lucide-react'
 import { api } from '@/utils/api'
 import { SEO } from '@/components/ui'
@@ -122,6 +123,13 @@ const QUICK_ACTIONS = [
     icon: FolderKanban,
     color: 'text-blue-600',
     bg: 'bg-blue-50',
+  },
+  {
+    label: 'Blog Posts',
+    to: '/admin/blog',
+    icon: Newspaper,
+    color: 'text-pink-600',
+    bg: 'bg-pink-50',
   },
   {
     label: 'Tasks Board',
@@ -314,6 +322,14 @@ export default function AdminDashboardPage() {
             color="text-indigo-600"
             to="/admin/careers"
             value={isLoading ? '…' : data?.totalApplications}
+          />
+          <StatCard
+            icon={Newspaper}
+            label="Blog Posts"
+            bg="bg-pink-100"
+            color="text-pink-600"
+            to="/admin/blog"
+            value={isLoading ? '…' : data?.totalPublishedBlogPosts}
           />
         </div>
 

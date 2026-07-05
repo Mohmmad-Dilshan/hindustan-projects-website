@@ -535,6 +535,8 @@ export const getDashboardStats = async (_req, res, next) => {
       openPositions,
       clientProjects,
       workTasks,
+      totalPublishedBlogPosts,
+      pendingBlogComments,
     ] = await Promise.all([
       prisma.contactLead.count(),
       prisma.contactLead.count({ where: { status: 'NEW' } }),
@@ -547,6 +549,8 @@ export const getDashboardStats = async (_req, res, next) => {
       prisma.jobPosting.count({ where: { isActive: true } }),
       prisma.clientProject.findMany(),
       prisma.workTask.findMany(),
+      prisma.blogPost.count({ where: { status: 'PUBLISHED' } }),
+      prisma.blogComment.count({ where: { isApproved: false } }),
     ])
 
     const activeProjectsCount = clientProjects.filter((p) => p.status !== 'COMPLETED').length
@@ -581,6 +585,8 @@ export const getDashboardStats = async (_req, res, next) => {
         overdueProjectsCount,
         dueTodayTasksCount,
         totalClientProjectsCount: clientProjects.length,
+        totalPublishedBlogPosts,
+        pendingBlogComments,
       },
     })
   } catch (err) {

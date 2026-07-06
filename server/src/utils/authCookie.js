@@ -8,17 +8,19 @@ import { env } from '../config/env.js'
 const ACCESS_COOKIE_NAME = 'adminToken'
 const REFRESH_COOKIE_NAME = 'adminRefreshToken'
 
+const isProduction = env.NODE_ENV === 'production'
+
 const ACCESS_COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: env.NODE_ENV === 'production',
-  sameSite: 'strict',
+  secure: isProduction,
+  sameSite: isProduction ? 'none' : 'strict',
   maxAge: 2 * 60 * 60 * 1000, // 2 hours
 }
 
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: env.NODE_ENV === 'production',
-  sameSite: 'strict',
+  secure: isProduction,
+  sameSite: isProduction ? 'none' : 'strict',
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 }
 
@@ -31,8 +33,8 @@ export function setAdminRefreshTokenCookie(res, token) {
 }
 
 export function clearAdminCookies(res) {
-  res.clearCookie(ACCESS_COOKIE_NAME, { httpOnly: true, sameSite: 'strict' })
-  res.clearCookie(REFRESH_COOKIE_NAME, { httpOnly: true, sameSite: 'strict' })
+  res.clearCookie(ACCESS_COOKIE_NAME, { httpOnly: true, secure: isProduction, sameSite: isProduction ? 'none' : 'strict' })
+  res.clearCookie(REFRESH_COOKIE_NAME, { httpOnly: true, secure: isProduction, sameSite: isProduction ? 'none' : 'strict' })
 }
 
 export function clearAdminCookie(res) {

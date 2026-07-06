@@ -537,6 +537,8 @@ export const getDashboardStats = async (_req, res, next) => {
       workTasks,
       totalPublishedBlogPosts,
       pendingBlogComments,
+      totalTestimonials,
+      siteSettings,
     ] = await Promise.all([
       prisma.contactLead.count(),
       prisma.contactLead.count({ where: { status: 'NEW' } }),
@@ -551,6 +553,14 @@ export const getDashboardStats = async (_req, res, next) => {
       prisma.workTask.findMany(),
       prisma.blogPost.count({ where: { status: 'PUBLISHED' } }),
       prisma.blogComment.count({ where: { isApproved: false } }),
+      prisma.testimonial.count({ where: { isActive: true } }),
+      prisma.siteSetting.findMany({
+        where: {
+          key: {
+            in: ['phone', 'email', 'address', 'linkedin', 'instagram', 'facebook'],
+          },
+        },
+      }),
     ])
 
     const activeProjectsCount = clientProjects.filter((p) => p.status !== 'COMPLETED').length
@@ -568,6 +578,16 @@ export const getDashboardStats = async (_req, res, next) => {
       const d = new Date(t.dueDate)
       return d >= todayStart && d <= todayEnd
     }).length
+
+    const phone = siteSettings.find((s) => s.key === 'phone')?.value || ''
+    const email = siteSettings.find((s) => s.key === 'email')?.value || ''
+    const address = siteSettings.find((s) => s.key === 'address')?.value || ''
+    const linkedin = siteSettings.find((s) => s.key === 'linkedin')?.value || ''
+    const instagram = siteSettings.find((s) => s.key === 'instagram')?.value || ''
+    const facebook = siteSettings.find((s) => s.key === 'facebook')?.value || ''
+
+    const hasContactInfo = !!(phone && email && address)
+    const hasSocialLinks = !!(linkedin || instagram || facebook)
 
     res.json({
       status: 'ok',
@@ -587,6 +607,9 @@ export const getDashboardStats = async (_req, res, next) => {
         totalClientProjectsCount: clientProjects.length,
         totalPublishedBlogPosts,
         pendingBlogComments,
+        totalTestimonials,
+        hasContactInfo,
+        hasSocialLinks,
       },
     })
   } catch (err) {

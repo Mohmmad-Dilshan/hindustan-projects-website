@@ -25,6 +25,7 @@ import {
   StickyNote,
   Calendar,
   Newspaper,
+  Check,
 } from 'lucide-react'
 import { api } from '@/utils/api'
 import { SEO } from '@/components/ui'
@@ -168,14 +169,7 @@ const QUICK_ACTIONS = [
   },
 ]
 
-const CHECKLIST = [
-  { text: 'Update contact info (phone, email, address)', to: '/admin/site-settings' },
-  { text: 'Add your social media links', to: '/admin/site-settings' },
-  { text: 'Add team members with photos', to: '/admin/team' },
-  { text: 'Add real client testimonials', to: '/admin/testimonials' },
-  { text: 'Add portfolio projects with thumbnails', to: '/admin/projects' },
-  { text: 'Update services with features & tech stack', to: '/admin/services' },
-]
+
 
 function getGreeting() {
   const h = new Date().getHours()
@@ -199,6 +193,43 @@ export default function AdminDashboardPage() {
     queryKey: ['admin-stats'],
     queryFn: () => api.get('/admin/stats').then((r) => r.data),
   })
+
+  const checklistItems = [
+    {
+      text: 'Update contact info (phone, email, address)',
+      to: '/admin/site-settings',
+      completed: !!data?.hasContactInfo,
+    },
+    {
+      text: 'Add your social media links',
+      to: '/admin/site-settings',
+      completed: !!data?.hasSocialLinks,
+    },
+    {
+      text: 'Add team members with photos',
+      to: '/admin/team',
+      completed: (data?.totalTeam ?? 0) > 0,
+    },
+    {
+      text: 'Add real client testimonials',
+      to: '/admin/testimonials',
+      completed: (data?.totalTestimonials ?? 0) > 0,
+    },
+    {
+      text: 'Add portfolio projects with thumbnails',
+      to: '/admin/projects',
+      completed: (data?.totalProjects ?? 0) > 0,
+    },
+    {
+      text: 'Update services with features & tech stack',
+      to: '/admin/services',
+      completed: (data?.totalServices ?? 0) > 0,
+    },
+  ]
+
+  const completedCount = checklistItems.filter((item) => item.completed).length
+  const progressPercent =
+    checklistItems.length > 0 ? Math.round((completedCount / checklistItems.length) * 100) : 0
 
   return (
     <>
@@ -549,24 +580,42 @@ export default function AdminDashboardPage() {
             {/* Progress bar */}
             <div className="w-full h-1.5 bg-gray-100 rounded-full mb-4 overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-brand-blue to-blue-400 rounded-full"
-                style={{ width: '33%' }}
+                className="h-full bg-gradient-to-r from-brand-blue to-blue-400 rounded-full transition-all duration-500"
+                style={{ width: `${progressPercent}%` }}
               />
             </div>
 
             <ul className="space-y-1.5">
-              {CHECKLIST.map((item, i) => (
+              {checklistItems.map((item, i) => (
                 <li key={item.text}>
                   <Link
                     to={item.to}
                     className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors group"
                   >
-                    <div className="w-5 h-5 rounded-md border-2 border-gray-200 group-hover:border-brand-blue shrink-0 transition-colors flex items-center justify-center">
-                      <span className="text-[9px] font-bold text-gray-300 group-hover:text-brand-blue">
-                        {i + 1}
-                      </span>
+                    <div
+                      className={`w-5 h-5 rounded-md border-2 shrink-0 transition-colors flex items-center justify-center
+                        ${
+                          item.completed
+                            ? 'border-emerald-500 bg-emerald-500 text-white'
+                            : 'border-gray-200 group-hover:border-brand-blue text-gray-300 group-hover:text-brand-blue'
+                        }`}
+                    >
+                      {item.completed ? (
+                        <Check className="w-3 h-3 stroke-[3]" />
+                      ) : (
+                        <span className="text-[9px] font-bold">
+                          {i + 1}
+                        </span>
+                      )}
                     </div>
-                    <span className="text-xs text-gray-600 group-hover:text-gray-900 flex-1 transition-colors">
+                    <span
+                      className={`text-xs flex-1 transition-colors
+                        ${
+                          item.completed
+                            ? 'text-gray-400 line-through'
+                            : 'text-gray-600 group-hover:text-gray-900'
+                        }`}
+                    >
                       {item.text}
                     </span>
                     <ArrowRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-brand-blue opacity-0 group-hover:opacity-100 transition-all" />

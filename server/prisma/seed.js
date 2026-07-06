@@ -3,6 +3,40 @@ import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
+async function safeUpsertProject(p) {
+  const existing = await prisma.project.findUnique({ where: { id: p.id } })
+  if (existing) {
+    const updateData = { ...p }
+    if (existing.thumbnailUrl) updateData.thumbnailUrl = existing.thumbnailUrl
+    if (existing.images && existing.images.length > 0) updateData.images = existing.images
+    await prisma.project.update({ where: { id: p.id }, data: updateData })
+  } else {
+    await prisma.project.create({ data: p })
+  }
+}
+
+async function safeUpsertTeamMember(m) {
+  const existing = await prisma.teamMember.findUnique({ where: { id: m.id } })
+  if (existing) {
+    const updateData = { ...m }
+    if (existing.photoUrl) updateData.photoUrl = existing.photoUrl
+    await prisma.teamMember.update({ where: { id: m.id }, data: updateData })
+  } else {
+    await prisma.teamMember.create({ data: m })
+  }
+}
+
+async function safeUpsertTestimonial(t) {
+  const existing = await prisma.testimonial.findUnique({ where: { id: t.id } })
+  if (existing) {
+    const updateData = { ...t }
+    if (existing.avatarUrl) updateData.avatarUrl = existing.avatarUrl
+    await prisma.testimonial.update({ where: { id: t.id }, data: updateData })
+  } else {
+    await prisma.testimonial.create({ data: t })
+  }
+}
+
 async function main() {
   console.log('Seeding database...')
 
@@ -406,7 +440,7 @@ async function main() {
     },
   ]
   for (const p of projects) {
-    await prisma.project.upsert({ where: { id: p.id }, update: p, create: p })
+    await safeUpsertProject(p)
   }
   console.log('Seeded ' + projects.length + ' projects')
 
@@ -450,7 +484,7 @@ async function main() {
     },
   ]
   for (const m of team) {
-    await prisma.teamMember.upsert({ where: { id: m.id }, update: m, create: m })
+    await safeUpsertTeamMember(m)
   }
   console.log('Seeded ' + team.length + ' team members')
 
@@ -488,7 +522,7 @@ async function main() {
     },
   ]
   for (const t of testimonials) {
-    await prisma.testimonial.upsert({ where: { id: t.id }, update: t, create: t })
+    await safeUpsertTestimonial(t)
   }
   console.log('Seeded ' + testimonials.length + ' testimonials')
 

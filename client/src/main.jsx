@@ -42,7 +42,8 @@ const queryClient = new QueryClient({
 async function bootstrapApp() {
   let settings = {}
   try {
-    const res = await fetch('/api/settings')
+    const BASE = import.meta.env.VITE_API_URL || '/api'
+    const res = await fetch(`${BASE}/settings`)
     if (res.ok) {
       const data = await res.json()
       settings = data?.data || {}

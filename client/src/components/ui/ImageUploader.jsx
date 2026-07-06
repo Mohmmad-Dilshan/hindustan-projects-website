@@ -34,8 +34,9 @@ export default function ImageUploader({
     try {
       const formData = new FormData()
       formData.append('image', file)
-      // Use fetch directly for multipart (api util uses JSON)
-      const res = await fetch('/api/upload', {
+      // Use VITE_API_URL so this works in production (Vercel → Render)
+      const BASE = import.meta.env.VITE_API_URL || '/api'
+      const res = await fetch(`${BASE}/upload`, {
         method: 'POST',
         credentials: 'include',
         body: formData,

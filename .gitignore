@@ -36,3 +36,7 @@ Thumbs.db
 # Agent / Tool Caches
 .kiro/
 .agents/
+
+# Local developer documents (never push to Github)
+DEPLOY.md
+DEVELOPER_NOTES.md

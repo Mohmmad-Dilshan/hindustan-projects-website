@@ -42,7 +42,8 @@ export const askQuestion = async (req, res, next) => {
         const matchCount = faqKeywords.filter((kw) => clean.includes(kw)).length
         const matchRatio = faqKeywords.length > 0 ? matchCount / faqKeywords.length : 0
 
-        if (matchRatio >= 0.4 || faqKeywords.some((kw) => kw.length > 4 && clean.includes(kw))) {
+        // Stricter threshold (0.5) to avoid false positives between similar topics
+        if (matchRatio >= 0.5 || faqKeywords.some((kw) => kw.length > 5 && clean.includes(kw))) {
           answer = faq.answer
           isAnswered = true
           break
@@ -53,15 +54,19 @@ export const askQuestion = async (req, res, next) => {
     }
 
     // ── STEP 2: Fallback keyword rules ────────────────────────────
+    // NOTE: Order matters — check hours BEFORE pricing to avoid 'time'/'rate' overlap
     if (!isAnswered) {
-      const pricing = ['price', 'pricing', 'cost', 'charges', 'fees', 'rate', 'budget', 'package', 'kitna', 'how much']
+      const hours    = ['business hours', 'working hours', 'office hours', 'open time', 'closing time', 'hours', 'timing', 'timings', 'schedule', 'days', 'weekend', 'kitne baje', 'kab khulta', 'kab band', 'open', 'kab']
+      const pricing  = ['price', 'pricing', 'cost', 'charges', 'fees', 'rate', 'budget', 'package', 'kitna', 'how much', 'quote', 'estimate']
       const services = ['service', 'services', 'offer', 'develop', 'marketing', 'seo', 'branding', 'app', 'design', 'website', 'software', 'kya karte', 'kya kaam']
-      const contact = ['contact', 'phone', 'email', 'call', 'whatsapp', 'reach', 'address', 'location', 'office', 'where', 'kahan', 'number']
-      const hours = ['hours', 'time', 'open', 'schedule', 'timing', 'timings', 'days', 'weekend', 'kitne baje', 'kab']
+      const contact  = ['contact', 'phone', 'email', 'call', 'whatsapp', 'reach', 'address', 'location', 'office', 'where', 'kahan', 'number']
       const portfolio = ['portfolio', 'project', 'work', 'sample', 'previous', 'client', 'example', 'case study']
-      const careers = ['job', 'career', 'hiring', 'vacancy', 'internship', 'opening', 'apply', 'join', 'work with']
+      const careers  = ['job', 'career', 'hiring', 'vacancy', 'internship', 'opening', 'apply', 'join', 'work with']
 
-      if (pricing.some((k) => clean.includes(k))) {
+      if (hours.some((k) => clean.includes(k))) {
+        answer = '⏰ **Business Hours:**\n\nMonday – Saturday: **10:00 AM to 7:00 PM IST**\n\nWe are closed on Sundays and national holidays. For urgent matters, drop us a WhatsApp!'
+        isAnswered = true
+      } else if (pricing.some((k) => clean.includes(k))) {
         answer = '💰 **Pricing at Hindustan Projects** depends on the project scope.\n\n• Simple landing page: starting ₹15,000\n• Business website: ₹25,000–₹60,000\n• Custom web/mobile app, ERP, or SaaS: quoted individually\n\nContact us for a free detailed estimate — we\'ll tailor it to your exact requirements!'
         isAnswered = true
       } else if (services.some((k) => clean.includes(k))) {
@@ -69,9 +74,6 @@ export const askQuestion = async (req, res, next) => {
         isAnswered = true
       } else if (contact.some((k) => clean.includes(k))) {
         answer = '📞 **Reach us easily:**\n\n• 📧 Email: info@hindustanprojects.com\n• 📱 WhatsApp/Call: +91 99999 99999\n• 📍 Office: Bhilwara, Rajasthan, India\n\nOr submit the **Contact Form** on our website — we respond within 24 hours!'
-        isAnswered = true
-      } else if (hours.some((k) => clean.includes(k))) {
-        answer = '⏰ **Business Hours:**\n\nMonday – Saturday: **10:00 AM to 7:00 PM IST**\n\nWe are closed on Sundays and national holidays. For urgent matters, drop us a WhatsApp!'
         isAnswered = true
       } else if (portfolio.some((k) => clean.includes(k))) {
         answer = '🎨 **Our Portfolio** showcases projects across web, mobile, ERP, and branding.\n\nVisit the **Portfolio** section on our website to see our latest client work with live demos!'

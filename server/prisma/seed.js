@@ -5,34 +5,21 @@ const prisma = new PrismaClient()
 
 async function safeUpsertProject(p) {
   const existing = await prisma.project.findUnique({ where: { id: p.id } })
-  if (existing) {
-    const updateData = { ...p }
-    if (existing.thumbnailUrl) updateData.thumbnailUrl = existing.thumbnailUrl
-    if (existing.images && existing.images.length > 0) updateData.images = existing.images
-    await prisma.project.update({ where: { id: p.id }, data: updateData })
-  } else {
+  if (!existing) {
     await prisma.project.create({ data: p })
   }
 }
 
 async function safeUpsertTeamMember(m) {
   const existing = await prisma.teamMember.findUnique({ where: { id: m.id } })
-  if (existing) {
-    const updateData = { ...m }
-    if (existing.photoUrl) updateData.photoUrl = existing.photoUrl
-    await prisma.teamMember.update({ where: { id: m.id }, data: updateData })
-  } else {
+  if (!existing) {
     await prisma.teamMember.create({ data: m })
   }
 }
 
 async function safeUpsertTestimonial(t) {
   const existing = await prisma.testimonial.findUnique({ where: { id: t.id } })
-  if (existing) {
-    const updateData = { ...t }
-    if (existing.avatarUrl) updateData.avatarUrl = existing.avatarUrl
-    await prisma.testimonial.update({ where: { id: t.id }, data: updateData })
-  } else {
+  if (!existing) {
     await prisma.testimonial.create({ data: t })
   }
 }
@@ -334,7 +321,10 @@ async function main() {
     },
   ]
   for (const s of services) {
-    await prisma.service.upsert({ where: { slug: s.slug }, update: s, create: s })
+    const existing = await prisma.service.findUnique({ where: { slug: s.slug } })
+    if (!existing) {
+      await prisma.service.create({ data: s })
+    }
   }
   console.log('Seeded ' + services.length + ' services')
 
@@ -570,7 +560,10 @@ async function main() {
     },
   ]
   for (const f of faqs) {
-    await prisma.faq.upsert({ where: { id: f.id }, update: f, create: f })
+    const existing = await prisma.faq.findUnique({ where: { id: f.id } })
+    if (!existing) {
+      await prisma.faq.create({ data: f })
+    }
   }
   console.log('Seeded ' + faqs.length + ' FAQs')
 
@@ -590,11 +583,10 @@ async function main() {
     { key: 'stat_cities', value: '3' },
   ]
   for (const s of settings) {
-    await prisma.siteSetting.upsert({
-      where: { key: s.key },
-      update: { value: s.value },
-      create: s,
-    })
+    const existing = await prisma.siteSetting.findUnique({ where: { key: s.key } })
+    if (!existing) {
+      await prisma.siteSetting.create({ data: s })
+    }
   }
   console.log('Seeded ' + settings.length + ' site settings')
 
@@ -637,7 +629,10 @@ async function main() {
     },
   ]
   for (const m of milestones) {
-    await prisma.milestone.upsert({ where: { id: m.id }, update: m, create: m })
+    const existing = await prisma.milestone.findUnique({ where: { id: m.id } })
+    if (!existing) {
+      await prisma.milestone.create({ data: m })
+    }
   }
   console.log('Seeded ' + milestones.length + ' milestones')
 
@@ -650,7 +645,10 @@ async function main() {
     { id: 'p-5', name: 'RetailHub', order: 5, isActive: true },
   ]
   for (const p of partners) {
-    await prisma.partner.upsert({ where: { id: p.id }, update: p, create: p })
+    const existing = await prisma.partner.findUnique({ where: { id: p.id } })
+    if (!existing) {
+      await prisma.partner.create({ data: p })
+    }
   }
   console.log('Seeded ' + partners.length + ' partners')
 
@@ -703,11 +701,10 @@ async function main() {
   ]
 
   for (const j of jobs) {
-    await prisma.jobPosting.upsert({
-      where: { slug: j.slug },
-      update: j,
-      create: j,
-    })
+    const existing = await prisma.jobPosting.findUnique({ where: { slug: j.slug } })
+    if (!existing) {
+      await prisma.jobPosting.create({ data: j })
+    }
   }
   console.log('Seeded ' + jobs.length + ' job postings')
 
@@ -749,13 +746,11 @@ async function main() {
     },
   ]
   for (const lp of legalPages) {
-    await prisma.legalPage.upsert({
-      where: { pageType: lp.pageType },
-      update: { title: lp.title, content: lp.content, updatedBy: lp.updatedBy },
-      create: lp,
-    })
-  }
-  console.log('Seeded ' + legalPages.length + ' legal pages')
+    const existing = await prisma.legalPage.findUnique({ where: { pageType: lp.pageType } })
+    if (!existing) {
+      await prisma.legalPage.create({ data: lp })
+    }
+  }console.log('Seeded ' + legalPages.length + ' legal pages')
 
   // Blog Posts (3 sample posts for IT services company)
   const blogPosts = [
@@ -894,11 +889,10 @@ async function main() {
   ]
 
   for (const post of blogPosts) {
-    await prisma.blogPost.upsert({
-      where: { id: post.id },
-      update: post,
-      create: post,
-    })
+    const existing = await prisma.blogPost.findUnique({ where: { id: post.id } })
+    if (!existing) {
+      await prisma.blogPost.create({ data: post })
+    }
   }
   console.log('Seeded ' + blogPosts.length + ' blog posts')
 

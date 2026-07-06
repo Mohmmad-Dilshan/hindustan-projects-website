@@ -63,8 +63,12 @@ const allowedOrigins = [
 
 export const corsOptions = cors({
   origin: (origin, callback) => {
-    // Allow all origins in development to facilitate local network/mobile device testing
+    // Allow all origins in development
     if (process.env.NODE_ENV === 'development') {
+      return callback(null, true)
+    }
+    // Allow requests with no origin (server-to-server, mobile apps, curl)
+    if (!origin) {
       return callback(null, true)
     }
     if (allowedOrigins.includes(origin)) {

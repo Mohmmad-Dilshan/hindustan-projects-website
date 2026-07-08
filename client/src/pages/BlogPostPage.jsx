@@ -285,13 +285,11 @@ export default function BlogPostPage() {
 
         {/* ── FEATURED IMAGE ───────────────────────────────── */}
         {post.featuredImageUrl && (
-          <div className="bg-[#050e20]">
+          <div className="bg-[#050e20] pb-8">
             <Container>
-              <div className="max-w-3xl">
-                <div className="rounded-b-2xl overflow-hidden shadow-2xl h-64 sm:h-80 lg:h-96">
-                  <img src={post.featuredImageUrl} alt={post.title}
-                    className="w-full h-full object-cover" />
-                </div>
+              <div className="rounded-2xl overflow-hidden shadow-2xl border border-white/5 h-64 sm:h-96 md:h-[450px]">
+                <img src={post.featuredImageUrl} alt={post.title}
+                  className="w-full h-full object-cover" />
               </div>
             </Container>
           </div>
@@ -305,7 +303,7 @@ export default function BlogPostPage() {
               {/* ── MAIN ARTICLE ───────────────────────────── */}
               <motion.article
                 variants={fadeUp} initial="hidden" animate="visible"
-                className="flex-1 min-w-0"
+                className="flex-1 min-w-0 max-w-3xl"
               >
                 {/* Article body */}
                 <div
@@ -460,7 +458,7 @@ export default function BlogPostPage() {
               </motion.article>
 
               {/* ── SIDEBAR ──────────────────────────────────── */}
-              <aside className="w-full lg:w-72 xl:w-80 shrink-0 space-y-5">
+              <aside className="w-full lg:w-72 xl:w-80 shrink-0 space-y-5 lg:sticky lg:top-24 h-fit">
                 {/* Author card */}
                 <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
                   <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">About the Author</h4>

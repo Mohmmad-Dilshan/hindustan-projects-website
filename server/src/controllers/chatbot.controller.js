@@ -27,7 +27,22 @@ export const askQuestion = async (req, res, next) => {
     let answer = null
     let isAnswered = false
 
-    // ── STEP 1: Match against DB FAQ table (graceful fallback if DB is sleeping) ─
+    // ── STEP 1: Fetch dynamic site settings (phone, email, whatsapp) ─
+    let phoneVal = '+91 99999 99999'
+    let emailVal = 'info@hindustanprojects.com'
+    try {
+      const rows = await prisma.siteSetting.findMany()
+      const settings = {}
+      for (const r of rows) {
+        settings[r.key] = r.value
+      }
+      if (settings.phone) phoneVal = settings.phone
+      if (settings.email) emailVal = settings.email
+    } catch {
+      // Graceful fallback if DB is sleeping
+    }
+
+    // ── STEP 2: Match against DB FAQ table (graceful fallback if DB is sleeping) ─
     try {
       const faqs = await prisma.faq.findMany({
         where: { isActive: true },
@@ -50,21 +65,21 @@ export const askQuestion = async (req, res, next) => {
         }
       }
     } catch {
-      // DB might be sleeping (Neon free tier) — skip to keyword rules
+      // DB might be sleeping — skip to keyword rules
     }
 
-    // ── STEP 2: Fallback keyword rules ────────────────────────────
-    // NOTE: Order matters — check hours BEFORE pricing to avoid 'time'/'rate' overlap
+    // ── STEP 3: Fallback keyword rules ────────────────────────────
     if (!isAnswered) {
-      const hours    = ['business hours', 'working hours', 'office hours', 'open time', 'closing time', 'hours', 'timing', 'timings', 'schedule', 'days', 'weekend', 'kitne baje', 'kab khulta', 'kab band', 'open', 'kab']
-      const pricing  = ['price', 'pricing', 'cost', 'charges', 'fees', 'rate', 'budget', 'package', 'kitna', 'how much', 'quote', 'estimate']
-      const services = ['service', 'services', 'offer', 'develop', 'marketing', 'seo', 'branding', 'app', 'design', 'website', 'software', 'kya karte', 'kya kaam']
-      const contact  = ['contact', 'phone', 'email', 'call', 'whatsapp', 'reach', 'address', 'location', 'office', 'where', 'kahan', 'number']
-      const portfolio = ['portfolio', 'project', 'work', 'sample', 'previous', 'client', 'example', 'case study']
-      const careers  = ['job', 'career', 'hiring', 'vacancy', 'internship', 'opening', 'apply', 'join', 'work with']
+      // Refined keywords (exact phrases, no generic short words like 'kab', 'open', 'call', 'app', 'days')
+      const hours    = ['business hours', 'working hours', 'office hours', 'open time', 'closing time', 'timings', 'timing', 'schedule', 'working days', 'weekend', 'kitne baje', 'kab khulta', 'kab band']
+      const pricing  = ['price', 'pricing', 'cost', 'charges', 'fees', 'rate', 'budget', 'package', 'kitna', 'how much', 'quote', 'estimate', 'charge']
+      const services = ['what services', 'service offer', 'our services', 'web development', 'app development', 'digital marketing', 'seo', 'software development', 'erp system', 'designing', 'kya karte', 'kya kaam', 'what do you do', 'do you offer']
+      const contact  = ['contact', 'phone number', 'email', 'call you', 'whatsapp', 'reach you', 'address', 'location', 'office address', 'where are you', 'kahan', 'phone no', 'mobile number']
+      const portfolio = ['portfolio', 'projects', 'our work', 'sample', 'case study', 'case studies', 'previous work', 'examples of work']
+      const careers  = ['jobs', 'career', 'hiring', 'vacancies', 'internships', 'openings', 'apply for', 'join the team', 'careers']
 
       if (hours.some((k) => clean.includes(k))) {
-        answer = '⏰ **Business Hours:**\n\nMonday – Saturday: **10:00 AM to 7:00 PM IST**\n\nWe are closed on Sundays and national holidays. For urgent matters, drop us a WhatsApp!'
+        answer = `⏰ **Business Hours:**\n\nMonday – Saturday: **10:00 AM to 7:00 PM IST**\n\nWe are closed on Sundays and national holidays. For urgent matters, drop us a WhatsApp at ${phoneVal}!`
         isAnswered = true
       } else if (pricing.some((k) => clean.includes(k))) {
         answer = '💰 **Pricing at Hindustan Projects** depends on the project scope.\n\n• Simple landing page: starting ₹15,000\n• Business website: ₹25,000–₹60,000\n• Custom web/mobile app, ERP, or SaaS: quoted individually\n\nContact us for a free detailed estimate — we\'ll tailor it to your exact requirements!'
@@ -73,7 +88,7 @@ export const askQuestion = async (req, res, next) => {
         answer = '🛠️ **Our Services include:**\n\n• Web Development (React, Node.js, PHP, WordPress)\n• Mobile App Development (Flutter, React Native)\n• Custom Software & ERP Systems\n• UI/UX Design & Branding\n• Digital Marketing & SEO\n• E-Commerce Solutions\n\nVisit our Services page for full details!'
         isAnswered = true
       } else if (contact.some((k) => clean.includes(k))) {
-        answer = '📞 **Reach us easily:**\n\n• 📧 Email: info@hindustanprojects.com\n• 📱 WhatsApp/Call: +91 99999 99999\n• 📍 Office: Bhilwara, Rajasthan, India\n\nOr submit the **Contact Form** on our website — we respond within 24 hours!'
+        answer = `📞 **Reach us easily:**\n\n• 📧 Email: ${emailVal}\n• 📱 WhatsApp/Call: ${phoneVal}\n• 📍 Office: Bhilwara, Rajasthan, India\n\nOr submit the **Contact Form** on our website — we respond within 24 hours!`
         isAnswered = true
       } else if (portfolio.some((k) => clean.includes(k))) {
         answer = '🎨 **Our Portfolio** showcases projects across web, mobile, ERP, and branding.\n\nVisit the **Portfolio** section on our website to see our latest client work with live demos!'
@@ -84,7 +99,7 @@ export const askQuestion = async (req, res, next) => {
       }
     }
 
-    // ── STEP 3: Save to DB for admin review (non-blocking) ───────
+    // ── STEP 4: Save to DB for admin review (non-blocking) ───────
     try {
       await prisma.chatbotInquiry.create({
         data: { question: trimmed, answer, isAnswered },
@@ -93,9 +108,9 @@ export const askQuestion = async (req, res, next) => {
       // DB sleeping — skip saving, still return answer to user
     }
 
-    // ── STEP 4: Return response ────────────────────────────────────
+    // ── STEP 5: Return response ────────────────────────────────────
     const fallback =
-      "🤔 I couldn't find a direct answer to that. Please use the **Contact Form** or WhatsApp us at +91 99999 99999 — our team will get back to you within 24 hours!"
+      `🤔 I couldn't find a direct answer to that. Please use the **Contact Form** or WhatsApp us at ${phoneVal} — our team will get back to you within 24 hours!`
 
     return res.json({
       status: 'ok',

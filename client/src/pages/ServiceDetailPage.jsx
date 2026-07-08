@@ -464,7 +464,7 @@ export default function ServiceDetailPage() {
                 >
                   {createElement(getServiceIcon(service?.icon || 'Globe'), { className: 'w-8 h-8 text-white', strokeWidth: 1.6 })}
                 </div>
-                <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">
+                <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold !text-white leading-tight">
                   {service.title}
                 </h1>
               </div>
@@ -499,7 +499,7 @@ export default function ServiceDetailPage() {
             {/* Right: CTA card */}
             <div className="lg:w-80 shrink-0">
               <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-                <h3 className="font-heading text-lg font-bold text-white mb-2">
+                <h3 className="font-heading text-lg font-bold !text-white mb-2">
                   Ready to Get Started?
                 </h3>
                 <p className="text-white/50 text-sm mb-5 leading-relaxed">

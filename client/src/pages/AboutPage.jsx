@@ -251,9 +251,9 @@ export default function AboutPage() {
                         <span className="text-[5px] font-black tracking-widest text-brand-red bg-brand-red/10 border border-brand-red/20 px-2 py-0.5 rounded-full uppercase">
                           IT Services Department
                         </span>
-                        <h2 className="text-[11px] font-black text-gray-900 leading-tight max-w-[170px]">
+                        <div className="text-[11px] font-black text-gray-900 leading-tight max-w-[170px] font-heading">
                           Building Digital Solutions That Drive Growth
-                        </h2>
+                        </div>
                         <p className="text-[6px] text-gray-400 max-w-[150px]">
                           We build next-generation platforms and custom applications for enterprises.
                         </p>
@@ -306,9 +306,9 @@ export default function AboutPage() {
 
                     {/* Mobile Hero Content */}
                     <div className="flex-1 p-2 bg-gradient-to-b from-blue-50/30 to-white flex flex-col justify-center items-center text-center space-y-1.5">
-                      <h2 className="text-[7.5px] font-black text-gray-900 leading-tight">
+                       <div className="text-[7.5px] font-black text-gray-900 leading-tight font-heading">
                         Digital Solutions That Drive Growth
-                      </h2>
+                      </div>
                       <p className="text-[5px] text-gray-400 leading-normal max-w-[80px]">
                         We build custom systems and portals.
                       </p>

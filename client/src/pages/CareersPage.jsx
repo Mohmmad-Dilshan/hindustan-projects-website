@@ -75,6 +75,7 @@ export default function CareersPage() {
       {/* Core Values Section - White Background (Matches /services page metrics) */}
       <section className="py-10 sm:py-12 lg:py-16 bg-white border-b border-gray-100">
         <Container>
+          <h2 className="sr-only">Our Core Values</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {VALUES.map((val, idx) => {
               const Icon = val.icon
@@ -199,9 +200,9 @@ export default function CareersPage() {
 
               {/* Bottom General Application Section */}
               <div className="bg-gray-50 border border-gray-200 rounded-3xl p-8 text-center space-y-5 max-w-2xl mx-auto mt-14 shadow-sm relative overflow-hidden">
-                <h4 className="font-heading text-lg font-bold text-brand-blue">
+                <h3 className="font-heading text-lg font-bold text-brand-blue">
                   Don't see the right role?
-                </h4>
+                </h3>
                 <p className="text-xs sm:text-sm text-gray-500 max-w-md mx-auto leading-relaxed">
                   We are always on the lookout for talented software engineers, creative UI/UX
                   designers, and metrics-driven digital marketing associates. Submit a general

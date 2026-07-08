@@ -248,9 +248,9 @@ export default function ShowcaseSection() {
                                 <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
                                 <span className="text-[7px] font-bold text-emerald-400 uppercase tracking-widest">Active Server</span>
                               </div>
-                              <h4 className="font-heading font-extrabold text-sm text-white leading-tight">
+                              <div className="font-heading font-extrabold text-sm text-white leading-tight">
                                 Database Sync & Operations Panel
-                              </h4>
+                              </div>
                               <p className="text-[9px] text-gray-400 leading-relaxed">
                                 Real-time pipeline data and encrypted token management dashboard.
                               </p>

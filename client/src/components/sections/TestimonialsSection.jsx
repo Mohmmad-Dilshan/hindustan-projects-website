@@ -147,9 +147,9 @@ export default function TestimonialsSection() {
                         </div>
                       )}
                       <div className="text-center sm:text-left">
-                        <h4 className="font-heading text-base font-bold text-brand-blue leading-none mb-1">
+                        <h3 className="font-heading text-base font-bold text-brand-blue leading-none mb-1">
                           {t.name}
-                        </h4>
+                        </h3>
                         <p className="text-xs text-text-muted">
                           {t.role},{' '}
                           <span className="font-semibold text-brand-red">{t.company}</span>

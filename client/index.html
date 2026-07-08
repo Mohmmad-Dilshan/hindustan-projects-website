@@ -65,8 +65,10 @@
     <!-- Sitemap reference -->
     <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 
-    <!-- Performance: DNS prefetch for external resources -->
+    <!-- Performance: Preconnect for external resources -->
+    <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
     <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+    <link rel="preconnect" href="https://www.google.com" crossorigin />
     <link rel="dns-prefetch" href="https://www.google.com" />
 
     <!-- JSON-LD: Organization (base schema — always present, not page-specific) -->

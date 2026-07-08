@@ -7,7 +7,7 @@ import { Container, Button, SEO } from '@/components/ui'
 import PortfolioSection from '@/components/sections/PortfolioSection'
 import { useSiteSettings } from '@/hooks/useContent'
 
-import portfolioHeroNewFit from '@/assets/portfolio_hero_new_fit.png'
+import portfolioHeroNewFit from '@/assets/portfolio_hero_new_fit.webp'
 
 export default function PortfolioPage() {
   const { data: settingsData } = useSiteSettings()

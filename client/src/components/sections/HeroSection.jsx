@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 import { ArrowRight, ChevronDown, CheckCircle2 } from 'lucide-react'
 import { Button, Container } from '@/components/ui'
 import { useSiteSettings } from '@/hooks/useContent'
-import professionalHero from '@/assets/professional_hero.png'
+import professionalHero from '@/assets/professional_hero.webp'
 
 // ── Animation variants ─────────────────────────────────────────
 const fadeUp = {

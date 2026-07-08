@@ -19,7 +19,7 @@ import { useFaqs, useSiteSettings } from '@/hooks/useContent'
 import { api } from '@/utils/api'
 import { faqSchema, breadcrumbSchema } from '@/components/ui/SEO'
 import { fadeUp, staggerContainer } from '@/utils/motion'
-import contactHeroPerson from '@/assets/contact_hero_person.png'
+import contactHeroPerson from '@/assets/contact_hero_person.webp'
 
 // ── Zod validation schema ─────────────────────────────────────
 const contactSchema = z.object({

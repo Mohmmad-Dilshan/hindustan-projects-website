@@ -317,7 +317,7 @@ export default function BlogPostPage() {
             <motion.nav
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-1.5 text-xs text-white/40 mb-8 flex-wrap"
+              className="flex items-center justify-center gap-1.5 text-xs text-white/40 mb-8 flex-wrap"
             >
               <Link to="/" className="hover:text-white/75 transition-colors">Home</Link>
               <ChevronRight className="w-3 h-3 shrink-0" />
@@ -326,12 +326,12 @@ export default function BlogPostPage() {
               <span className="text-white/30 truncate max-w-[180px] sm:max-w-sm">{post.title}</span>
             </motion.nav>
 
-            <div className="max-w-3xl">
+            <div className="max-w-3xl mx-auto text-center flex flex-col items-center">
               {/* Category badge */}
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="inline-flex items-center gap-2 text-[11px] font-bold text-brand-red bg-brand-red/15 border border-brand-red/25 px-3.5 py-1.5 rounded-full mb-5 backdrop-blur-sm"
+                className="inline-flex items-center gap-2 text-[11px] font-bold text-brand-red bg-brand-red/15 border border-brand-red/25 px-3.5 py-1.5 rounded-full mb-5 backdrop-blur-sm mx-auto"
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-brand-red animate-pulse" />
                 {post.category}
@@ -342,7 +342,7 @@ export default function BlogPostPage() {
                 initial={{ opacity: 0, y: 18 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.08 }}
-                className="font-heading text-3xl sm:text-4xl lg:text-[2.75rem] font-black !text-white leading-[1.15] mb-5 tracking-tight"
+                className="font-heading text-3xl sm:text-4xl lg:text-[2.75rem] font-black !text-white leading-[1.15] mb-5 tracking-tight text-center"
               >
                 {post.title}
               </motion.h1>
@@ -352,7 +352,7 @@ export default function BlogPostPage() {
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.14 }}
-                className="text-white/60 text-base sm:text-lg leading-relaxed mb-7 max-w-2xl"
+                className="text-white/60 text-base sm:text-lg leading-relaxed mb-7 max-w-2xl text-center mx-auto"
               >
                 {post.excerpt}
               </motion.p>
@@ -362,7 +362,7 @@ export default function BlogPostPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="flex flex-wrap items-center gap-x-5 gap-y-3"
+                className="flex flex-wrap items-center justify-center gap-x-5 gap-y-3"
               >
                 {/* Author */}
                 <div className="flex items-center gap-3">
@@ -378,7 +378,7 @@ export default function BlogPostPage() {
                 <div className="hidden sm:block w-px h-6 bg-white/15" />
 
                 {/* Stats */}
-                <div className="flex flex-wrap items-center gap-4 text-xs text-white/50">
+                <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-white/50">
                   {publishDate && (
                     <span className="flex items-center gap-1.5">
                       <Calendar className="w-3.5 h-3.5" /> {publishDate}

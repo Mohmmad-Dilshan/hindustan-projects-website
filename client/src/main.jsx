@@ -4,7 +4,6 @@ import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { HelmetProvider } from 'react-helmet-async'
-import * as Sentry from '@sentry/react'
 
 // Local fonts — no internet required
 import '@fontsource/poppins/400.css'
@@ -49,23 +48,10 @@ async function bootstrapApp() {
       settings = data?.data || {}
     }
   } catch (err) {
-    console.warn('[main] Failed to fetch settings for Sentry/GA4 configs:', err.message)
+    console.warn('[main] Failed to fetch GA4 config:', err.message)
   }
 
-  // 1. Optional Sentry Integration
-  if (settings.sys_sentry_dsn) {
-    Sentry.init({
-      dsn: settings.sys_sentry_dsn,
-      environment: import.meta.env.MODE,
-      tracesSampleRate: 0.1,
-      replaysSessionSampleRate: 0.1,
-      replaysOnErrorSampleRate: 1.0,
-    })
-    window.SENTRY_INITIALIZED = true
-    console.log('[Sentry] Initialized successfully')
-  }
-
-  // 2. Optional Google Analytics 4 Integration
+  // Optional Google Analytics 4 Integration
   if (settings.sys_ga_measurement_id) {
     const gaId = settings.sys_ga_measurement_id
     const script = document.createElement('script')

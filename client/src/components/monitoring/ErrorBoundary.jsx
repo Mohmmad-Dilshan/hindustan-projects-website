@@ -1,5 +1,4 @@
 import React from 'react'
-import * as Sentry from '@sentry/react'
 import { api } from '@/utils/api'
 
 export class ErrorBoundary extends React.Component {
@@ -15,12 +14,6 @@ export class ErrorBoundary extends React.Component {
   componentDidCatch(error, errorInfo) {
     this.setState({ errorInfo })
 
-    // 1. Report to Sentry (if Sentry is initialized)
-    if (window.SENTRY_INITIALIZED) {
-      Sentry.captureException(error, { extra: errorInfo })
-    }
-
-    // 2. Report to our custom backend ErrorLog table (fallback/backup)
     const payload = {
       errorMessage: error?.toString() || 'Unknown Frontend Error',
       pageOrRoute: window.location.pathname + window.location.search,

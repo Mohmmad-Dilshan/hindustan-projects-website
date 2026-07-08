@@ -174,7 +174,7 @@ export default function AboutPage() {
                 <span className="w-1.5 h-1.5 rounded-full bg-brand-red animate-pulse" />
                 Who We Are
               </span>
-              <h1 className="font-heading text-4xl sm:text-5xl lg:text-[3.5rem] font-bold text-white leading-tight mb-5">
+              <h1 className="font-heading text-4xl sm:text-5xl lg:text-[3.5rem] font-bold !text-white leading-tight mb-5">
                 Bhilwara's Premier{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-red to-orange-400">
                   IT Partner

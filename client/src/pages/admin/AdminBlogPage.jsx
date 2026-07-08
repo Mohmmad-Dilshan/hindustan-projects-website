@@ -30,40 +30,35 @@ const STATUS_ICONS = { PUBLISHED: Globe, DRAFT: FileText, ARCHIVED: Archive }
 
 const inputCls = 'w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue/25 focus:border-brand-blue transition-all'
 
-// ── Simple WYSIWYG editor (same pattern as AdminLegalPage) ─────
+// ── Simple WYSIWYG editor ──────────────────────────────────────
 function RichEditor({ value, onChange, label }) {
   const editorRef = useRef(null)
   const [htmlMode, setHtmlMode] = useState(false)
+  const isInitialized = useRef(false)
 
-  // Only sync on mount and mode changes to preserve cursor position during typing
+  // On first mount OR when switching to visual mode — load content into editor
   useEffect(() => {
-    if (!htmlMode && editorRef.current && value !== undefined) {
+    if (!htmlMode && editorRef.current) {
       const safe = DOMPurify.sanitize(value || '')
-      // Only update if content is actually different (prevents cursor jumps)
-      if (editorRef.current.innerHTML !== safe) {
-        const selection = window.getSelection()
-        const range = selection?.rangeCount > 0 ? selection.getRangeAt(0) : null
-        const cursorOffset = range ? range.startOffset : 0
-        
+      // Always set on first mount (initial load), then only on mode switch
+      if (!isInitialized.current || editorRef.current.dataset.syncing === 'true') {
         editorRef.current.innerHTML = safe
-        
-        // Restore cursor position if possible
-        if (range && editorRef.current.firstChild) {
-          try {
-            const newRange = document.createRange()
-            const textNode = editorRef.current.firstChild
-            const offset = Math.min(cursorOffset, textNode.textContent?.length || 0)
-            newRange.setStart(textNode, offset)
-            newRange.collapse(true)
-            selection.removeAllRanges()
-            selection.addRange(newRange)
-          } catch (e) {
-            // Ignore cursor restoration errors
-          }
-        }
+        isInitialized.current = true
       }
     }
-  }, [htmlMode]) // Removed 'value' dependency to prevent cursor jumps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [htmlMode])
+
+  // When value changes externally (e.g. form reset / initial load after async fetch)
+  // Only apply if editor is not focused (user not typing)
+  useEffect(() => {
+    if (!htmlMode && editorRef.current && document.activeElement !== editorRef.current) {
+      const safe = DOMPurify.sanitize(value || '')
+      if (editorRef.current.innerHTML !== safe) {
+        editorRef.current.innerHTML = safe
+      }
+    }
+  }, [value, htmlMode])
 
   const exec = (cmd, val = null) => {
     if (htmlMode) return
@@ -160,14 +155,26 @@ function RichEditor({ value, onChange, label }) {
   )
 }
 
+// ── Fetch full post for editing ───────────────────────────────
+function useAdminPostForEdit(id) {
+  return useQuery({
+    queryKey: ['admin-blog-post-edit', id],
+    queryFn: () => api.get(`/admin/blog/${id}`),
+    enabled: Boolean(id),
+    staleTime: 0,
+  })
+}
+
 // ── Post Editor Form ──────────────────────────────────────────
-function PostEditor({ initial, onSave, onCancel, loading }) {
+function PostEditor({ postId, initial, onSave, onCancel, loading }) {
+  // When editing, fetch full post data (list view only has partial data, no full content)
+  const { data: fullPostData, isLoading: fetchingPost } = useAdminPostForEdit(postId)
+  const fullPost = postId ? (fullPostData?.data || null) : null
+  const editData = fullPost || initial
+
   const [seoOpen, setSeoOpen] = useState(false)
-  const { register, handleSubmit, control, watch, setValue, formState: { errors } } = useForm({
-    defaultValues: initial ? {
-      ...initial,
-      tags: initial.tags?.join(', ') || '',
-    } : {
+  const { register, handleSubmit, control, watch, setValue, reset, formState: { errors } } = useForm({
+    defaultValues: {
       title: '', slug: '', excerpt: '', content: '',
       featuredImageUrl: '', category: 'Web Development',
       tags: '', authorName: 'Hindustan Projects',
@@ -176,15 +183,26 @@ function PostEditor({ initial, onSave, onCancel, loading }) {
     },
   })
 
+  // Populate form when full post data loads (edit mode)
+  useEffect(() => {
+    if (editData) {
+      reset({
+        ...editData,
+        tags: Array.isArray(editData.tags) ? editData.tags.join(', ') : (editData.tags || ''),
+        isFeatured: Boolean(editData.isFeatured),
+      })
+    }
+  }, [editData, reset])
+
   const title = watch('title')
 
   // Auto-generate slug from title when creating (not editing)
   useEffect(() => {
-    if (!initial && title) {
+    if (!postId && title) {
       const slug = title.toLowerCase().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '')
       setValue('slug', slug)
     }
-  }, [title, initial, setValue])
+  }, [title, postId, setValue])
 
   const onSubmit = (data) => {
     onSave({
@@ -192,6 +210,18 @@ function PostEditor({ initial, onSave, onCancel, loading }) {
       tags: data.tags ? data.tags.split(',').map((t) => t.trim()).filter(Boolean) : [],
       isFeatured: Boolean(data.isFeatured),
     })
+  }
+
+  // Show loading state while fetching full post
+  if (postId && fetchingPost) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 rounded-full border-2 border-brand-blue border-t-transparent animate-spin mx-auto" />
+          <p className="text-sm text-gray-500">Loading post content...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -417,6 +447,7 @@ export default function AdminBlogPage() {
             />
           ) : (
             <PostEditor
+              postId={editing?.id}
               initial={editing}
               onSave={(data) => updateMutation.mutate({ id: editing.id, ...data })}
               onCancel={handleCancel}

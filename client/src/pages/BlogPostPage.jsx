@@ -1,26 +1,28 @@
 import { useState } from 'react'
-import { Link, useParams, useNavigate } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   Calendar, Clock, Eye, Tag, ArrowLeft, MessageSquare,
-  Send, CheckCircle, AlertCircle, Share2, ChevronRight, BookOpen,
+  Send, CheckCircle, AlertCircle, Share2, ChevronRight,
+  BookOpen, User, TrendingUp, Sparkles,
 } from 'lucide-react'
 import { Container, SEO } from '@/components/ui'
 import { useBlogPost, useBlogComments, useSubmitComment } from '@/hooks/useBlog'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { fadeUp, staggerContainer } from '@/utils/motion'
+import { fadeUp } from '@/utils/motion'
 import DOMPurify from 'dompurify'
 import { SITE } from '@/components/ui/SEO'
 
 const commentSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.').max(100),
   email: z.string().email('Please enter a valid email.'),
-  comment: z.string().min(5, 'Comment must be at least 5 characters.').max(2000, 'Comment is too long.'),
+  comment: z.string().min(5, 'Comment must be at least 5 characters.').max(2000, 'Too long.'),
   _hp: z.string().optional(),
 })
 
+// ── Share Buttons ─────────────────────────────────────────────
 function ShareButtons({ title, slug }) {
   const url = `${window.location.origin}/blog/${slug}`
   const encoded = encodeURIComponent(url)
@@ -30,19 +32,19 @@ function ShareButtons({ title, slug }) {
     {
       label: 'LinkedIn',
       href: `https://www.linkedin.com/sharing/share-offsite/?url=${encoded}`,
-      color: 'bg-[#0077b5] hover:bg-[#006399] text-white',
+      className: 'bg-[#0077b5] hover:bg-[#006399] text-white',
       icon: (
-        <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+        <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
           <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
         </svg>
       ),
     },
     {
-      label: 'X / Twitter',
+      label: 'Twitter / X',
       href: `https://twitter.com/intent/tweet?text=${text}&url=${encoded}`,
-      color: 'bg-black hover:bg-gray-800 text-white',
+      className: 'bg-black hover:bg-gray-800 text-white',
       icon: (
-        <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+        <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
           <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
         </svg>
       ),
@@ -50,9 +52,9 @@ function ShareButtons({ title, slug }) {
     {
       label: 'WhatsApp',
       href: `https://wa.me/?text=${text}%20${encoded}`,
-      color: 'bg-[#25D366] hover:bg-[#20ba5a] text-white',
+      className: 'bg-[#25D366] hover:bg-[#1db954] text-white',
       icon: (
-        <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+        <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
           <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
         </svg>
       ),
@@ -65,50 +67,50 @@ function ShareButtons({ title, slug }) {
         <Share2 className="w-3.5 h-3.5" /> Share:
       </span>
       {buttons.map((btn) => (
-        <a
-          key={btn.label}
-          href={btn.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${btn.color}`}
-        >
-          {btn.icon}
-          {btn.label}
+        <a key={btn.label} href={btn.href} target="_blank" rel="noopener noreferrer"
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:-translate-y-0.5 hover:shadow-md ${btn.className}`}>
+          {btn.icon} {btn.label}
         </a>
       ))}
     </div>
   )
 }
 
+// ── Related Article Card ──────────────────────────────────────
 function RelatedCard({ post }) {
   const date = post.publishedAt
     ? new Date(post.publishedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
     : ''
   return (
     <Link to={`/blog/${post.slug}`} className="group block">
-      <div className="bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
-        <div className="h-32 bg-gradient-to-br from-brand-blue/10 to-brand-blue/5 overflow-hidden">
+      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
+        <div className="h-36 bg-gradient-to-br from-brand-blue/10 to-brand-blue/5 overflow-hidden relative">
           {post.featuredImageUrl ? (
-            <img src={post.featuredImageUrl} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+            <img src={post.featuredImageUrl} alt={post.title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <BookOpen className="w-8 h-8 text-brand-blue/20" />
             </div>
           )}
+          <span className="absolute top-2 left-2 text-[10px] font-bold bg-brand-blue text-white px-2 py-0.5 rounded-full">
+            {post.category}
+          </span>
         </div>
         <div className="p-4">
-          <span className="text-[10px] font-bold text-brand-blue uppercase tracking-wide">{post.category}</span>
-          <h3 className="font-heading font-bold text-gray-900 text-sm leading-snug mt-1 mb-2 group-hover:text-brand-blue transition-colors line-clamp-2">{post.title}</h3>
-          <p className="text-[11px] text-gray-400">{date} · {post.readTime} min read</p>
+          <h3 className="font-heading font-bold text-gray-900 text-sm leading-snug mt-1 mb-2 group-hover:text-brand-blue transition-colors line-clamp-2">
+            {post.title}
+          </h3>
+          <p className="text-[11px] text-gray-400">{date}{post.readTime ? ` · ${post.readTime} min read` : ''}</p>
         </div>
       </div>
     </Link>
   )
 }
 
+// ── Main Page ─────────────────────────────────────────────────
 export default function BlogPostPage() {
   const { slug } = useParams()
-  const navigate = useNavigate()
   const [commentSuccess, setCommentSuccess] = useState(false)
 
   const { data, isLoading, isError } = useBlogPost(slug)
@@ -119,10 +121,9 @@ export default function BlogPostPage() {
   const comments = commentsData?.data || []
   const relatedPosts = post?.relatedPosts || []
 
-  const {
-    register, handleSubmit, reset,
-    formState: { errors, isSubmitting },
-  } = useForm({ resolver: zodResolver(commentSchema) })
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({
+    resolver: zodResolver(commentSchema),
+  })
 
   const onCommentSubmit = async (formData) => {
     try {
@@ -130,39 +131,39 @@ export default function BlogPostPage() {
       setCommentSuccess(true)
       reset()
       setTimeout(() => setCommentSuccess(false), 8000)
-    } catch {
-      // error shown via submitMutation.isError
-    }
+    } catch { /* error shown via submitMutation.isError */ }
   }
 
+  // ── Loading State ─────────────────────────────────────────
   if (isLoading) {
     return (
       <div className="min-h-screen pt-24 pb-16 bg-bg-base">
-        <Container className="max-w-4xl">
-          <div className="animate-pulse space-y-6">
-            <div className="h-6 bg-gray-100 rounded w-24" />
-            <div className="h-10 bg-gray-100 rounded w-3/4" />
-            <div className="h-5 bg-gray-100 rounded w-1/2" />
+        <Container>
+          <div className="animate-pulse max-w-4xl mx-auto space-y-6">
+            <div className="h-5 bg-gray-100 rounded w-40" />
+            <div className="h-8 bg-gray-100 rounded w-3/4" />
+            <div className="h-4 bg-gray-100 rounded w-1/2" />
             <div className="h-72 bg-gray-100 rounded-2xl" />
-            <div className="space-y-3">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="h-4 bg-gray-100 rounded" style={{ width: `${70 + Math.random() * 30}%` }} />
-              ))}
-            </div>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-4 bg-gray-100 rounded" style={{ width: `${65 + Math.random() * 30}%` }} />
+            ))}
           </div>
         </Container>
       </div>
     )
   }
 
+  // ── Not Found / Error ─────────────────────────────────────
   if (isError || !post) {
     return (
       <div className="min-h-screen pt-24 pb-16 bg-bg-base flex items-center justify-center">
-        <div className="text-center">
-          <BookOpen className="w-12 h-12 text-gray-200 mx-auto mb-3" />
+        <div className="text-center px-4">
+          <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-5">
+            <BookOpen className="w-10 h-10 text-gray-300" />
+          </div>
           <h1 className="font-heading text-2xl font-bold text-gray-800 mb-2">Article Not Found</h1>
-          <p className="text-gray-500 mb-6">The article you're looking for doesn't exist or has been removed.</p>
-          <Link to="/blog" className="inline-flex items-center gap-2 bg-brand-blue text-white px-5 py-2.5 rounded-xl text-sm font-semibold">
+          <p className="text-gray-500 mb-6 max-w-sm mx-auto">The article you're looking for doesn't exist or has been removed.</p>
+          <Link to="/blog" className="inline-flex items-center gap-2 bg-brand-blue text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:shadow-md transition-all">
             <ArrowLeft className="w-4 h-4" /> Back to Blog
           </Link>
         </div>
@@ -172,9 +173,10 @@ export default function BlogPostPage() {
 
   const metaTitle = post.metaTitle || post.title
   const metaDescription = post.metaDescription || post.excerpt
-  const publishDate = post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : ''
+  const publishDate = post.publishedAt
+    ? new Date(post.publishedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
+    : ''
 
-  // JSON-LD Article structured data
   const articleSchema = {
     '@context': 'https://schema.org',
     '@type': 'Article',
@@ -202,77 +204,132 @@ export default function BlogPostPage() {
         schemas={[articleSchema]}
       />
 
-      <div className="min-h-screen pt-20 bg-bg-base">
-        {/* Hero */}
-        <div className="bg-[#050e20] pt-10 pb-12 border-b border-white/5">
-          <Container className="max-w-4xl">
+      <div className="min-h-screen bg-bg-base">
+        {/* ── HERO ─────────────────────────────────────────── */}
+        <div className="bg-gradient-to-br from-[#050e20] via-[#0a1628] to-[#050e20] pt-28 pb-16 relative overflow-hidden">
+          {/* Background grid */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff04_1px,transparent_1px),linear-gradient(to_bottom,#ffffff04_1px,transparent_1px)] bg-[size:40px_40px]" />
+          {/* Orbs */}
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-blue/15 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4" />
+          <div className="absolute bottom-0 left-0 w-72 h-72 bg-brand-red/8 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4" />
+
+          <Container className="relative">
             {/* Breadcrumb */}
-            <nav className="flex items-center gap-1.5 text-xs text-white/70 mb-6">
-              <Link to="/" className="hover:text-white/70 transition-colors">Home</Link>
-              <ChevronRight className="w-3 h-3" />
-              <Link to="/blog" className="hover:text-white/70 transition-colors">Blog</Link>
-              <ChevronRight className="w-3 h-3" />
-              <span className="text-white/60 truncate max-w-[200px]">{post.title}</span>
+            <nav className="flex items-center gap-1.5 text-xs text-white/50 mb-8 flex-wrap">
+              <Link to="/" className="hover:text-white/80 transition-colors">Home</Link>
+              <ChevronRight className="w-3 h-3 shrink-0" />
+              <Link to="/blog" className="hover:text-white/80 transition-colors">Blog</Link>
+              <ChevronRight className="w-3 h-3 shrink-0" />
+              <span className="text-white/40 truncate max-w-[250px]">{post.title}</span>
             </nav>
 
-            <span className="inline-block text-xs font-bold text-brand-red bg-brand-red/10 border border-brand-red/20 px-3 py-1 rounded-full mb-4">
-              {post.category}
-            </span>
-            <h1 className="font-heading text-3xl sm:text-4xl font-black text-white leading-tight mb-4">
-              {post.title}
-            </h1>
-            <p className="text-white/60 text-base leading-relaxed mb-6 max-w-2xl">{post.excerpt}</p>
+            <div className="max-w-3xl">
+              {/* Category badge */}
+              <motion.span
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="inline-flex items-center gap-2 text-xs font-bold text-brand-red bg-brand-red/10 border border-brand-red/20 px-3 py-1.5 rounded-full mb-5"
+              >
+                <Sparkles className="w-3 h-3" />
+                {post.category}
+              </motion.span>
 
-            {/* Meta */}
-            <div className="flex flex-wrap items-center gap-4 text-xs text-white/60 font-medium">
-              <span className="text-white/60 font-semibold">By {post.authorName}</span>
-              {publishDate && (
-                <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" />{publishDate}</span>
-              )}
-              <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />{post.readTime} min read</span>
-              <span className="flex items-center gap-1.5"><Eye className="w-3.5 h-3.5" />{post.viewCount} views</span>
-              <span className="flex items-center gap-1.5"><MessageSquare className="w-3.5 h-3.5" />{comments.length} comments</span>
+              {/* Title */}
+              <motion.h1
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="font-heading text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-[1.15] mb-5"
+              >
+                {post.title}
+              </motion.h1>
+
+              {/* Excerpt */}
+              <motion.p
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+                className="text-white/65 text-base leading-relaxed mb-7 max-w-2xl"
+              >
+                {post.excerpt}
+              </motion.p>
+
+              {/* Meta bar */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-white/55 font-medium"
+              >
+                <span className="flex items-center gap-1.5 text-white/80 font-semibold">
+                  <User className="w-3.5 h-3.5" /> {post.authorName}
+                </span>
+                {publishDate && (
+                  <span className="flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5" /> {publishDate}
+                  </span>
+                )}
+                <span className="flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5" /> {post.readTime} min read
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Eye className="w-3.5 h-3.5" /> {post.viewCount} views
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <MessageSquare className="w-3.5 h-3.5" /> {comments.length} comments
+                </span>
+              </motion.div>
             </div>
           </Container>
         </div>
 
-        {/* Featured image */}
+        {/* ── FEATURED IMAGE ───────────────────────────────── */}
         {post.featuredImageUrl && (
-          <div className="relative -mb-8 z-10">
-            <Container className="max-w-4xl">
-              <div className="rounded-2xl overflow-hidden shadow-2xl border border-gray-100 h-72 sm:h-96">
-                <img src={post.featuredImageUrl} alt={post.title} className="w-full h-full object-cover" />
+          <div className="bg-[#050e20]">
+            <Container>
+              <div className="max-w-3xl">
+                <div className="rounded-b-2xl overflow-hidden shadow-2xl h-64 sm:h-80 lg:h-96">
+                  <img src={post.featuredImageUrl} alt={post.title}
+                    className="w-full h-full object-cover" />
+                </div>
               </div>
             </Container>
           </div>
         )}
 
-        {/* Article content */}
-        <section className={`py-12 ${post.featuredImageUrl ? 'pt-20' : ''}`}>
-          <Container className="max-w-4xl">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-              {/* Main content */}
+        {/* ── CONTENT AREA ─────────────────────────────────── */}
+        <section className="py-12 sm:py-16">
+          <Container>
+            <div className="flex flex-col lg:flex-row gap-10 lg:gap-12 max-w-none">
+
+              {/* ── MAIN ARTICLE ───────────────────────────── */}
               <motion.article
-                variants={fadeUp}
-                initial="hidden"
-                animate="visible"
-                className="lg:col-span-8"
+                variants={fadeUp} initial="hidden" animate="visible"
+                className="flex-1 min-w-0"
               >
+                {/* Article body */}
                 <div
-                  className="prose prose-slate max-w-none prose-headings:font-heading prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-brand-blue prose-a:no-underline hover:prose-a:underline prose-img:rounded-xl prose-img:shadow-md prose-strong:text-gray-900 prose-ul:text-gray-600 prose-ol:text-gray-600 prose-li:leading-relaxed prose-h2:text-2xl prose-h3:text-xl"
+                  className="prose prose-slate max-w-none
+                    prose-headings:font-heading prose-headings:font-bold prose-headings:text-brand-blue
+                    prose-h2:text-2xl prose-h3:text-xl prose-h4:text-lg
+                    prose-p:text-gray-600 prose-p:leading-[1.85]
+                    prose-a:text-brand-blue prose-a:font-semibold prose-a:no-underline hover:prose-a:underline hover:prose-a:text-brand-red
+                    prose-strong:text-gray-900 prose-strong:font-bold
+                    prose-ul:text-gray-600 prose-ol:text-gray-600 prose-li:leading-relaxed
+                    prose-img:rounded-2xl prose-img:shadow-lg
+                    prose-blockquote:border-brand-blue prose-blockquote:bg-brand-blue/5 prose-blockquote:rounded-r-xl prose-blockquote:py-2
+                    prose-code:bg-gray-100 prose-code:text-brand-red prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
+                    prose-pre:bg-slate-900 prose-pre:rounded-2xl"
                   dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
                 />
 
                 {/* Tags */}
                 {post.tags?.length > 0 && (
-                  <div className="mt-8 pt-6 border-t border-gray-100 flex flex-wrap items-center gap-2">
+                  <div className="mt-10 pt-6 border-t border-gray-100 flex flex-wrap items-center gap-2">
                     <Tag className="w-4 h-4 text-gray-400" />
                     {post.tags.map((tag) => (
-                      <Link
-                        key={tag}
-                        to={`/blog?tag=${encodeURIComponent(tag)}`}
-                        className="text-xs font-semibold bg-gray-100 hover:bg-brand-blue hover:text-white text-gray-600 px-3 py-1 rounded-full transition-colors"
-                      >
+                      <Link key={tag} to={`/blog?tag=${encodeURIComponent(tag)}`}
+                        className="text-xs font-semibold bg-gray-100 hover:bg-brand-blue hover:text-white text-gray-600 px-3 py-1 rounded-full transition-all">
                         #{tag}
                       </Link>
                     ))}
@@ -284,151 +341,204 @@ export default function BlogPostPage() {
                   <ShareButtons title={post.title} slug={post.slug} />
                 </div>
 
-                {/* Comments */}
-                <div className="mt-12">
-                  <h2 className="font-heading text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                    <MessageSquare className="w-5 h-5 text-brand-blue" />
-                    Comments ({comments.length})
+                {/* Back to blog */}
+                <div className="mt-6">
+                  <Link to="/blog"
+                    className="inline-flex items-center gap-2 text-sm text-brand-blue font-semibold hover:gap-3 transition-all group">
+                    <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                    Back to all articles
+                  </Link>
+                </div>
+
+                {/* ── COMMENTS ─────────────────────────────── */}
+                <div className="mt-14">
+                  <h2 className="font-heading text-2xl font-bold text-gray-900 mb-7 flex items-center gap-2.5">
+                    <MessageSquare className="w-6 h-6 text-brand-blue" />
+                    Comments
+                    <span className="text-sm font-normal text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+                      {comments.length}
+                    </span>
                   </h2>
 
                   {/* Comment list */}
                   {comments.length > 0 ? (
-                    <div className="space-y-4 mb-8">
-                      {comments.map((c) => (
-                        <div key={c.id} className="bg-white rounded-xl border border-gray-100 p-5">
+                    <div className="space-y-4 mb-10">
+                      {comments.map((c, i) => (
+                        <motion.div key={c.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.05 }}
+                          className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
                           <div className="flex items-start gap-3">
-                            <div className="w-9 h-9 rounded-full bg-brand-blue/10 flex items-center justify-center text-brand-blue font-bold text-sm shrink-0">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-blue to-brand-blue/60 flex items-center justify-center text-white font-bold text-sm shrink-0">
                               {c.name[0].toUpperCase()}
                             </div>
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1.5">
-                                <span className="font-semibold text-sm text-gray-900">{c.name}</span>
-                                <span className="text-[11px] text-gray-400">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap mb-2">
+                                <span className="font-bold text-sm text-gray-900">{c.name}</span>
+                                <span className="text-[11px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full">
                                   {new Date(c.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                                 </span>
                               </div>
                               <p className="text-sm text-gray-600 leading-relaxed">{c.comment}</p>
                             </div>
                           </div>
-                        </div>
+                        </motion.div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-gray-400 text-sm italic mb-8">No approved comments yet. Be the first to comment!</p>
+                    <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center mb-8">
+                      <MessageSquare className="w-8 h-8 text-gray-200 mx-auto mb-2" />
+                      <p className="text-gray-400 text-sm">No comments yet. Be the first to share your thoughts!</p>
+                    </div>
                   )}
 
-                  {/* Comment form */}
-                  <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-                    <h3 className="font-heading font-bold text-gray-900 mb-5">Leave a Comment</h3>
-
-                    {commentSuccess ? (
-                      <div className="flex items-start gap-3 bg-emerald-50 border border-emerald-200 rounded-xl p-4">
-                        <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-                        <div>
-                          <p className="font-semibold text-emerald-800 text-sm">Comment submitted!</p>
-                          <p className="text-emerald-700 text-xs mt-0.5">Your comment is awaiting moderation and will appear once approved by our team.</p>
-                        </div>
-                      </div>
-                    ) : (
-                      <form onSubmit={handleSubmit(onCommentSubmit)} className="space-y-4" noValidate>
-                        {/* Honeypot */}
-                        <input type="text" {...register('_hp')} className="absolute opacity-0 h-0 w-0 pointer-events-none" tabIndex={-1} autoComplete="off" aria-hidden="true" />
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Comment Form */}
+                  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                    <div className="bg-gradient-to-r from-brand-blue/5 to-transparent border-b border-gray-100 px-6 py-4">
+                      <h3 className="font-heading font-bold text-gray-900 text-lg">Leave a Comment</h3>
+                      <p className="text-xs text-gray-500 mt-0.5">Comments are moderated before appearing.</p>
+                    </div>
+                    <div className="p-6">
+                      {commentSuccess ? (
+                        <div className="flex items-start gap-3 bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                          <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
                           <div>
-                            <label className="text-xs font-bold text-gray-600 block mb-1.5 uppercase tracking-wide">Name *</label>
-                            <input
-                              type="text"
-                              {...register('name')}
-                              placeholder="Your name"
-                              className={`w-full px-3.5 py-2.5 text-sm border rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue/25 focus:border-brand-blue transition-all ${errors.name ? 'border-brand-red' : 'border-gray-200'}`}
-                            />
-                            {errors.name && <p className="text-xs text-brand-red mt-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.name.message}</p>}
+                            <p className="font-semibold text-emerald-800 text-sm">Comment submitted!</p>
+                            <p className="text-emerald-700 text-xs mt-0.5">Awaiting moderation — will appear once approved.</p>
                           </div>
+                        </div>
+                      ) : (
+                        <form onSubmit={handleSubmit(onCommentSubmit)} className="space-y-4" noValidate>
+                          {/* Honeypot */}
+                          <input type="text" {...register('_hp')}
+                            className="absolute opacity-0 h-0 w-0 pointer-events-none"
+                            tabIndex={-1} autoComplete="off" aria-hidden="true" />
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <label className="text-xs font-bold text-gray-600 block mb-1.5 uppercase tracking-wide">Name *</label>
+                              <input type="text" {...register('name')} placeholder="Your name"
+                                className={`w-full px-3.5 py-2.5 text-sm border rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue/25 focus:border-brand-blue transition-all ${errors.name ? 'border-brand-red' : 'border-gray-200'}`} />
+                              {errors.name && <p className="text-xs text-brand-red mt-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.name.message}</p>}
+                            </div>
+                            <div>
+                              <label className="text-xs font-bold text-gray-600 block mb-1.5 uppercase tracking-wide">Email *</label>
+                              <input type="email" {...register('email')} placeholder="your@email.com"
+                                className={`w-full px-3.5 py-2.5 text-sm border rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue/25 focus:border-brand-blue transition-all ${errors.email ? 'border-brand-red' : 'border-gray-200'}`} />
+                              {errors.email && <p className="text-xs text-brand-red mt-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.email.message}</p>}
+                            </div>
+                          </div>
+
                           <div>
-                            <label className="text-xs font-bold text-gray-600 block mb-1.5 uppercase tracking-wide">Email *</label>
-                            <input
-                              type="email"
-                              {...register('email')}
-                              placeholder="your@email.com"
-                              className={`w-full px-3.5 py-2.5 text-sm border rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue/25 focus:border-brand-blue transition-all ${errors.email ? 'border-brand-red' : 'border-gray-200'}`}
-                            />
-                            {errors.email && <p className="text-xs text-brand-red mt-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.email.message}</p>}
+                            <label className="text-xs font-bold text-gray-600 block mb-1.5 uppercase tracking-wide">Comment *</label>
+                            <textarea rows={4} {...register('comment')} placeholder="Share your thoughts..."
+                              className={`w-full px-3.5 py-2.5 text-sm border rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue/25 focus:border-brand-blue transition-all resize-none ${errors.comment ? 'border-brand-red' : 'border-gray-200'}`} />
+                            {errors.comment && <p className="text-xs text-brand-red mt-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.comment.message}</p>}
                           </div>
-                        </div>
 
-                        <div>
-                          <label className="text-xs font-bold text-gray-600 block mb-1.5 uppercase tracking-wide">Comment *</label>
-                          <textarea
-                            rows={4}
-                            {...register('comment')}
-                            placeholder="Share your thoughts..."
-                            className={`w-full px-3.5 py-2.5 text-sm border rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue/25 focus:border-brand-blue transition-all resize-none ${errors.comment ? 'border-brand-red' : 'border-gray-200'}`}
-                          />
-                          {errors.comment && <p className="text-xs text-brand-red mt-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.comment.message}</p>}
-                        </div>
+                          {submitMutation.isError && (
+                            <div className="flex items-center gap-2 text-sm text-brand-red bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+                              <AlertCircle className="w-4 h-4 shrink-0" />
+                              {submitMutation.error?.message || 'Failed to submit. Please try again.'}
+                            </div>
+                          )}
 
-                        {submitMutation.isError && (
-                          <div className="flex items-center gap-2 text-sm text-brand-red bg-red-50 border border-red-200 rounded-xl px-4 py-3">
-                            <AlertCircle className="w-4 h-4 shrink-0" />
-                            {submitMutation.error?.message || 'Failed to submit comment.'}
+                          <div className="flex items-center gap-4 pt-1">
+                            <button type="submit" disabled={isSubmitting}
+                              className="inline-flex items-center gap-2 bg-brand-blue text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:shadow-md hover:-translate-y-0.5 transition-all disabled:opacity-60">
+                              <Send className="w-4 h-4" />
+                              {isSubmitting ? 'Submitting…' : 'Post Comment'}
+                            </button>
+                            <p className="text-[11px] text-gray-400">Email won't be published.</p>
                           </div>
-                        )}
-
-                        <button
-                          type="submit"
-                          disabled={isSubmitting}
-                          className="inline-flex items-center gap-2 bg-brand-blue text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:shadow-md transition-all disabled:opacity-60"
-                        >
-                          <Send className="w-4 h-4" />
-                          {isSubmitting ? 'Submitting…' : 'Post Comment'}
-                        </button>
-                        <p className="text-[11px] text-gray-400">Your email will not be published. Comments are moderated before appearing.</p>
-                      </form>
-                    )}
+                        </form>
+                      )}
+                    </div>
                   </div>
                 </div>
               </motion.article>
 
-              {/* Sidebar */}
-              <aside className="lg:col-span-4 space-y-6">
-                {/* Author */}
+              {/* ── SIDEBAR ──────────────────────────────────── */}
+              <aside className="w-full lg:w-72 xl:w-80 shrink-0 space-y-5">
+                {/* Author card */}
                 <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">About the Author</h4>
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-12 h-12 rounded-full bg-brand-blue flex items-center justify-center text-white font-bold text-lg shrink-0">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-blue to-brand-blue/60 flex items-center justify-center text-white font-black text-lg shrink-0">
                       {post.authorName?.[0]?.toUpperCase() || 'H'}
                     </div>
                     <div>
                       <p className="font-bold text-gray-900 text-sm">{post.authorName}</p>
-                      <p className="text-xs text-gray-500">Hindustan Projects</p>
+                      <p className="text-xs text-gray-400">Hindustan Projects</p>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-500 leading-relaxed">IT services experts based in Bhilwara, Rajasthan. Helping businesses grow digitally since 2019.</p>
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                    IT services experts based in Bhilwara, Rajasthan. Building digital solutions that drive real business growth since 2019.
+                  </p>
                 </div>
 
-                {/* CTA */}
-                <div className="bg-gradient-to-br from-brand-blue to-[#0f2660] rounded-2xl p-5 text-white">
-                  <h3 className="font-heading font-bold text-base mb-2">Need IT Services?</h3>
-                  <p className="text-white/70 text-xs leading-relaxed mb-4">Get expert web development, digital marketing, and IT consulting from Bhilwara's trusted IT partner.</p>
-                  <Link to="/contact" className="inline-block w-full text-center bg-brand-red hover:bg-brand-red/90 text-white font-semibold text-sm py-2.5 rounded-xl transition-colors">
+                {/* Article meta card */}
+                <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm space-y-3">
+                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Article Details</h4>
+                  <div className="space-y-2.5 text-sm">
+                    {publishDate && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500 flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" />Published</span>
+                        <span className="font-semibold text-gray-800 text-xs">{publishDate}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-500 flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />Read time</span>
+                      <span className="font-semibold text-gray-800 text-xs">{post.readTime} min</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-500 flex items-center gap-1.5"><Eye className="w-3.5 h-3.5" />Views</span>
+                      <span className="font-semibold text-gray-800 text-xs">{post.viewCount}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-500 flex items-center gap-1.5"><MessageSquare className="w-3.5 h-3.5" />Comments</span>
+                      <span className="font-semibold text-gray-800 text-xs">{comments.length}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* CTA card */}
+                <div className="bg-gradient-to-br from-brand-blue via-[#1a3680] to-[#0f2660] rounded-2xl p-5 text-white shadow-lg">
+                  <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center mb-3">
+                    <TrendingUp className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="font-heading font-bold text-base mb-2 leading-snug">Need IT Services for Your Business?</h3>
+                  <p className="text-white/65 text-xs leading-relaxed mb-4">
+                    Web development, digital marketing, and IT consulting from Bhilwara's trusted tech partner.
+                  </p>
+                  <Link to="/contact"
+                    className="block w-full text-center bg-brand-red hover:bg-brand-red/90 text-white font-bold text-sm py-2.5 rounded-xl transition-all hover:shadow-lg hover:shadow-brand-red/25">
                     Get a Free Quote
                   </Link>
                 </div>
 
-                {/* Back to blog */}
-                <Link to="/blog" className="flex items-center gap-2 text-sm text-brand-blue font-semibold hover:gap-3 transition-all">
-                  <ArrowLeft className="w-4 h-4" /> Back to all articles
+                {/* Browse more */}
+                <Link to="/blog"
+                  className="flex items-center gap-2 text-sm text-brand-blue font-semibold hover:gap-3 transition-all group">
+                  <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                  Browse all articles
                 </Link>
               </aside>
             </div>
           </Container>
         </section>
 
-        {/* Related posts */}
+        {/* ── RELATED POSTS ────────────────────────────────── */}
         {relatedPosts.length > 0 && (
-          <section className="py-12 bg-white border-t border-gray-100">
+          <section className="py-14 bg-white border-t border-gray-100">
             <Container>
-              <h2 className="font-heading text-2xl font-bold text-gray-900 mb-6">Related Articles</h2>
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="font-heading text-2xl font-bold text-gray-900">Related Articles</h2>
+                <Link to="/blog" className="text-sm text-brand-blue font-semibold flex items-center gap-1 hover:gap-2 transition-all">
+                  View all <ChevronRight className="w-4 h-4" />
+                </Link>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {relatedPosts.map((p) => <RelatedCard key={p.id} post={p} />)}
               </div>

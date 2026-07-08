@@ -755,136 +755,120 @@ async function main() {
   // Blog Posts (3 sample posts for IT services company)
   const blogPosts = [
     {
-      id: 'blog-1',
-      title: 'Why Every Small Business Needs a Website in 2026',
-      slug: 'why-every-small-business-needs-a-website-2026',
-      excerpt: 'In today\'s digital-first economy, a professional website is no longer optional for small businesses — it\'s the foundation of your entire online presence. Here\'s why businesses in Bhilwara and across India need one now.',
-      content: `<h2>The Digital Shift is Here</h2>
-<p>Over <strong>700 million Indians</strong> are now active internet users, and that number grows every month. When a potential customer searches for a product or service in Bhilwara, Jaipur, or anywhere across Rajasthan — they search online first. If your business isn't there, your competitor is.</p>
+      id: 'hp-blog-1',
+      title: 'Why We Founded Hindustan Projects: Shifting Rajasthan\'s Businesses to Enterprise IT',
+      slug: 'why-we-founded-hindustan-projects-enterprise-it',
+      excerpt: 'In today\'s digital-first economy, we founded Hindustan Projects to bridge the gap between legacy paper workflows and high-performance custom software for businesses in Rajasthan and beyond.',
+      content: `<h2>Bridging the Digital Gap in Local Markets</h2>
+<p>Hindustan Projects was founded with a single, clear mission: to bring enterprise-grade web development, custom software engineering, and digital solutions to businesses across Rajasthan and India. For too long, small and mid-sized enterprises (SMEs) in growing hubs like Bhilwara, Udaipur, and Jodhpur had only two choices when going digital: expensive global consultancies or low-cost template builders who offer zero support and rigid structures.</p>
+<p>We realized that local industries—whether it is Bhilwara’s massive textile manufacturing units or Rajasthan's expanding retail and hospitality sectors—need custom, secure, and fast software systems tailored to their specific workflows. That is why we built Hindustan Projects.</p>
 
-<h2>1. Your 24/7 Salesperson</h2>
-<p>Unlike a physical store, your website never closes. It answers customer questions, showcases your products, and captures leads at 2 AM on a Sunday. A well-designed website with a clear contact form works as your most reliable salesperson — at zero extra cost per lead.</p>
+<h2>Moving Away From "Template" Culture</h2>
+<p>Many businesses buy off-the-shelf templates or generic WordPress setups. While they seem cheap at first, they quickly fail to scale. They are slow, vulnerable to security hacks, and force the business to adapt its real-world operations to fit a rigid website template.</p>
+<p>At Hindustan Projects, we do the exact opposite. We build custom applications using cutting-edge technologies like React, Node.js, and PostgreSQL. We design the software around your business operations, ensuring that the technology grows with you, rather than holding you back.</p>
 
-<h2>2. Builds Trust and Credibility</h2>
-<p>Customers judge businesses by their online presence. A professional website with your team, services, testimonials, and contact information signals that you're a serious, established business. Without it, you're invisible to an entire generation of buyers who won't trust a business they can't verify online.</p>
-
-<h2>3. Local SEO — Get Found in Your City</h2>
-<p>A properly built website, optimised with local SEO practices, helps your business appear when people search "web developer in Bhilwara" or "IT company Rajasthan". This is free, ongoing traffic that compounds over time.</p>
-
-<h2>4. Cost-Effective Marketing</h2>
-<p>Compared to print advertising, banners, or hoardings, a website costs a fraction and reaches infinitely more people. Combined with Google My Business and basic SEO, even a small ₹15,000 website investment can generate leads worth 10x that amount within the first year.</p>
-
-<h2>5. Compete With Larger Businesses</h2>
-<p>A well-designed website levels the playing field. A local boutique in Bhilwara with a great website can appear more professional than a larger chain with a poor one. Design and user experience matter more than company size online.</p>
-
-<h2>Getting Started</h2>
-<p>At Hindustan Projects, we build fast, mobile-first websites starting at affordable prices for local businesses across Rajasthan. Whether you need a simple 5-page portfolio site or a full e-commerce store, we handle everything from design to launch.</p>
-<p><strong>Ready to get online?</strong> Contact us today for a free consultation.</p>`,
-      featuredImageUrl: '',
-      category: 'Web Development',
-      tags: ['website', 'small business', 'local SEO', 'Bhilwara'],
+<h2>Our Commitment to Quality</h2>
+<p>When you partner with us, you are not just hiring a vendor; you are gaining a technology partner. We stand by four core commitments: complete transparency in billing, zero dependency on third-party templates, high-performance optimization, and dedicated post-launch support. We are here to build digital products that drive real revenue and efficiency for your brand.</p>`,
+      featuredImageUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80',
+      category: 'Company News',
+      tags: ['Hindustan Projects', 'mission', 'custom software', 'Rajasthan IT'],
       authorName: 'Hindustan Projects',
       status: 'PUBLISHED',
       isFeatured: true,
-      publishedAt: new Date('2026-06-01'),
-      metaTitle: 'Why Every Small Business Needs a Website in 2026 | Hindustan Projects',
-      metaDescription: 'Discover why a professional website is essential for small businesses in India in 2026. Learn how to get found online and grow your customer base.',
-      viewCount: 124,
+      publishedAt: new Date('2026-07-08'),
+      metaTitle: 'Why We Founded Hindustan Projects | Rajasthan\'s Custom Software Agency',
+      metaDescription: 'Read our founding story. We started Hindustan Projects to bridge the gap between legacy systems and modern custom software for businesses in Rajasthan.',
+      viewCount: 152,
     },
     {
-      id: 'blog-2',
-      title: 'Top 5 Digital Marketing Trends for Indian Businesses in 2026',
-      slug: 'top-5-digital-marketing-trends-indian-businesses-2026',
-      excerpt: 'Digital marketing in India is evolving faster than ever. From AI-powered advertising to short-form video dominance, here are the 5 trends every Indian business owner must know to stay competitive in 2026.',
-      content: `<h2>Digital Marketing in India is Changing Fast</h2>
-<p>With over 500 million social media users and a growing base of digital shoppers, India has become one of the most competitive digital markets in the world. Businesses that embrace the right trends will grow — those that don't will be left behind.</p>
+      id: 'hp-blog-2',
+      title: 'What We Build: A Deep Dive into Our Core IT Services & Digital Solutions',
+      slug: 'what-we-build-core-it-services-digital-solutions',
+      excerpt: 'Discover what we build. From responsive corporate portals and custom textile ERP inventory systems to mobile apps, we design custom digital systems that scale.',
+      content: `<h2>A Full-Suite Software Engineering Partner</h2>
+<p>Hindustan Projects is a comprehensive IT services provider. We design, code, secure, and manage high-performance software systems. Our capabilities span across three core pillars: custom web applications, specialized business ERP systems, and high-converting marketing platforms.</p>
 
-<h2>Trend 1: AI-Powered Advertising</h2>
-<p>Google Performance Max and Meta Advantage+ campaigns are now standard. These AI-driven ad formats automatically find your best audiences, test creatives, and optimise bids — reducing cost-per-lead by up to 40% compared to manual campaigns. If you're still running old-style keyword-only Google Ads, you're leaving money on the table.</p>
+<h2>1. Custom Web Applications & SaaS Portals</h2>
+<p>We build responsive, fast, and feature-rich web applications tailored to your business goals. Utilizing modern frontend frameworks like React and NextJS combined with robust backend APIs (Node.js/Express), we ensure your system loads instantly and can handle thousands of concurrent users securely.</p>
 
-<h2>Trend 2: Short-Form Video is King</h2>
-<p>Instagram Reels and YouTube Shorts have become the highest-reach format for organic content in India. Businesses that consistently post 30–60 second educational or behind-the-scenes videos are seeing 3–5x more organic reach than static image posts. You don't need a film crew — a smartphone and good lighting is enough.</p>
+<h2>2. Specialized ERP & Internal Software</h2>
+<p>Internal operations are the heart of any business. We build custom dashboards, billing engines, custom CRMs, and supply chain tracking systems. Whether you need to track raw yarn inventory for a loom factory or automate invoice processing for a retail brand, we design software that eliminates manual Excel sheets and paperwork.</p>
 
-<h2>Trend 3: WhatsApp Business Marketing</h2>
-<p>With over 500 million WhatsApp users in India, WhatsApp Business API campaigns have become incredibly effective. Businesses using WhatsApp broadcasts for lead follow-up, order confirmations, and re-engagement are seeing open rates above 80% — far beyond email marketing's 20%.</p>
+<h2>3. Mobile App Development</h2>
+<p>Bring your services directly to your clients' smartphones. We build cross-platform mobile apps using Flutter and React Native, delivering a native look and feel on both iOS and Android with a single codebase, saving you time and cost.</p>
 
-<h2>Trend 4: Hyperlocal SEO</h2>
-<p>Google is increasingly showing local results. Optimising your Google Business Profile, collecting genuine customer reviews, and creating location-specific landing pages (e.g. "Web Developer in Bhilwara") can dramatically increase local visibility. For businesses in Tier 2 and Tier 3 cities, this is often the biggest untapped opportunity.</p>
-
-<h2>Trend 5: Content That Answers Questions</h2>
-<p>Google's Helpful Content update rewards businesses that genuinely answer customer questions. Creating detailed blog posts, FAQs, and how-to guides — like this one — builds long-term organic traffic. One good blog post can bring visitors for years at zero ongoing cost.</p>
-
-<h2>Apply These Trends to Your Business</h2>
-<p>At Hindustan Projects, our digital marketing team implements all five of these strategies for clients across Rajasthan. Whether you need Google Ads management, social media strategy, or SEO — we deliver measurable results.</p>`,
-      featuredImageUrl: '',
-      category: 'Digital Marketing',
-      tags: ['digital marketing', 'SEO', 'India', 'social media', '2026'],
+<h2>4. Performance-Driven SEO & Marketing</h2>
+<p>A great software tool is only useful if your clients can find it. We integrate technical SEO, schema indexing, and fast-performance audits into every site we deploy, helping you rank on top of local searches and capture inbound leads organically.</p>`,
+      featuredImageUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80',
+      category: 'Web Development',
+      tags: ['custom web apps', 'SaaS', 'ERP', 'mobile apps', 'digital marketing'],
       authorName: 'Hindustan Projects',
       status: 'PUBLISHED',
       isFeatured: false,
-      publishedAt: new Date('2026-06-10'),
-      metaTitle: 'Top 5 Digital Marketing Trends for Indian Businesses 2026 | Hindustan Projects',
-      metaDescription: 'Stay ahead with the top 5 digital marketing trends shaping Indian businesses in 2026 — AI ads, short videos, WhatsApp marketing, local SEO, and content strategy.',
-      viewCount: 89,
+      publishedAt: new Date('2026-07-08'),
+      metaTitle: 'Our Core IT & Software Development Services | Hindustan Projects',
+      metaDescription: 'Explore what we build. From responsive corporate portals to custom ERP inventory systems and mobile dashboards, we design custom systems that scale.',
+      viewCount: 98,
     },
     {
-      id: 'blog-3',
-      title: 'How Custom Software Can Save Your Business Time and Money',
-      slug: 'how-custom-software-saves-business-time-money',
-      excerpt: 'Off-the-shelf software forces your business to adapt to it. Custom software does the opposite — it\'s built exactly for how you work. Here\'s how businesses across India are cutting costs and saving hours every week with purpose-built systems.',
-      content: `<h2>The Problem With Generic Software</h2>
-<p>Most businesses start with off-the-shelf solutions — Tally for accounting, Excel for inventory, WhatsApp for orders. It works initially. But as your business grows, you spend more time fighting your tools than running your business.</p>
-<p>You end up with data scattered across five different apps, manual copy-pasting between systems, and no single view of your operations. Staff waste hours on repetitive data entry. Errors creep in. Decisions slow down.</p>
+      id: 'hp-blog-3',
+      title: 'How We Work: Our Step-by-Step Transparent Software Development Journey',
+      slug: 'how-we-work-transparent-software-development-journey',
+      excerpt: 'How do we bring your ideas to life? Read about our transparent 4-stage development lifecycle: Discovery, UI/UX Design, Robust Coding, and Support.',
+      content: `<h2>A Collaborative Approach with Zero Jargon</h2>
+<p>We believe that building software should be an exciting and stress-free journey for our clients. We do not hide behind complex technical jargon or surprise you with hidden maintenance fees. Our development lifecycle is divided into four transparent, structured stages to keep you involved every step of the way.</p>
 
-<h2>What Custom Software Actually Does</h2>
-<p>Custom software is built specifically around your business workflows. A textile company in Bhilwara doesn't need the same system as a restaurant in Mumbai. Custom software means:</p>
-<ul>
-<li>Your exact processes automated — not generic templates</li>
-<li>All your data in one place — inventory, orders, customers, billing</li>
-<li>Reports and dashboards showing exactly what you need to see</li>
-<li>Integration with your existing tools (Tally, WhatsApp, email)</li>
-<li>Mobile access for your team on the field</li>
-</ul>
+<h2>Stage 1: Discovery & Consultation</h2>
+<p>We begin by sitting down with you (either in-person or virtually) to map out your business objectives, workflows, and target audience. We document all functional specifications and align on a clear project roadmap with defined milestones.</p>
 
-<h2>Real Business Impact: A Bhilwara Textile Case Study</h2>
-<p>One of our clients — a mid-size textile manufacturer in Bhilwara — was managing production tracking on paper registers and Excel sheets. Their challenges:</p>
-<ul>
-<li>2–3 hours per day spent on manual data entry across teams</li>
-<li>Inventory discrepancies causing production delays</li>
-<li>No real-time visibility into order status for clients</li>
-</ul>
-<p>We built a custom ERP system with production tracking, inventory management, and a client portal. The results within 6 months:</p>
-<ul>
-<li><strong>40% reduction in administrative overhead</strong></li>
-<li>Production errors down by 65%</li>
-<li>Management decisions now based on real-time data</li>
-</ul>
+<h2>Stage 2: Strategic UI/UX Design</h2>
+<p>Before writing a single line of code, our design team builds interactive wireframes and premium UI mockups. You get to see exactly how your website or application will look on desktop and mobile screens. We iterate on the layouts until you are 100% satisfied with the visual design.</p>
 
-<h2>Is Custom Software Expensive?</h2>
-<p>The upfront cost is higher than buying an off-the-shelf product. But consider the full picture:</p>
-<ul>
-<li>Monthly SaaS subscriptions add up — ₹2,000–₹20,000/month per tool</li>
-<li>Staff time lost to manual work costs more than you think</li>
-<li>Custom software has no per-user licensing fees</li>
-<li>You own it completely — no vendor lock-in</li>
-</ul>
-<p>Most businesses see full ROI within 12–18 months. After that, it's pure savings.</p>
+<h2>Stage 3: Robust Development & Rigorous Testing</h2>
+<p>Once you approve the design, our developers bring it to life using clean, secure, and well-documented code. We run comprehensive quality checks, verifying security protocols, responsive grid fits, and fast page-speed execution across all popular web browsers.</p>
 
-<h2>When Should You Consider Custom Software?</h2>
-<p>Custom software makes sense when you are spending significant time on manual processes that could be automated, when off-the-shelf tools don't fit your specific workflow, when you have a team of 10+ people who need coordinated systems, or when your industry has unique compliance or reporting requirements.</p>
-
-<h2>Start With a Consultation</h2>
-<p>At Hindustan Projects, we start every custom software project with a detailed workflow analysis. We identify exactly where you're losing time and money, then design a solution that pays for itself. Contact us for a free business process review.</p>`,
-      featuredImageUrl: '',
-      category: 'Custom Software',
-      tags: ['custom software', 'ERP', 'automation', 'business efficiency'],
+<h2>Stage 4: Launch & Dedicated Support</h2>
+<p>We configure your servers, launch your platform live on your custom domains, and set up sitemaps for Google indexing. Post-launch, we provide dedicated support, training your team on how to manage the system via the admin panel, and ensuring 99.9% uptime.</p>`,
+      featuredImageUrl: 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=800&q=80',
+      category: 'Our Process',
+      tags: ['development process', 'UI/UX', 'software testing', 'client collaboration'],
       authorName: 'Hindustan Projects',
       status: 'PUBLISHED',
       isFeatured: false,
-      publishedAt: new Date('2026-06-20'),
-      metaTitle: 'How Custom Software Saves Your Business Time and Money | Hindustan Projects',
-      metaDescription: 'Learn how custom-built software eliminates manual work, reduces errors, and delivers ROI within 12-18 months for Indian businesses of all sizes.',
-      viewCount: 67,
+      publishedAt: new Date('2026-07-08'),
+      metaTitle: 'Our Software Development Process | Hindustan Projects',
+      metaDescription: 'How do we bring your ideas to life? Read about our transparent 4-stage process: Discovery, UX Design, Robust Coding, and Support.',
+      viewCount: 112,
+    },
+    {
+      id: 'hp-blog-4',
+      title: 'Rooted in Bhilwara: Bridging Local Rajasthan Industries with Global Technology',
+      slug: 'rooted-in-bhilwara-local-industries-global-tech',
+      excerpt: 'We are proud to be based in Bhilwara, Rajasthan. Learn how we help local manufacturing, textile loom mills, and retail brands scale using modern software.',
+      content: `<h2>Proudly Based in Rajasthan's Textile Capital</h2>
+<p>Hindustan Projects is proud to call Bhilwara, Rajasthan, our home base. As the textile capital of the state, Bhilwara has a rich heritage of industrial entrepreneurship. However, as the global economy transitions to digital-first systems, local mills, retail hubs, and real estate brands need local technology partners who understand their market and can support them face-to-face.</p>
+<p>Being local allows us to visit your mills, audit your warehouses, and collaborate directly with your team in Hindi and English. We combine this local availability with global coding and performance standards.</p>
+
+<h2>Helping Local Sectors Scale Globally</h2>
+<p>Our localized solutions focus on solving real operational challenges for Rajasthan's leading industries:</p>
+<ul>
+  <li><strong>Textiles & Loom Mills:</strong> Automating raw material tracking and worker efficiency calculations.</li>
+  <li><strong>Marble & Mining:</strong> Creating digital stock catalogs and inquiry forms to capture international buyers.</li>
+  <li><strong>Retail & Trade:</strong> Implementing custom e-commerce channels and WhatsApp notification automations.</li>
+</ul>
+
+<h2>Let's Collaborate Face-to-Face</h2>
+<p>If you are a business owner in Bhilwara, Chittorgarh, Udaipur, or Jaipur, you do not need to look toward metro cities for premium software engineering. Our local team is ready to build your custom web apps, mobile portals, and digital systems right here. Contact us to schedule a meeting at our office or invite us to your factory for a live consultation.</p>`,
+      featuredImageUrl: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80',
+      category: 'Local Growth',
+      tags: ['Bhilwara', 'Rajasthan', 'local businesses', 'IT agency Bhilwara'],
+      authorName: 'Hindustan Projects',
+      status: 'PUBLISHED',
+      isFeatured: false,
+      publishedAt: new Date('2026-07-08'),
+      metaTitle: 'Bhilwara\'s Trusted IT & Web Development Agency | Hindustan Projects',
+      metaDescription: 'We are proud to be based in Bhilwara, Rajasthan. Learn how we help local manufacturing, textiles, and retail brands scale using modern software.',
+      viewCount: 143,
     },
   ]
 

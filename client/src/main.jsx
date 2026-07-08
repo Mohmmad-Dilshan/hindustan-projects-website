@@ -37,51 +37,51 @@ const queryClient = new QueryClient({
   },
 })
 
-// Asynchronously load settings to initialize optional integrations before rendering
-async function bootstrapApp() {
-  let settings = {}
+// Render the React application immediately to prevent blocking LCP (Largest Contentful Paint)
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <ErrorBoundary>
+      <HelmetProvider>
+        <BrowserRouter>
+          <QueryClientProvider client={queryClient}>
+            <App />
+            {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+          </QueryClientProvider>
+        </BrowserRouter>
+      </HelmetProvider>
+    </ErrorBoundary>
+  </StrictMode>
+)
+
+// Load optional Google Analytics 4 asynchronously in the background
+async function initializeAnalytics() {
   try {
     const BASE = import.meta.env.VITE_API_URL || '/api'
     const res = await fetch(`${BASE}/settings`)
     if (res.ok) {
       const data = await res.json()
-      settings = data?.data || {}
+      const settings = data?.data || {}
+
+      if (settings.sys_ga_measurement_id) {
+        const gaId = settings.sys_ga_measurement_id
+        const script = document.createElement('script')
+        script.async = true
+        script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`
+        document.head.appendChild(script)
+
+        window.dataLayer = window.dataLayer || []
+        window.gtag = function () {
+          window.dataLayer.push(arguments)
+        }
+        window.gtag('js', new Date())
+        window.gtag('config', gaId, { page_path: window.location.pathname })
+        console.log('[GA4] Loaded successfully in the background')
+      }
     }
   } catch (err) {
     console.warn('[main] Failed to fetch GA4 config:', err.message)
   }
-
-  // Optional Google Analytics 4 Integration
-  if (settings.sys_ga_measurement_id) {
-    const gaId = settings.sys_ga_measurement_id
-    const script = document.createElement('script')
-    script.async = true
-    script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`
-    document.head.appendChild(script)
-
-    window.dataLayer = window.dataLayer || []
-    window.gtag = function () {
-      window.dataLayer.push(arguments)
-    }
-    window.gtag('js', new Date())
-    window.gtag('config', gaId, { page_path: window.location.pathname })
-    console.log('[GA4] Loaded successfully')
-  }
-
-  createRoot(document.getElementById('root')).render(
-    <StrictMode>
-      <ErrorBoundary>
-        <HelmetProvider>
-          <BrowserRouter>
-            <QueryClientProvider client={queryClient}>
-              <App />
-              {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
-            </QueryClientProvider>
-          </BrowserRouter>
-        </HelmetProvider>
-      </ErrorBoundary>
-    </StrictMode>
-  )
 }
 
-bootstrapApp()
+initializeAnalytics()
+

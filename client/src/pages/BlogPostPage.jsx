@@ -303,20 +303,29 @@ export default function BlogPostPage() {
         ════════════════════════════════════════════════════ */}
         <div className="relative w-full min-h-[480px] sm:min-h-[540px] lg:min-h-[580px] flex items-end overflow-hidden bg-[#050e20]">
 
-          {/* Cover image */}
+          {/* Cover image & blends */}
           {post.featuredImageUrl ? (
-            <img src={post.featuredImageUrl} alt={post.title}
-              className="absolute inset-0 w-full h-full object-cover opacity-35" />
+            <div className="absolute inset-0 w-full h-full">
+              {/* Right-aligned image on desktop, full cover on mobile */}
+              <img src={post.featuredImageUrl} alt={post.title}
+                className="absolute right-0 top-0 h-full w-full lg:w-1/2 object-cover opacity-30 lg:opacity-75 transition-opacity duration-300" />
+              
+              {/* Left-to-right fade gradient for desktop to blend image into background */}
+              <div className="hidden lg:block absolute inset-y-0 left-0 right-1/2 bg-gradient-to-r from-[#050e20] via-[#050e20]/98 to-transparent z-[1]" />
+              <div className="hidden lg:block absolute inset-y-0 left-[45%] w-1/5 bg-gradient-to-r from-[#050e20]/90 to-transparent backdrop-blur-[3px] z-[1]" />
+              
+              {/* Top-to-bottom fade to blend with content section */}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#050e20] via-[#050e20]/75 to-transparent z-[1]" />
+            </div>
           ) : (
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_60%_0%,rgba(26,62,140,0.45),transparent)]" />
           )}
 
-          {/* Gradient overlays */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#050e20] via-[#050e20]/78 to-[#050e20]/20" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_70%_0%,rgba(26,62,140,0.18),transparent)]" />
+          {/* Glowing blue accent in background */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_40%_at_20%_30%,rgba(26,62,140,0.22),transparent)] pointer-events-none" />
 
           {/* Dot grid */}
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:40px_40px]" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
           <Container className="relative z-10 pt-28 pb-12 sm:pb-16">
 

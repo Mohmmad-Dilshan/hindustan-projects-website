@@ -35,14 +35,35 @@ function RichEditor({ value, onChange, label }) {
   const editorRef = useRef(null)
   const [htmlMode, setHtmlMode] = useState(false)
 
+  // Only sync on mount and mode changes to preserve cursor position during typing
   useEffect(() => {
     if (!htmlMode && editorRef.current && value !== undefined) {
       const safe = DOMPurify.sanitize(value || '')
+      // Only update if content is actually different (prevents cursor jumps)
       if (editorRef.current.innerHTML !== safe) {
+        const selection = window.getSelection()
+        const range = selection?.rangeCount > 0 ? selection.getRangeAt(0) : null
+        const cursorOffset = range ? range.startOffset : 0
+        
         editorRef.current.innerHTML = safe
+        
+        // Restore cursor position if possible
+        if (range && editorRef.current.firstChild) {
+          try {
+            const newRange = document.createRange()
+            const textNode = editorRef.current.firstChild
+            const offset = Math.min(cursorOffset, textNode.textContent?.length || 0)
+            newRange.setStart(textNode, offset)
+            newRange.collapse(true)
+            selection.removeAllRanges()
+            selection.addRange(newRange)
+          } catch (e) {
+            // Ignore cursor restoration errors
+          }
+        }
       }
     }
-  }, [value, htmlMode])
+  }, [htmlMode]) // Removed 'value' dependency to prevent cursor jumps
 
   const exec = (cmd, val = null) => {
     if (htmlMode) return
@@ -275,7 +296,8 @@ function PostEditor({ initial, onSave, onCancel, loading }) {
           {/* Tags */}
           <div className="bg-white border border-gray-200 rounded-xl p-4">
             <label className="text-xs font-semibold text-gray-600 block mb-2">Tags <span className="text-gray-400 font-normal">(comma separated)</span></label>
-            <input {...register('tags')} className={inputCls} placeholder="web, react, SEO" />
+            <input {...register('tags')} className={inputCls} placeholder="web, react, SEO, digital-marketing" />
+            <p className="text-[10px] text-gray-400 mt-1.5">Separate tags with commas. Spaces will be trimmed.</p>
           </div>
 
           {/* Featured toggle */}
@@ -317,15 +339,17 @@ export default function AdminBlogPage() {
   const [saveStatus, setSaveStatus] = useState(null)
   const qc = useQueryClient()
 
-  const { data: posts = [], isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['admin-blog-posts', { status: statusFilter, search: searchTerm }],
     queryFn: () => {
       const params = new URLSearchParams()
       if (statusFilter) params.set('status', statusFilter)
       if (searchTerm) params.set('search', searchTerm)
-      return api.get(`/admin/blog${params.toString() ? `?${params}` : ''}`).then((r) => r.data)
+      return api.get(`/admin/blog${params.toString() ? `?${params}` : ''}`)
     },
   })
+
+  const posts = data?.data || []
 
   const createMutation = useMutation({
     mutationFn: (data) => api.post('/admin/blog', data),
@@ -450,6 +474,17 @@ export default function AdminBlogPage() {
             ))}
           </div>
         </div>
+
+        {/* Error state */}
+        {isError && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3 mb-6">
+            <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold text-red-800 text-sm">Failed to load blog posts</p>
+              <p className="text-red-600 text-xs mt-0.5">Please check your connection and try again.</p>
+            </div>
+          </div>
+        )}
 
         {/* Posts table */}
         <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">

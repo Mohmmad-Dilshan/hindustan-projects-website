@@ -3,7 +3,7 @@
  */
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { MessageSquare, Check, X, Trash2, Search, ExternalLink } from 'lucide-react'
+import { MessageSquare, Check, X, Trash2, Search, ExternalLink, AlertCircle } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { api } from '@/utils/api'
 import { SEO } from '@/components/ui'
@@ -13,13 +13,15 @@ export default function AdminBlogCommentsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const qc = useQueryClient()
 
-  const { data: comments = [], isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['admin-blog-comments', filter],
     queryFn: () => {
       const qs = filter !== '' ? `?approved=${filter}` : ''
-      return api.get(`/admin/blog/comments${qs}`).then((r) => r.data)
+      return api.get(`/admin/blog/comments${qs}`)
     },
   })
+
+  const comments = data?.data || []
 
   const approveMutation = useMutation({
     mutationFn: ({ id, isApproved }) => api.patch(`/admin/blog/comments/${id}/approve`, { isApproved }),
@@ -92,6 +94,17 @@ export default function AdminBlogCommentsPage() {
             ))}
           </div>
         </div>
+
+        {/* Error state */}
+        {isError && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold text-red-800 text-sm">Failed to load comments</p>
+              <p className="text-red-600 text-xs mt-0.5">Please check your connection and try again.</p>
+            </div>
+          </div>
+        )}
 
         {/* Comments list */}
         <div className="space-y-3">

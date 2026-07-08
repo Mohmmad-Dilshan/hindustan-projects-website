@@ -264,7 +264,7 @@ export default function BlogPage() {
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.55, delay: 0.1 }}
-                className="font-heading text-[2.4rem] sm:text-5xl lg:text-[3.4rem] xl:text-[3.75rem] font-black text-white leading-[1.08] mb-5 tracking-tight"
+                className="font-heading text-[2.4rem] sm:text-5xl lg:text-[3.4rem] xl:text-[3.75rem] font-black !text-white leading-[1.08] mb-5 tracking-tight"
               >
                 Knowledge That
                 <br />

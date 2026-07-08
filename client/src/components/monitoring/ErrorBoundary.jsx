@@ -62,7 +62,7 @@ export class ErrorBoundary extends React.Component {
             </div>
 
             {/* Error detail accordion for developers/admins */}
-            {process.env.NODE_ENV === 'development' && this.state.error && (
+            {import.meta.env.DEV && this.state.error && (
               <details className="text-left bg-gray-50 border border-gray-200 rounded-xl p-4 text-xs font-mono text-gray-600 overflow-auto max-h-40">
                 <summary className="cursor-pointer font-semibold select-none text-gray-700 outline-none">
                   Error Details (Dev Mode)

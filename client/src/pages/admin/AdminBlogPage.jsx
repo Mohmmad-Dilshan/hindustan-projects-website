@@ -97,26 +97,47 @@ function RichEditor({ value, onChange, label }) {
         {/* Toolbar */}
         {!htmlMode && (
           <div className="flex flex-wrap items-center gap-1 px-3 py-2 bg-gray-50 border-b border-gray-200">
-            {[
-              { icon: Heading2, cmd: () => exec('formatBlock', '<h2>'), title: 'Heading 2' },
-              { label: 'H3', cmd: () => exec('formatBlock', '<h3>'), title: 'Heading 3' },
-              { label: 'P', cmd: () => exec('formatBlock', '<p>'), title: 'Paragraph' },
-            ].map((b, i) => (
-              <button key={i} type="button" onClick={b.cmd} title={b.title}
-                className="p-1.5 rounded hover:bg-gray-200 text-gray-600 transition-colors text-xs font-bold">
-                {b.icon ? <b.icon className="w-4 h-4" /> : b.label}
-              </button>
-            ))}
+            <button
+              type="button"
+              onClick={() => exec('formatBlock', '<h2>')}
+              title="Heading 2"
+              className="p-1.5 rounded hover:bg-gray-200 text-gray-600 transition-colors text-xs font-bold"
+            >
+              <Heading2 className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => exec('formatBlock', '<h3>')}
+              title="Heading 3"
+              className="p-1.5 rounded hover:bg-gray-200 text-gray-600 transition-colors text-xs font-bold"
+            >
+              H3
+            </button>
+            <button
+              type="button"
+              onClick={() => exec('formatBlock', '<p>')}
+              title="Paragraph"
+              className="p-1.5 rounded hover:bg-gray-200 text-gray-600 transition-colors text-xs font-bold"
+            >
+              P
+            </button>
             <div className="h-4 w-px bg-gray-300 mx-1" />
-            {[
-              { icon: Bold, cmd: () => exec('bold'), title: 'Bold' },
-              { icon: Italic, cmd: () => exec('italic'), title: 'Italic' },
-            ].map((b, i) => (
-              <button key={i} type="button" onClick={b.cmd} title={b.title}
-                className="p-1.5 rounded hover:bg-gray-200 text-gray-600 transition-colors">
-                <b.icon className="w-4 h-4" />
-              </button>
-            ))}
+            <button
+              type="button"
+              onClick={() => exec('bold')}
+              title="Bold"
+              className="p-1.5 rounded hover:bg-gray-200 text-gray-600 transition-colors"
+            >
+              <Bold className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => exec('italic')}
+              title="Italic"
+              className="p-1.5 rounded hover:bg-gray-200 text-gray-600 transition-colors"
+            >
+              <Italic className="w-4 h-4" />
+            </button>
             <div className="h-4 w-px bg-gray-300 mx-1" />
             <button type="button" onClick={() => exec('insertUnorderedList')} title="Bullet list"
               className="p-1.5 rounded hover:bg-gray-200 text-gray-600 transition-colors">

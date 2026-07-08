@@ -132,6 +132,7 @@ export default function AdminLayout() {
 
   // Auto-close dropdowns and sidebar on route change
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setNotifOpen(false)
     setAvatarOpen(false)
     setSidebarOpen(false)
@@ -198,6 +199,7 @@ export default function AdminLayout() {
 
   const formatTimeAgo = (dateStr) => {
     const d = new Date(dateStr)
+    // eslint-disable-next-line react-hooks/purity
     const diffMs = Date.now() - d.getTime()
     const diffMins = Math.floor(diffMs / 60000)
     const diffHours = Math.floor(diffMins / 60)

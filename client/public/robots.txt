@@ -6,4 +6,4 @@ Disallow: /admin/
 Disallow: /api/
 
 # Sitemap location
-Sitemap: https://hindustanprojects.com/sitemap.xml
+Sitemap: https://www.itservices.hindustanprojects.in/sitemap.xml

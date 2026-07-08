@@ -154,7 +154,7 @@ export default function AboutPage() {
             '@context': 'https://schema.org',
             '@type': 'AboutPage',
             name: 'About Hindustan Projects',
-            url: 'https://hindustanprojects.com/about',
+            url: 'https://www.itservices.hindustanprojects.in/about',
             description:
               'Hindustan Projects is a technology company based in Bhilwara, Rajasthan, helping businesses grow through smart digital solutions.',
           },
@@ -226,7 +226,7 @@ export default function AboutPage() {
                       </div>
                       <div className="flex-1 bg-gray-100 rounded-md py-0.5 px-2.5 flex items-center justify-center gap-1.5 text-[7px] text-gray-400 max-w-[160px] mx-auto border border-gray-200/50">
                         <span className="text-emerald-500">🔒</span>
-                        <span className="truncate tracking-wide font-medium">hindustanprojects.com/it</span>
+                        <span className="truncate tracking-wide font-medium">itservices.hindustanprojects.in</span>
                       </div>
                     </div>
 
@@ -292,7 +292,7 @@ export default function AboutPage() {
                   <div className="w-full h-full bg-white text-gray-800 flex flex-col justify-between overflow-hidden relative pt-4 font-sans select-none">
                     {/* Mobile browser address bar */}
                     <div className="px-2 py-0.5 bg-gray-50 border-b border-gray-100 text-[5px] text-gray-400 flex items-center justify-center shrink-0">
-                      <span>🔒 hindustanprojects.com</span>
+                      <span>🔒 itservices.hindustanprojects.in</span>
                     </div>
 
                     {/* Mobile Nav */}

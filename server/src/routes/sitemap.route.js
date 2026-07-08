@@ -6,7 +6,7 @@ import { Router } from 'express'
 import prisma from '../config/db.js'
 
 const router = Router()
-const BASE = 'https://hindustanprojects.com'
+const BASE = 'https://www.itservices.hindustanprojects.in'
 
 router.get('/', async (_req, res, next) => {
   try {

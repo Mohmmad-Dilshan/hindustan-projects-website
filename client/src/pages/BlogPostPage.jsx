@@ -12,6 +12,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { fadeUp, staggerContainer } from '@/utils/motion'
 import DOMPurify from 'dompurify'
+import { SITE } from '@/components/ui/SEO'
 
 const commentSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.').max(100),
@@ -179,16 +180,16 @@ export default function BlogPostPage() {
     '@type': 'Article',
     headline: post.title,
     description: post.excerpt,
-    image: post.featuredImageUrl || `https://hindustanprojects.com/logo-with-bg.png`,
+    image: post.featuredImageUrl || `${SITE.url}/logo-with-bg.png`,
     author: { '@type': 'Organization', name: post.authorName || 'Hindustan Projects' },
     publisher: {
       '@type': 'Organization',
       name: 'Hindustan Projects',
-      logo: { '@type': 'ImageObject', url: 'https://hindustanprojects.com/logo-with-bg.png' },
+      logo: { '@type': 'ImageObject', url: `${SITE.url}/logo-with-bg.png` },
     },
     datePublished: post.publishedAt || post.createdAt,
     dateModified: post.updatedAt,
-    mainEntityOfPage: { '@type': 'WebPage', '@id': `https://hindustanprojects.com/blog/${post.slug}` },
+    mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE.url}/blog/${post.slug}` },
   }
 
   return (

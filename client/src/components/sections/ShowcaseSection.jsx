@@ -215,7 +215,7 @@ export default function ShowcaseSection() {
                           <span className="w-2 h-2 rounded-full bg-green-500 inline-block" />
                         </div>
                         <div className="flex-1 max-w-[200px] mx-auto bg-slate-900 border border-slate-800 rounded-md py-0.5 px-3 text-[8px] text-gray-500 font-mono text-center truncate">
-                          https://portal.hindustanprojects.com
+                          https://portal.itservices.hindustanprojects.in
                         </div>
                       </div>
 

@@ -8,7 +8,7 @@ import { Helmet } from 'react-helmet-async'
 
 export const SITE = {
   name: 'Hindustan Projects',
-  url: 'https://hindustanprojects.com',
+  url: 'https://www.itservices.hindustanprojects.in',
   description:
     'Hindustan Projects is a leading IT services company in Bhilwara, Rajasthan offering custom web development, digital marketing, IT consulting, mobile app development, and SEO services.',
   phone: '+91 99999 99999',
@@ -21,8 +21,8 @@ export const SITE = {
     country: 'IN',
   },
   geo: { lat: 25.3478, lng: 74.6367 },
-  logo: 'https://hindustanprojects.com/favicon-32x32.png',
-  ogImage: 'https://hindustanprojects.com/og-image.png',
+  logo: 'https://www.itservices.hindustanprojects.in/favicon-32x32.png',
+  ogImage: 'https://www.itservices.hindustanprojects.in/logo-with-bg.png',
   twitterHandle: '@hindustanprojects',
   founded: '2019',
   keywords:

@@ -1,6 +1,10 @@
 {
   "routes": [
     {
+      "src": "/sitemap.xml",
+      "dest": "https://api.hindustanprojects.in/sitemap.xml"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "https://api.hindustanprojects.in/api/$1"
     },

@@ -90,7 +90,7 @@ export default function ShowcaseSection() {
       <Container className="space-y-16">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
-          <span className="text-xs font-extrabold tracking-widest uppercase text-brand-red bg-brand-red/10 border border-brand-red/20 px-4.5 py-1.5 rounded-full inline-block">
+          <span className="text-xs font-extrabold tracking-widest uppercase text-brand-red-dark bg-brand-red/10 border border-brand-red/20 px-4.5 py-1.5 rounded-full inline-block">
             Interactive Showcase
           </span>
           <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 leading-tight">

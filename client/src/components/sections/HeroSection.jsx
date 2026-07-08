@@ -238,9 +238,9 @@ export default function HeroSection() {
                 </div>
 
                 {/* Floating Badge 2: 50+ Projects Delivered */}
-                <div className="absolute z-20 bottom-8 sm:bottom-12 -left-2 sm:-left-6 bg-brand-red rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 shadow-xl transition-transform duration-300 hover:scale-105 border border-white/10">
+                <div className="absolute z-20 bottom-8 sm:bottom-12 -left-2 sm:-left-6 bg-[#0a1835] rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 shadow-xl transition-transform duration-300 hover:scale-105 border border-white/10">
                   <p className="font-heading text-[10px] sm:text-xs font-bold text-white leading-none">50+ Projects</p>
-                  <p className="text-[8px] sm:text-[10px] text-white/75 mt-0.5 leading-none">Delivered Successfully</p>
+                  <p className="text-[8px] sm:text-[10px] text-white mt-0.5 leading-none">Delivered Successfully</p>
                 </div>
               </div>
             </motion.div>

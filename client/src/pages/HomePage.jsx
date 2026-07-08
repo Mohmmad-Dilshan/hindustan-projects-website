@@ -76,11 +76,11 @@ export default function HomePage() {
           <p className="text-center text-[10px] md:text-xs font-bold text-text-muted tracking-widest uppercase mb-8">
             Trusted By Forward-Thinking Brands & Businesses
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6 md:gap-x-16 opacity-30 hover:opacity-50 transition-opacity duration-300 pointer-events-none select-none">
+          <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6 md:gap-x-16 pointer-events-none select-none">
             {partners.map((p) => (
               <span
                 key={p.id}
-                className="font-heading text-sm md:text-base font-black tracking-wider text-brand-blue uppercase"
+                className="font-heading text-sm md:text-base font-black tracking-wider text-gray-500 uppercase"
               >
                 {p.name}
               </span>

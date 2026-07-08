@@ -41,7 +41,7 @@ function RichEditor({ value, onChange, label }) {
         editorRef.current.innerHTML = safe
       }
     }
-  }, []) // only on mount
+  }, [value])
 
   const exec = (cmd, val = null) => {
     document.execCommand(cmd, false, val)

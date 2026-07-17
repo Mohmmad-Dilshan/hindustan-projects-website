@@ -84,7 +84,7 @@ export const corsOptions = cors({
   },
   credentials: true, // needed for httpOnly JWT cookies
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-integration-unlock-token'],
 })
 
 // Helper to log rate-limit-triggered blocks to console for Render dashboard logging

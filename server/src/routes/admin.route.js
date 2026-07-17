@@ -98,6 +98,7 @@ import {
   testDatabaseConnection,
   verifyIntegrationKey,
   checkUnlockToken,
+  verifyUnlockToken,
 } from '../controllers/integration.controller.js'
 import {
   listAdminUsers,
@@ -623,19 +624,21 @@ router.patch('/blog/comments/:id/approve', verifyToken, requireRole('ADMIN', 'SU
 router.delete('/blog/comments/:id', verifyToken, requireRole('SUPER_ADMIN'), adminDeleteComment)
 
 // ── Integration Config (Cloudinary, SMTP, reCAPTCHA, DB, JWT) ─
-router.get('/integrations', verifyToken, requireRole('SUPER_ADMIN'), getIntegrationConfig)
-router.patch('/integrations', verifyToken, requireRole('SUPER_ADMIN'), updateIntegrationConfig)
-router.post('/integrations/test-smtp', verifyToken, requireRole('SUPER_ADMIN'), testSmtpConnection)
+router.get('/integrations', verifyToken, requireRole('SUPER_ADMIN'), verifyUnlockToken, getIntegrationConfig)
+router.patch('/integrations', verifyToken, requireRole('SUPER_ADMIN'), verifyUnlockToken, updateIntegrationConfig)
+router.post('/integrations/test-smtp', verifyToken, requireRole('SUPER_ADMIN'), verifyUnlockToken, testSmtpConnection)
 router.post(
   '/integrations/test-cloudinary',
   verifyToken,
   requireRole('SUPER_ADMIN'),
+  verifyUnlockToken,
   testCloudinaryConnection
 )
 router.post(
   '/integrations/test-database',
   verifyToken,
   requireRole('SUPER_ADMIN'),
+  verifyUnlockToken,
   testDatabaseConnection
 )
 router.post(

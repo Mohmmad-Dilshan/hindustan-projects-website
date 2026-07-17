@@ -17,6 +17,14 @@ async function request(path, options = {}) {
   const isFormData = options.body instanceof FormData
 
   const headers = { ...options.headers }
+  
+  if (typeof window !== 'undefined' && window.sessionStorage) {
+    const unlockToken = window.sessionStorage.getItem('integration_unlock_token')
+    if (unlockToken) {
+      headers['x-integration-unlock-token'] = unlockToken
+    }
+  }
+
   if (!isFormData && !headers['Content-Type']) {
     headers['Content-Type'] = 'application/json'
   }

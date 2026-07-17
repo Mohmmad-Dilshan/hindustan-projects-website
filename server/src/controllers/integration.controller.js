@@ -375,3 +375,31 @@ export const checkUnlockToken = async (req, res, next) => {
     next(err)
   }
 }
+
+export const verifyUnlockToken = async (req, res, next) => {
+  try {
+    const token = req.headers['x-integration-unlock-token'] || req.query.unlockToken
+    if (!token) {
+      return res.status(403).json({
+        status: 'error',
+        message: 'Page is locked. Master Key authorization required.',
+      })
+    }
+
+    const { default: jwt } = await import('jsonwebtoken')
+    try {
+      const decoded = jwt.verify(token, env.JWT_SECRET)
+      if (decoded.purpose !== 'integration_unlock' || decoded.adminId !== req.admin.id) {
+        throw new Error('Invalid token')
+      }
+      next()
+    } catch (err) {
+      return res.status(403).json({
+        status: 'error',
+        message: 'Session expired. Please enter Master Key again.',
+      })
+    }
+  } catch (err) {
+    next(err)
+  }
+}

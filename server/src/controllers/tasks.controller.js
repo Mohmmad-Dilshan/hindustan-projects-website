@@ -21,6 +21,11 @@ export const listTasks = async (req, res, next) => {
 
     const tasks = await prisma.workTask.findMany({
       where,
+      include: {
+        attachments: {
+          orderBy: { createdAt: 'desc' }
+        }
+      },
       orderBy: { createdAt: 'desc' },
     })
     res.json({ status: 'ok', data: tasks })
@@ -60,6 +65,9 @@ export const createTask = async (req, res, next) => {
         creatorId: req.admin.id,
         assignedToAdminId,
       },
+      include: {
+        attachments: true
+      }
     })
 
     await logActivity(req, 'CREATE', 'WorkTask', `Created task '${task.title}'`)
@@ -112,6 +120,11 @@ export const updateTask = async (req, res, next) => {
     const task = await prisma.workTask.update({
       where: { id },
       data,
+      include: {
+        attachments: {
+          orderBy: { createdAt: 'desc' }
+        }
+      }
     })
 
     await logActivity(

@@ -11,6 +11,11 @@ import {
   HelpCircle,
   FileText,
   AlertTriangle,
+  FileImage,
+  FileSpreadsheet,
+  FileArchive,
+  File,
+  Download,
 } from 'lucide-react'
 import { useClientProject } from '@/hooks/useClientPortal'
 
@@ -206,6 +211,65 @@ export default function ClientProjectDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Shared Files & Documents */}
+      {project.attachments && project.attachments.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="text-lg font-bold text-gray-900 font-heading">Shared Files & Documents</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {project.attachments.map((item) => {
+              const mime = item.fileType.toLowerCase()
+              let iconColor = 'text-gray-500 bg-gray-50'
+              if (mime.startsWith('image/')) iconColor = 'text-blue-500 bg-blue-50'
+              else if (mime === 'application/pdf') iconColor = 'text-red-500 bg-red-50'
+              else if (mime.includes('word') || mime.includes('msword')) iconColor = 'text-indigo-500 bg-indigo-50'
+              else if (mime.includes('excel') || mime.includes('spreadsheet') || mime.includes('sheet')) iconColor = 'text-emerald-500 bg-emerald-50'
+              else if (mime.includes('zip') || mime.includes('compressed')) iconColor = 'text-purple-500 bg-purple-50'
+
+              return (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between p-3 border border-gray-200 rounded-2xl bg-white shadow-sm"
+                >
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className={`p-2.5 rounded-xl ${iconColor} shrink-0`}>
+                      {mime.startsWith('image/') ? (
+                        <FileImage className="w-4 h-4" />
+                      ) : mime === 'application/pdf' ? (
+                        <FileText className="w-4 h-4" />
+                      ) : mime.includes('excel') || mime.includes('sheet') ? (
+                        <FileSpreadsheet className="w-4 h-4" />
+                      ) : mime.includes('zip') ? (
+                        <FileArchive className="w-4 h-4" />
+                      ) : (
+                        <File className="w-4 h-4" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-gray-800 truncate" title={item.fileName}>
+                        {item.fileName}
+                      </p>
+                      <p className="text-[10px] text-gray-400 mt-0.5">
+                        {item.fileSize ? `${(item.fileSize / (1024 * 1024)).toFixed(2)} MB` : ''}
+                      </p>
+                    </div>
+                  </div>
+
+                  <a
+                    href={item.fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 text-gray-400 hover:text-brand-blue hover:bg-brand-blue/5 rounded-xl transition-all ml-4 shrink-0"
+                    title="Download File"
+                  >
+                    <Download className="w-4 h-4" />
+                  </a>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -168,17 +168,18 @@ enum LeadStatus {
 }
 
 model ContactLead {
-  id                String     @id @default(cuid())
+  id                String       @id @default(cuid())
   name              String
   email             String
   phone             String?
   message           String
   serviceInterested String?
-  status            LeadStatus @default(NEW)
-  notes             String?    @default("")
-  estimatedBudget   String?    @default("")
-  createdAt         DateTime   @default(now())
-  updatedAt         DateTime   @updatedAt
+  status            LeadStatus   @default(NEW)
+  notes             String?      @default("")
+  estimatedBudget   String?      @default("")
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  attachments       Attachment[]
 
   @@index([status])
   @@index([createdAt])
@@ -326,6 +327,7 @@ model ClientProject {
   tasks         WorkTask[]
   clientId      String?
   client        Client?         @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  attachments   Attachment[]
 
   @@index([clientId])
   @@map("client_projects")
@@ -360,6 +362,7 @@ model WorkTask {
   assignedToAdminId String?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
+  attachments     Attachment[]
 
   @@index([clientProjectId])
   @@map("work_tasks")
@@ -538,5 +541,30 @@ model Client {
   updatedAt          DateTime        @updatedAt
 
   @@map("clients")
+}
+
+model Attachment {
+  id              String         @id @default(cuid())
+  fileName        String
+  fileUrl         String
+  fileType        String
+  fileSize        Int?
+  publicId        String?
+  createdAt       DateTime       @default(now())
+
+  // Scoped Relations
+  leadId          String?
+  lead            ContactLead?   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  
+  taskId          String?
+  task            WorkTask?      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  clientProjectId String?
+  clientProject   ClientProject? @relation(fields: [clientProjectId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([taskId])
+  @@index([clientProjectId])
+  @@map("attachments")
 }
 

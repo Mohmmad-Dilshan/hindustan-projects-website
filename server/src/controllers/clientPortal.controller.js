@@ -56,6 +56,9 @@ export const getClientProjectById = async (req, res, next) => {
         tasks: {
           orderBy: { createdAt: 'desc' },
         },
+        attachments: {
+          orderBy: { createdAt: 'desc' },
+        },
       },
     })
 

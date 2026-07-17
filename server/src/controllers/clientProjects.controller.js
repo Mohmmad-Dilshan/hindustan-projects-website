@@ -8,7 +8,12 @@ export const listClientProjects = async (req, res, next) => {
   try {
     const projects = await prisma.clientProject.findMany({
       orderBy: { createdAt: 'desc' },
-      include: { tasks: true },
+      include: {
+        tasks: true,
+        attachments: {
+          orderBy: { createdAt: 'desc' }
+        }
+      },
     })
     res.json({ status: 'ok', data: projects })
   } catch (err) {
@@ -53,6 +58,10 @@ export const createClientProject = async (req, res, next) => {
         priority: priority ?? 'MEDIUM',
         progress: progress ? parseInt(progress) : 0,
       },
+      include: {
+        tasks: true,
+        attachments: true
+      }
     })
 
     await logActivity(
@@ -79,6 +88,12 @@ export const updateClientProject = async (req, res, next) => {
     const project = await prisma.clientProject.update({
       where: { id },
       data,
+      include: {
+        tasks: true,
+        attachments: {
+          orderBy: { createdAt: 'desc' }
+        }
+      }
     })
 
     await logActivity(

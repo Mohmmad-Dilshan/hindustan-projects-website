@@ -14,6 +14,11 @@ export const getLeads = async (req, res, next) => {
     const [leads, total] = await Promise.all([
       prisma.contactLead.findMany({
         where,
+        include: {
+          attachments: {
+            orderBy: { createdAt: 'desc' }
+          }
+        },
         orderBy: { createdAt: 'desc' },
         skip,
         take: Number(limit),
@@ -52,7 +57,15 @@ export const updateLeadStatus = async (req, res, next) => {
       data.estimatedBudget = estimatedBudget
     }
 
-    const lead = await prisma.contactLead.update({ where: { id }, data })
+    const lead = await prisma.contactLead.update({
+      where: { id },
+      data,
+      include: {
+        attachments: {
+          orderBy: { createdAt: 'desc' }
+        }
+      }
+    })
     await logActivity(req, 'UPDATE', 'ContactLead', `Updated lead '${lead.name}' (status: ${lead.status})`)
     res.json({ status: 'ok', data: lead })
   } catch (err) {

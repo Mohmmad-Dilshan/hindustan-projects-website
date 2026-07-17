@@ -55,6 +55,34 @@ export const uploadResume = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
 })
 
+// Attachment file filter - allows images, PDFs, Word docs, Excel sheets, and ZIP files
+const attachmentFileFilter = (_req, file, cb) => {
+  const allowedTypes = [
+    'image/jpeg', 'image/jpg', 'image/png', 'image/webp',
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/zip',
+    'application/x-zip-compressed'
+  ]
+  const ext = file.originalname.split('.').pop().toLowerCase()
+  const allowedExts = ['jpg', 'jpeg', 'png', 'webp', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'zip']
+
+  if (allowedTypes.includes(file.mimetype) || allowedExts.includes(ext)) {
+    cb(null, true)
+  } else {
+    cb(new Error('File format not supported. Only images, PDFs, Word documents, Excel sheets, and ZIP archives are allowed.'), false)
+  }
+}
+
+export const uploadAttachment = multer({
+  storage: memoryStorage,
+  fileFilter: attachmentFileFilter,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB max size
+})
+
 /**
  * Upload buffer to Cloudinary directly
  * Used in upload.route.js after multer processes the file into memory

@@ -21,6 +21,7 @@ import {
 import { useForm } from 'react-hook-form'
 import { api } from '@/utils/api'
 import { SEO } from '@/components/ui'
+import AttachmentSection from '@/components/ui/AttachmentSection'
 
 const COLUMNS = [
   {
@@ -65,7 +66,7 @@ const PRIORITY_COLORS = {
 const inputCls =
   'w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue/25 focus:border-brand-blue transition-all'
 
-function TaskForm({ initial, projects, onSave, onCancel, loading }) {
+function TaskForm({ initial, projects, onSave, onCancel, loading, onAttachmentChange }) {
   const formatDateForInput = (dateStr) => {
     if (!dateStr) return ''
     const d = new Date(dateStr)
@@ -188,6 +189,15 @@ function TaskForm({ initial, projects, onSave, onCancel, loading }) {
           <X className="w-4 h-4" /> Cancel
         </button>
       </div>
+      {initial && (
+        <div className="border-t border-gray-150 pt-4 mt-4">
+          <AttachmentSection
+            attachments={initial.attachments || []}
+            taskId={initial.id}
+            onUploadSuccess={onAttachmentChange}
+          />
+        </div>
+      )}
     </form>
   )
 }
@@ -207,7 +217,7 @@ export default function AdminTasksPage() {
 
   const qc = useQueryClient()
 
-  const { data: tasks = [], isLoading: loadingTasks } = useQuery({
+  const { data: tasks = [], isLoading: loadingTasks, refetch } = useQuery({
     queryKey: ['admin-tasks'],
     queryFn: () => api.get('/admin/tasks').then((r) => r.data),
   })
@@ -244,6 +254,14 @@ export default function AdminTasksPage() {
       qc.invalidateQueries({ queryKey: ['admin-stats'] })
     },
   })
+
+  const handleAttachmentChange = async () => {
+    const updated = await refetch()
+    const found = updated.data?.find((t) => t.id === editing?.id)
+    if (found) {
+      setEditing(found)
+    }
+  }
 
   const handleQuickAddSubmit = (e) => {
     e.preventDefault()
@@ -429,6 +447,7 @@ export default function AdminTasksPage() {
                 onSave={(data) => updateMutation.mutate({ id: editing.id, ...data })}
                 onCancel={() => setEditing(null)}
                 loading={updateMutation.isPending}
+                onAttachmentChange={handleAttachmentChange}
               />
             )}
           </div>

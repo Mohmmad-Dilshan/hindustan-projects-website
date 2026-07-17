@@ -4,7 +4,8 @@
  */
 import { Router } from 'express'
 import { verifyToken, requireRole } from '../middleware/auth.js'
-import { upload, uploadToCloudinary } from '../utils/cloudinary.js'
+import { upload, uploadToCloudinary, uploadAttachment } from '../utils/cloudinary.js'
+import { createAttachment, deleteAttachment } from '../controllers/attachments.controller.js'
 
 const router = Router()
 
@@ -48,6 +49,22 @@ router.post(
       })
     }
   }
+)
+
+// ── Attachment Management ──────────────────────────────────────
+router.post(
+  '/attachment',
+  verifyToken,
+  requireRole('ADMIN', 'SUPER_ADMIN', 'STAFF'),
+  uploadAttachment.single('file'),
+  createAttachment
+)
+
+router.delete(
+  '/attachment/:id',
+  verifyToken,
+  requireRole('ADMIN', 'SUPER_ADMIN', 'STAFF'),
+  deleteAttachment
 )
 
 export default router

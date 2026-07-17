@@ -24,6 +24,7 @@ import backupRouter from './routes/backup.route.js'
 import socialRouter from './routes/social.route.js'
 import chatbotRouter from './routes/chatbot.route.js'
 import blogRouter from './routes/blog.route.js'
+import clientRouter from './routes/client.route.js'
 import { hideAdminRoutes } from './middleware/auth.js'
 
 const app = express()
@@ -76,6 +77,7 @@ app.use('/api/admin/backup', hideAdminRoutes, backupRouter)
 app.use('/api/admin/social', hideAdminRoutes, socialRouter)
 app.use('/api/chatbot', chatbotRouter)
 app.use('/api/blog', blogRouter)
+app.use('/api/client', clientRouter)
 app.use('/api', contentRouter)
 app.use('/api', monitoringRouter)
 app.use('/sitemap.xml', sitemapRouter)

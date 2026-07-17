@@ -40,3 +40,23 @@ export function clearAdminCookies(res) {
 export function clearAdminCookie(res) {
   clearAdminCookies(res)
 }
+
+const CLIENT_ACCESS_COOKIE_NAME = 'clientToken'
+const CLIENT_ACCESS_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? 'none' : 'strict',
+  maxAge: 24 * 60 * 60 * 1000, // 24 hours
+}
+
+export function setClientCookie(res, token) {
+  res.cookie(CLIENT_ACCESS_COOKIE_NAME, token, CLIENT_ACCESS_COOKIE_OPTIONS)
+}
+
+export function clearClientCookies(res) {
+  res.clearCookie(CLIENT_ACCESS_COOKIE_NAME, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'strict',
+  })
+}

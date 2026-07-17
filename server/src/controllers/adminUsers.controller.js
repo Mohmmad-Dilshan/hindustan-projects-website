@@ -3,7 +3,10 @@
  */
 import prisma from '../config/db.js'
 import bcrypt from 'bcryptjs'
+import crypto from 'crypto'
 import { logActivity } from '../utils/activity.js'
+import { sendEmail } from '../utils/mailer.js'
+import { env } from '../config/env.js'
 
 export const listAdminUsers = async (req, res, next) => {
   try {
@@ -189,3 +192,189 @@ export const deleteAdminUser = async (req, res, next) => {
     next(err)
   }
 }
+
+// ── Client Portal Users CRUD (SUPER_ADMIN / ADMIN) ────────────────
+
+export const listClients = async (req, res, next) => {
+  try {
+    const clients = await prisma.client.findMany({
+      include: {
+        projects: {
+          select: { id: true, projectTitle: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    })
+    res.json({ status: 'ok', data: clients })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const createClientUser = async (req, res, next) => {
+  try {
+    const { name, email, projectIds } = req.body
+
+    if (!name || !email) {
+      return res.status(400).json({ status: 'error', message: 'Name and email are required.' })
+    }
+
+    const cleanEmail = email.trim().toLowerCase()
+
+    const existing = await prisma.client.findUnique({ where: { email: cleanEmail } })
+    if (existing) {
+      return res.status(409).json({ status: 'error', message: 'Email is already in use.' })
+    }
+
+    const inviteToken = crypto.randomBytes(32).toString('hex')
+    const inviteTokenExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+
+    const client = await prisma.client.create({
+      data: {
+        name,
+        email: cleanEmail,
+        inviteToken,
+        inviteTokenExpires,
+        projects: projectIds && projectIds.length > 0 ? {
+          connect: projectIds.map(id => ({ id }))
+        } : undefined
+      },
+      include: {
+        projects: {
+          select: { id: true, projectTitle: true },
+        },
+      },
+    })
+
+    const clientUrl = env.CLIENT_URL || 'https://it-services-hindustan-projects.vercel.app'
+    const inviteLink = `${clientUrl}/client/setup-password?token=${inviteToken}`
+
+    await sendEmail({
+      to: client.email,
+      subject: 'Welcome to Hindustan Projects Client Portal',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
+          <h2 style="color: #1A3E8C; margin-top: 0;">Welcome, ${client.name}!</h2>
+          <p>Your client portal account has been created for your projects with Hindustan Projects.</p>
+          <p>Please click the button below to set up your password and access your dashboard:</p>
+          <p style="text-align: center; margin: 30px 0;">
+            <a href="${inviteLink}" style="background-color: #E31E24; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Set Up Your Password</a>
+          </p>
+          <p style="font-size: 12px; color: #6b7280; margin-top: 20px;">If the button doesn't work, copy and paste this link in your browser: <br/> <a href="${inviteLink}">${inviteLink}</a></p>
+          <p style="font-size: 12px; color: #9ca3af; margin-top: 10px;">This setup link will expire in 7 days.</p>
+        </div>
+      `,
+      text: `Welcome, ${client.name}!\n\nYour client portal account has been created. Set up your password using the link below:\n${inviteLink}\n\nThis setup link will expire in 7 days.`
+    }).catch((err) => {
+      console.error('[invite-email] Failed to send invite:', err.message)
+    })
+
+    await logActivity(req, 'CREATE', 'Client', `Created client account '${client.email}'`)
+
+    res.status(201).json({ status: 'ok', data: client })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const updateClientUser = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const { name, email, isActive, projectIds, resendInvite } = req.body
+
+    const existing = await prisma.client.findUnique({ where: { id } })
+    if (!existing) {
+      return res.status(404).json({ status: 'error', message: 'Client not found.' })
+    }
+
+    const data = {}
+    if (name) data.name = name
+    if (email) {
+      const cleanEmail = email.trim().toLowerCase()
+      if (cleanEmail !== existing.email) {
+        const dup = await prisma.client.findUnique({ where: { email: cleanEmail } })
+        if (dup) {
+          return res.status(409).json({ status: 'error', message: 'Email is already in use.' })
+        }
+        data.email = cleanEmail
+      }
+    }
+    if (isActive !== undefined) {
+      data.isActive = Boolean(isActive)
+    }
+
+    if (projectIds) {
+      data.projects = {
+        set: projectIds.map(id => ({ id }))
+      }
+    }
+
+    if (resendInvite) {
+      const inviteToken = crypto.randomBytes(32).toString('hex')
+      const inviteTokenExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+      data.inviteToken = inviteToken
+      data.inviteTokenExpires = inviteTokenExpires
+      data.passwordHash = null // reset existing password until setup done
+    }
+
+    const client = await prisma.client.update({
+      where: { id },
+      data,
+      include: {
+        projects: {
+          select: { id: true, projectTitle: true },
+        },
+      },
+    })
+
+    if (resendInvite) {
+      const clientUrl = env.CLIENT_URL || 'https://it-services-hindustan-projects.vercel.app'
+      const inviteLink = `${clientUrl}/client/setup-password?token=${client.inviteToken}`
+
+      await sendEmail({
+        to: client.email,
+        subject: 'Set Up Your Hindustan Projects Client Portal Password',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
+            <h2 style="color: #1A3E8C; margin-top: 0;">Hello, ${client.name}!</h2>
+            <p>An administrator has requested to reset or set up your client portal password.</p>
+            <p>Please click the button below to set up your password and access your dashboard:</p>
+            <p style="text-align: center; margin: 30px 0;">
+              <a href="${inviteLink}" style="background-color: #E31E24; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Set Up Your Password</a>
+            </p>
+            <p style="font-size: 12px; color: #6b7280; margin-top: 20px;">If the button doesn't work, copy and paste this link in your browser: <br/> <a href="${inviteLink}">${inviteLink}</a></p>
+            <p style="font-size: 12px; color: #9ca3af; margin-top: 10px;">This setup link will expire in 7 days.</p>
+          </div>
+        `,
+        text: `Hello, ${client.name}!\n\nAn administrator has requested to reset or set up your client portal password. Set up your password using the link below:\n${inviteLink}\n\nThis setup link will expire in 7 days.`
+      }).catch((err) => {
+        console.error('[invite-email] Failed to send setup link:', err.message)
+      })
+    }
+
+    await logActivity(req, 'UPDATE', 'Client', `Updated client account '${client.email}'`)
+
+    res.json({ status: 'ok', data: client })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const deleteClientUser = async (req, res, next) => {
+  try {
+    const { id } = req.params
+
+    const existing = await prisma.client.findUnique({ where: { id } })
+    if (!existing) {
+      return res.status(404).json({ status: 'error', message: 'Client not found.' })
+    }
+
+    await prisma.client.delete({ where: { id } })
+    await logActivity(req, 'DELETE', 'Client', `Deleted client account '${existing.email}'`)
+
+    res.json({ status: 'ok', message: 'Client account deleted.' })
+  } catch (err) {
+    next(err)
+  }
+}
+

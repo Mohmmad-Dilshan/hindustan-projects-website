@@ -1,0 +1,29 @@
+/**
+ * client.route.js — Client Portal API Routes
+ */
+import { Router } from 'express'
+import {
+  clientLogin,
+  getClientProfile,
+  setupClientPassword,
+  clientLogout,
+} from '../controllers/clientAuth.controller.js'
+import {
+  getClientProjects,
+  getClientProjectById,
+} from '../controllers/clientPortal.controller.js'
+import { verifyClientToken } from '../middleware/auth.js'
+
+const router = Router()
+
+// Public Auth routes
+router.post('/login', clientLogin)
+router.post('/setup-password', setupClientPassword)
+router.post('/logout', clientLogout)
+
+// Protected Portal routes
+router.get('/me', verifyClientToken, getClientProfile)
+router.get('/projects', verifyClientToken, getClientProjects)
+router.get('/projects/:id', verifyClientToken, getClientProjectById)
+
+export default router

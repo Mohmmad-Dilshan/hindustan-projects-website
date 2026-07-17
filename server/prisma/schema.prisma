@@ -324,7 +324,10 @@ model ClientProject {
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   tasks         WorkTask[]
+  clientId      String?
+  client        Client?         @relation(fields: [clientId], references: [id], onDelete: SetNull)
 
+  @@index([clientId])
   @@map("client_projects")
 }
 
@@ -520,5 +523,20 @@ model PasswordHistory {
 
   @@index([adminId])
   @@map("password_histories")
+}
+
+model Client {
+  id                 String          @id @default(cuid())
+  name               String
+  email              String          @unique
+  passwordHash       String?
+  isActive           Boolean         @default(true)
+  inviteToken        String?         @unique
+  inviteTokenExpires DateTime?
+  projects           ClientProject[]
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  @@map("clients")
 }
 

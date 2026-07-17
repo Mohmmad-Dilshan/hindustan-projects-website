@@ -96,6 +96,13 @@ const AdminBlogPage = lazyWithRetry(() => import('@/pages/admin/AdminBlogPage'))
 const AdminBlogCommentsPage = lazyWithRetry(() => import('@/pages/admin/AdminBlogCommentsPage'))
 const AdminUsersPage = lazyWithRetry(() => import('@/pages/admin/AdminUsersPage'))
 
+// ── Client Portal pages — lazy loaded ──────────────────────────
+const ClientLayout = lazyWithRetry(() => import('@/layouts/ClientLayout'))
+const ClientLoginPage = lazyWithRetry(() => import('@/pages/client/ClientLoginPage'))
+const ClientDashboardPage = lazyWithRetry(() => import('@/pages/client/ClientDashboardPage'))
+const ClientProjectDetailPage = lazyWithRetry(() => import('@/pages/client/ClientProjectDetailPage'))
+
+
 export default function App() {
   return (
     <>
@@ -319,6 +326,58 @@ export default function App() {
             }
           />
         </Route>
+
+        {/* ── Client Portal ── */}
+        <Route
+          path="/client"
+          element={
+            <Suspense fallback={<AdminFallback />}>
+              <ClientLayout />
+            </Suspense>
+          }
+        >
+          <Route
+            path="dashboard"
+            element={
+              <Suspense fallback={<PageFallback />}>
+                <ClientDashboardPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="projects/:id"
+            element={
+              <Suspense fallback={<PageFallback />}>
+                <ClientProjectDetailPage />
+              </Suspense>
+            }
+          />
+          <Route
+            index
+            element={
+              <Suspense fallback={<PageFallback />}>
+                <ClientDashboardPage />
+              </Suspense>
+            }
+          />
+        </Route>
+
+        <Route
+          path="/client-login"
+          element={
+            <Suspense fallback={<AdminFallback />}>
+              <ClientLoginPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/client/setup-password"
+          element={
+            <Suspense fallback={<AdminFallback />}>
+              <ClientLoginPage />
+            </Suspense>
+          }
+        />
 
         <Route
           path="/:adminSecret"

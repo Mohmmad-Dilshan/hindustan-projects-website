@@ -20,6 +20,7 @@ import {
 import { useForm } from 'react-hook-form'
 import { api } from '@/utils/api'
 import { SEO } from '@/components/ui'
+import AttachmentSection from '@/components/ui/AttachmentSection'
 
 const STATUSES = ['PLANNING', 'IN_PROGRESS', 'REVIEW', 'COMPLETED', 'ON_HOLD']
 const PRIORITIES = ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
@@ -50,7 +51,7 @@ const PRIORITY_COLORS = {
 const inputCls =
   'w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue/25 focus:border-brand-blue transition-all'
 
-function ProjectForm({ initial, onSave, onCancel, loading }) {
+function ProjectForm({ initial, onSave, onCancel, loading, onAttachmentChange }) {
   // Format dates for input type="date"
   const formatDateForInput = (dateStr) => {
     if (!dateStr) return ''
@@ -230,6 +231,16 @@ function ProjectForm({ initial, onSave, onCancel, loading }) {
           <X className="w-4 h-4" /> Cancel
         </button>
       </div>
+
+      {initial && (
+        <div className="border-t border-gray-100 pt-4 mt-4">
+          <AttachmentSection
+            attachments={initial.attachments || []}
+            clientProjectId={initial.id}
+            onUploadSuccess={onAttachmentChange}
+          />
+        </div>
+      )}
     </form>
   )
 }
@@ -241,7 +252,7 @@ export default function AdminClientProjectsPage() {
   const [statusFilter, setStatusFilter] = useState('ALL')
   const qc = useQueryClient()
 
-  const { data: projects = [], isLoading } = useQuery({
+  const { data: projects = [], isLoading, refetch } = useQuery({
     queryKey: ['admin-client-projects'],
     queryFn: () => api.get('/admin/client-projects').then((r) => r.data),
   })
@@ -263,6 +274,14 @@ export default function AdminClientProjectsPage() {
       setEditing(null)
     },
   })
+
+  const handleAttachmentChange = async () => {
+    const updated = await refetch()
+    const found = updated.data?.find((p) => p.id === editing?.id)
+    if (found) {
+      setEditing(found)
+    }
+  }
 
   const deleteMutation = useMutation({
     mutationFn: (id) => api.delete(`/admin/client-projects/${id}`),
@@ -419,6 +438,7 @@ export default function AdminClientProjectsPage() {
                 onSave={(data) => updateMutation.mutate({ id: editing.id, ...data })}
                 onCancel={() => setEditing(null)}
                 loading={updateMutation.isPending}
+                onAttachmentChange={handleAttachmentChange}
               />
             )}
           </div>

@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { api } from '@/utils/api'
 import { SEO } from '@/components/ui'
+import AttachmentSection from '@/components/ui/AttachmentSection'
 
 const STATUS_CONFIG = {
   NEW: { label: 'New', dot: 'bg-blue-500', pill: 'bg-blue-50 text-blue-700 border-blue-200' },
@@ -66,7 +67,7 @@ export default function AdminLeadsPage() {
   const [selectedLead, setSelectedLead] = useState(null)
   const qc = useQueryClient()
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-leads', statusFilter],
     queryFn: () =>
       api.get(`/admin/leads${statusFilter ? `?status=${statusFilter}` : ''}`).then((r) => r.data),
@@ -502,6 +503,21 @@ export default function AdminLeadsPage() {
                     />
                     <span className="text-[9px] text-gray-400 block">Changes are saved automatically when you click outside (onBlur).</span>
                   </div>
+                </div>
+
+                {/* Attachments Section */}
+                <div className="border-t border-gray-100 pt-4">
+                  <AttachmentSection
+                    attachments={selectedLead.attachments || []}
+                    leadId={selectedLead.id}
+                    onUploadSuccess={async () => {
+                      const updated = await refetch()
+                      const found = updated.data?.find((l) => l.id === selectedLead.id)
+                      if (found) {
+                        setSelectedLead(found)
+                      }
+                    }}
+                  />
                 </div>
               </div>
 

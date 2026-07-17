@@ -105,6 +105,10 @@ import {
   createAdminUser,
   updateAdminUser,
   deleteAdminUser,
+  listClients,
+  createClientUser,
+  updateClientUser,
+  deleteClientUser,
 } from '../controllers/adminUsers.controller.js'
 
 // ── CMS Validation Schemas ─────────────────────────────────────
@@ -508,6 +512,13 @@ router.get('/users', verifyToken, requireRole('SUPER_ADMIN'), listAdminUsers)
 router.post('/users', verifyToken, requireRole('SUPER_ADMIN'), createAdminUser)
 router.patch('/users/:id', verifyToken, requireRole('SUPER_ADMIN'), updateAdminUser)
 router.delete('/users/:id', verifyToken, requireRole('SUPER_ADMIN'), deleteAdminUser)
+
+// ── Client User Management ─────────────────────────────────────
+router.get('/clients', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), listClients)
+router.post('/clients', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), createClientUser)
+router.patch('/clients/:id', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), updateClientUser)
+router.delete('/clients/:id', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), deleteClientUser)
+
 
 // ── Legal Pages ────────────────────────────────────────────────
 router.get('/legal', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), listLegalPages)

@@ -122,3 +122,41 @@ export const hideAdminRoutes = (req, res, next) => {
     })
   }
 }
+
+/**
+ * Verifies Client JWT from httpOnly cookie or Authorization header.
+ * Attaches decoded payload to req.client on success.
+ */
+export const verifyClientToken = (req, res, next) => {
+  const tokenFromCookie = req.cookies?.clientToken
+
+  const authHeader = req.headers['authorization']
+  const tokenFromHeader =
+    authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null
+
+  const token = tokenFromCookie || tokenFromHeader
+
+  if (!token) {
+    return res.status(401).json({
+      status: 'error',
+      message: 'Authentication required. Please log in.',
+    })
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    if (decoded.role !== 'CLIENT') {
+      return res.status(403).json({ status: 'error', message: 'Access denied.' })
+    }
+    req.client = decoded // { id, email, role }
+    next()
+  } catch (err) {
+    const message =
+      err.name === 'TokenExpiredError'
+        ? 'Session expired. Please log in again.'
+        : 'Invalid token. Please log in again.'
+
+    return res.status(401).json({ status: 'error', message })
+  }
+}
+

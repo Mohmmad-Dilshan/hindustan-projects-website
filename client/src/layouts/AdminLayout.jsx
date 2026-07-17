@@ -183,11 +183,9 @@ export default function AdminLayout() {
   // Global search debouncing
   useEffect(() => {
     if (searchQuery.trim().length < 2) {
-      setSearchResults(null)
       return
     }
 
-    setSearchLoading(true)
     const delayDebounce = setTimeout(async () => {
       try {
         const res = await api.get(`/admin/search?q=${encodeURIComponent(searchQuery)}`)
@@ -462,8 +460,15 @@ export default function AdminLayout() {
                 placeholder="Search leads, tasks, blog..."
                 value={searchQuery}
                 onChange={(e) => {
-                  setSearchQuery(e.target.value)
+                  const val = e.target.value
+                  setSearchQuery(val)
                   setSearchOpen(true)
+                  if (val.trim().length < 2) {
+                    setSearchResults(null)
+                    setSearchLoading(false)
+                  } else {
+                    setSearchLoading(true)
+                  }
                 }}
                 onFocus={() => setSearchOpen(true)}
                 className="w-full pl-9 pr-8 py-1.5 text-xs border border-gray-250 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all"

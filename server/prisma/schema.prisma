@@ -205,6 +205,7 @@ model Admin {
   refreshToken     String?
   twoFactorSecret  String?
   twoFactorEnabled Boolean   @default(false)
+  passwordHistories PasswordHistory[]
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
@@ -508,5 +509,16 @@ model PageVisit {
   @@index([path])
   @@index([createdAt])
   @@map("page_visits")
+}
+
+model PasswordHistory {
+  id           String   @id @default(cuid())
+  adminId      String
+  admin        Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  @@index([adminId])
+  @@map("password_histories")
 }
 

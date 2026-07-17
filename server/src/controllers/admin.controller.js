@@ -39,6 +39,16 @@ export const adminLogin = async (req, res, next) => {
 
     const admin = await prisma.admin.findUnique({ where: { email } })
     if (!admin) {
+      await prisma.activityLog.create({
+        data: {
+          adminId: 'UNKNOWN',
+          adminEmail: email || 'unknown',
+          action: 'LOGIN_FAIL',
+          entity: 'Admin',
+          details: `Failed login: account not found. IP: ${ip}`,
+        },
+      }).catch((e) => console.error('[ActivityLog] Failed to log failure:', e.message))
+
       return res.status(401).json({ status: 'error', message: 'Invalid credentials.' })
     }
 
@@ -69,9 +79,29 @@ export const adminLogin = async (req, res, next) => {
         `[SECURITY_ALERT] FAILED_LOGIN_ATTEMPT | Email: ${email} | IP: ${ip} | Total attempts: ${attempts}`
       )
 
+      await prisma.activityLog.create({
+        data: {
+          adminId: admin.id,
+          adminEmail: admin.email,
+          action: 'LOGIN_FAIL',
+          entity: 'Admin',
+          details: `Failed login: incorrect password. IP: ${ip}. Attempt: ${attempts}`,
+        },
+      }).catch((e) => console.error('[ActivityLog] Failed to log failure:', e.message))
+
       if (attempts >= 5) {
         lockoutUntil = new Date(Date.now() + 15 * 60 * 1000) // 15 minutes
         message = 'Too many failed attempts. Account locked for 15 minutes.'
+
+        await prisma.activityLog.create({
+          data: {
+            adminId: admin.id,
+            adminEmail: admin.email,
+            action: 'LOCKOUT',
+            entity: 'Admin',
+            details: `Account locked for 15 minutes due to repeated failed logins. IP: ${ip}`,
+          },
+        }).catch((e) => console.error('[ActivityLog] Failed to log lockout:', e.message))
 
         // Send lockout notification email (at exactly 5 attempts to avoid spamming on subsequent attempts)
         if (attempts === 5) {
@@ -421,8 +451,56 @@ export const changePassword = async (req, res, next) => {
       return res.status(401).json({ status: 'error', message: 'Current password is incorrect.' })
     }
 
+    // Check if password is same as current password
+    const matchesCurrent = await bcrypt.compare(newPassword, admin.passwordHash)
+    if (matchesCurrent) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'New password cannot be the same as your current password.',
+      })
+    }
+
+    // Check if password matches any of the last 3 passwords in history
+    const history = await prisma.passwordHistory.findMany({
+      where: { adminId: admin.id },
+      orderBy: { createdAt: 'desc' },
+      take: 3,
+    })
+
+    for (const entry of history) {
+      const isMatch = await bcrypt.compare(newPassword, entry.passwordHash)
+      if (isMatch) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'You cannot reuse any of your last 3 passwords.',
+        })
+      }
+    }
+
     const passwordHash = await bcrypt.hash(newPassword, 12)
+
+    // Save current password hash to history before updating
+    await prisma.passwordHistory.create({
+      data: {
+        adminId: admin.id,
+        passwordHash: admin.passwordHash,
+      },
+    })
+
+    // Update admin password
     await prisma.admin.update({ where: { id: admin.id }, data: { passwordHash } })
+
+    // Keep only the last 3 history records
+    const allHistory = await prisma.passwordHistory.findMany({
+      where: { adminId: admin.id },
+      orderBy: { createdAt: 'desc' },
+    })
+    if (allHistory.length > 3) {
+      const idsToDelete = allHistory.slice(3).map((h) => h.id)
+      await prisma.passwordHistory.deleteMany({
+        where: { id: { in: idsToDelete } },
+      })
+    }
 
     res.json({ status: 'ok', message: 'Password updated successfully.' })
   } catch (err) {

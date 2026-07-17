@@ -94,7 +94,49 @@ export const updateAdminUser = async (req, res, next) => {
       data.isActive = Boolean(isActive)
     }
     if (password && password.trim()) {
-      data.passwordHash = await bcrypt.hash(password, 10)
+      const matchesCurrent = await bcrypt.compare(password, existing.passwordHash)
+      if (matchesCurrent) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'New password cannot be the same as the current password.',
+        })
+      }
+
+      const history = await prisma.passwordHistory.findMany({
+        where: { adminId: existing.id },
+        orderBy: { createdAt: 'desc' },
+        take: 3,
+      })
+
+      for (const entry of history) {
+        const isMatch = await bcrypt.compare(password, entry.passwordHash)
+        if (isMatch) {
+          return res.status(400).json({
+            status: 'error',
+            message: 'New password cannot reuse any of the last 3 passwords.',
+          })
+        }
+      }
+
+      await prisma.passwordHistory.create({
+        data: {
+          adminId: existing.id,
+          passwordHash: existing.passwordHash,
+        },
+      })
+
+      data.passwordHash = await bcrypt.hash(password, 12)
+
+      const allHistory = await prisma.passwordHistory.findMany({
+        where: { adminId: existing.id },
+        orderBy: { createdAt: 'desc' },
+      })
+      if (allHistory.length > 3) {
+        const idsToDelete = allHistory.slice(3).map((h) => h.id)
+        await prisma.passwordHistory.deleteMany({
+          where: { id: { in: idsToDelete } },
+        })
+      }
     }
 
     const user = await prisma.admin.update({

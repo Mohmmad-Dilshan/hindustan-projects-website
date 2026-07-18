@@ -656,6 +656,12 @@ export const getDashboardStats = async (req, res, next) => {
       })
     }
 
+    // Fetch creation dates for the past 6 months to compute trends
+    const sixMonthsAgo = new Date()
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5)
+    sixMonthsAgo.setDate(1)
+    sixMonthsAgo.setHours(0, 0, 0, 0)
+
     const [
       totalLeads,
       newLeads,
@@ -672,19 +678,21 @@ export const getDashboardStats = async (req, res, next) => {
       pendingBlogComments,
       totalTestimonials,
       siteSettings,
+      recentLeads,
+      recentProjects,
     ] = await Promise.all([
-      prisma.contactLead.count(),
-      prisma.contactLead.count({ where: { status: 'NEW' } }),
-      prisma.contactLead.count({ where: { status: 'CONTACTED' } }),
-      prisma.contactLead.count({ where: { status: 'CLOSED' } }),
-      prisma.project.count(),
+      prisma.contactLead.count({ where: { deletedAt: null } }),
+      prisma.contactLead.count({ where: { status: 'NEW', deletedAt: null } }),
+      prisma.contactLead.count({ where: { status: 'CONTACTED', deletedAt: null } }),
+      prisma.contactLead.count({ where: { status: 'CLOSED', deletedAt: null } }),
+      prisma.project.count(), // public projects
       prisma.service.count({ where: { isActive: true } }),
       prisma.teamMember.count(),
-      prisma.jobApplication.count(),
+      prisma.jobApplication.count({ where: { deletedAt: null } }),
       prisma.jobPosting.count({ where: { isActive: true } }),
-      prisma.clientProject.findMany(),
+      prisma.clientProject.findMany({ where: { deletedAt: null } }),
       prisma.workTask.findMany(),
-      prisma.blogPost.count({ where: { status: 'PUBLISHED' } }),
+      prisma.blogPost.count({ where: { status: 'PUBLISHED', deletedAt: null } }),
       prisma.blogComment.count({ where: { isApproved: false } }),
       prisma.testimonial.count({ where: { isActive: true } }),
       prisma.siteSetting.findMany({
@@ -693,6 +701,14 @@ export const getDashboardStats = async (req, res, next) => {
             in: ['phone', 'email', 'address', 'linkedin', 'instagram', 'facebook'],
           },
         },
+      }),
+      prisma.contactLead.findMany({
+        where: { createdAt: { gte: sixMonthsAgo }, deletedAt: null },
+        select: { createdAt: true },
+      }),
+      prisma.clientProject.findMany({
+        where: { createdAt: { gte: sixMonthsAgo }, deletedAt: null },
+        select: { createdAt: true },
       }),
     ])
 
@@ -722,6 +738,62 @@ export const getDashboardStats = async (req, res, next) => {
     const hasContactInfo = !!(phone && email && address)
     const hasSocialLinks = !!(linkedin || instagram || facebook)
 
+    // Calculate project status distribution
+    const projectStatusDistribution = {
+      PLANNING: clientProjects.filter((p) => p.status === 'PLANNING').length,
+      IN_PROGRESS: clientProjects.filter((p) => p.status === 'IN_PROGRESS').length,
+      REVIEW: clientProjects.filter((p) => p.status === 'REVIEW').length,
+      COMPLETED: clientProjects.filter((p) => p.status === 'COMPLETED').length,
+      ON_HOLD: clientProjects.filter((p) => p.status === 'ON_HOLD').length,
+    }
+
+    // Calculate task status distribution
+    const taskStatusDistribution = {
+      TODO: workTasks.filter((t) => t.status === 'TODO').length,
+      IN_PROGRESS: workTasks.filter((t) => t.status === 'IN_PROGRESS').length,
+      DONE: workTasks.filter((t) => t.status === 'DONE').length,
+      BLOCKED: workTasks.filter((t) => t.status === 'BLOCKED').length,
+    }
+
+    // Calculate monthly trends
+    const monthsData = []
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date()
+      d.setMonth(d.getMonth() - i)
+      const monthIndex = d.getMonth()
+      const year = d.getFullYear()
+      monthsData.push({
+        label: `${monthNames[monthIndex]}`,
+        monthVal: monthIndex,
+        yearVal: year,
+        leads: 0,
+        projects: 0,
+      })
+    }
+
+    recentLeads.forEach((lead) => {
+      const ld = new Date(lead.createdAt)
+      const m = ld.getMonth()
+      const y = ld.getFullYear()
+      const target = monthsData.find((item) => item.monthVal === m && item.yearVal === y)
+      if (target) target.leads++
+    })
+
+    recentProjects.forEach((proj) => {
+      const pd = new Date(proj.createdAt)
+      const m = pd.getMonth()
+      const y = pd.getFullYear()
+      const target = monthsData.find((item) => item.monthVal === m && item.yearVal === y)
+      if (target) target.projects++
+    })
+
+    const monthlyTrends = monthsData.map((item) => ({
+      month: item.label,
+      leads: item.leads,
+      projects: item.projects,
+    }))
+
     res.json({
       status: 'ok',
       data: {
@@ -743,6 +815,9 @@ export const getDashboardStats = async (req, res, next) => {
         totalTestimonials,
         hasContactInfo,
         hasSocialLinks,
+        projectStatusDistribution,
+        taskStatusDistribution,
+        monthlyTrends,
       },
     })
   } catch (err) {

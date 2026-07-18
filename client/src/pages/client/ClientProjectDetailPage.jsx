@@ -55,6 +55,7 @@ const TASK_STATUS_LABELS = {
 export default function ClientProjectDetailPage() {
   const { id } = useParams()
   const { data: project, isLoading, isError } = useClientProject(id)
+  const payMutation = useClientPayMilestone()
 
   if (isLoading) {
     return (
@@ -79,13 +80,13 @@ export default function ClientProjectDetailPage() {
 
   const tasks = project.tasks || []
   const completedTasks = tasks.filter((t) => t.status === 'DONE')
-  const payMutation = useClientPayMilestone()
 
   const handlePay = async (milestoneId) => {
     if (window.confirm('Simulate milestone payment check? This will immediately mark the milestone as PAID.')) {
       try {
         await payMutation.mutateAsync(milestoneId)
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.error(err)
       }
     }
@@ -192,8 +193,8 @@ export default function ClientProjectDetailPage() {
                 const isPaid = m.status === 'PAID'
                 const isOverdue = m.status === 'OVERDUE'
 
-                let iconBg = 'bg-gray-100 text-gray-500 ring-4 ring-gray-50'
-                let iconTag = Clock
+                let iconBg = 'bg-blue-50 text-brand-blue ring-4 ring-blue-100/50'
+                let iconTag = Calendar
 
                 if (isPaid) {
                   iconBg = 'bg-emerald-50 text-emerald-600 ring-4 ring-emerald-100/50'
@@ -201,9 +202,6 @@ export default function ClientProjectDetailPage() {
                 } else if (isOverdue) {
                   iconBg = 'bg-red-50 text-red-600 ring-4 ring-red-150/50'
                   iconTag = AlertTriangle
-                } else {
-                  iconBg = 'bg-blue-50 text-brand-blue ring-4 ring-blue-100/50'
-                  iconTag = Calendar
                 }
 
                 const IconElement = iconTag

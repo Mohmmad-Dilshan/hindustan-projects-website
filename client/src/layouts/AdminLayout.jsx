@@ -80,7 +80,7 @@ const NAV_GROUPS = [
       { to: '/admin/tasks', icon: CheckSquare, label: 'Tasks', roles: ['ADMIN', 'SUPER_ADMIN', 'STAFF'] },
       { to: '/admin/notes', icon: StickyNote, label: 'Notes', roles: ['ADMIN', 'SUPER_ADMIN', 'STAFF'] },
       { to: '/admin/calendar', icon: Calendar, label: 'Calendar', roles: ['ADMIN', 'SUPER_ADMIN', 'STAFF'] },
-      { to: '/admin/activities', icon: History, label: 'Activity Log', roles: ['ADMIN', 'SUPER_ADMIN'] },
+      { to: '/admin/activities', icon: History, label: 'Activity Log', roles: ['SUPER_ADMIN'] },
     ],
   },
   {

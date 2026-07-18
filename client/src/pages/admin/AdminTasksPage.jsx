@@ -134,7 +134,14 @@ function TaskForm({ initial, projects, onSave, onCancel, loading, onAttachmentCh
         </div>
         <div>
           <label className="text-xs font-semibold text-gray-600 block mb-1">Assigned To</label>
-          <input {...register('assignedTo')} className={inputCls} placeholder="Team member name" />
+          <select {...register('assignedTo')} className={inputCls}>
+            <option value="">Unassigned</option>
+            {teamMembers.map((m) => (
+              <option key={m.id} value={m.email}>
+                {m.email} ({m.role})
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="text-xs font-semibold text-gray-600 block mb-1">Status</label>
@@ -209,6 +216,7 @@ export default function AdminTasksPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [projectFilter, setProjectFilter] = useState('ALL')
   const [priorityFilter, setPriorityFilter] = useState('ALL')
+  const [assignmentFilter, setAssignmentFilter] = useState('ALL')
 
   // Quick Add State
   const [quickTitle, setQuickTitle] = useState('')
@@ -225,6 +233,16 @@ export default function AdminTasksPage() {
   const { data: projects = [], isLoading: loadingProjects } = useQuery({
     queryKey: ['admin-client-projects'],
     queryFn: () => api.get('/admin/client-projects').then((r) => r.data),
+  })
+
+  const { data: teamMembers = [] } = useQuery({
+    queryKey: ['admin-users'],
+    queryFn: () => api.get('/admin/users').then((r) => r.data),
+  })
+
+  const { data: adminProfile } = useQuery({
+    queryKey: ['admin-profile'],
+    queryFn: () => api.get('/admin/me').then((r) => r.data),
   })
 
   const createMutation = useMutation({
@@ -325,7 +343,14 @@ export default function AdminTasksPage() {
     const matchesProject = projectFilter === 'ALL' || t.clientProjectId === projectFilter
     const matchesPriority = priorityFilter === 'ALL' || t.priority === priorityFilter
 
-    return matchesSearch && matchesProject && matchesPriority
+    let matchesAssignment = true
+    if (assignmentFilter === 'ME') {
+      matchesAssignment = adminProfile && t.assignedTo?.toLowerCase() === adminProfile.email?.toLowerCase()
+    } else if (assignmentFilter === 'UNASSIGNED') {
+      matchesAssignment = !t.assignedTo
+    }
+
+    return matchesSearch && matchesProject && matchesPriority && matchesAssignment
   })
 
   return (
@@ -454,7 +479,7 @@ export default function AdminTasksPage() {
         )}
 
         {/* Global Filters */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
           <div className="relative">
             <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
@@ -492,6 +517,17 @@ export default function AdminTasksPage() {
                   {p}
                 </option>
               ))}
+            </select>
+          </div>
+          <div>
+            <select
+              value={assignmentFilter}
+              onChange={(e) => setAssignmentFilter(e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue/25 focus:border-brand-blue transition-all"
+            >
+              <option value="ALL">Filter by Assignee: All</option>
+              <option value="ME">Assigned to Me</option>
+              <option value="UNASSIGNED">Unassigned Tasks</option>
             </select>
           </div>
         </div>
@@ -628,13 +664,15 @@ export default function AdminTasksPage() {
                           >
                             <Pencil className="w-3.5 h-3.5" />
                           </button>
-                          <button
-                            onClick={() => handleDelete(t.id)}
-                            className="p-1 hover:text-red-500 text-gray-400 hover:bg-gray-50 rounded"
-                            title="Delete Task"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          {adminProfile?.role !== 'STAFF' && (
+                            <button
+                              onClick={() => handleDelete(t.id)}
+                              className="p-1 hover:text-red-500 text-gray-400 hover:bg-gray-50 rounded"
+                              title="Delete Task"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
 
                         {/* Quick Move controls for mobile / accessibility */}
@@ -782,13 +820,15 @@ export default function AdminTasksPage() {
                           >
                             <Pencil className="w-4 h-4" />
                           </button>
-                          <button
-                            onClick={() => handleDelete(t.id)}
-                            className="p-1.5 hover:text-red-500 text-gray-400 hover:bg-gray-100 rounded-lg transition-all"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          {adminProfile?.role !== 'STAFF' && (
+                            <button
+                              onClick={() => handleDelete(t.id)}
+                              className="p-1.5 hover:text-red-500 text-gray-400 hover:bg-gray-100 rounded-lg transition-all"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>

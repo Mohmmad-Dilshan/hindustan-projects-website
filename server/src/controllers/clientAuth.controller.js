@@ -134,9 +134,9 @@ export const setupClientPassword = async (req, res, next) => {
 
     setClientCookie(res, loginToken)
 
-    // Send welcome + login details email
+    // Send welcome + login details email with CORRECT login URL (/client-login not /client/login)
     const clientUrl = env.CLIENT_URL || 'https://it-services-hindustan-projects.vercel.app'
-    const loginUrl = `${clientUrl}/client/login`
+    const loginUrl = `${clientUrl}/client-login`
 
     sendEmail({
       to: updatedClient.email,
@@ -151,14 +151,14 @@ export const setupClientPassword = async (req, res, next) => {
           <p style="font-size: 16px; color: #1A1A1A;">Hi <strong>${updatedClient.name}</strong>,</p>
 
           <p style="font-size: 15px; color: #374151; line-height: 1.7;">
-            Your client portal account is now active! Here are your login details — please save them safely.
+            Your client portal account is now active! Here are your login details &mdash; please save them safely.
           </p>
 
           <div style="background: #f0f4ff; border: 1px solid #c7d2fe; border-radius: 8px; padding: 16px 20px; margin: 20px 0;">
             <p style="margin: 0 0 8px; font-size: 13px; color: #4B5563; text-transform: uppercase; letter-spacing: 0.05em; font-weight: bold;">Your Login Details</p>
-            <p style="margin: 0 0 6px; font-size: 14px; color: #1A1A1A;">📧 <strong>Email:</strong> ${updatedClient.email}</p>
-            <p style="margin: 0 0 6px; font-size: 14px; color: #1A1A1A;">🔑 <strong>Password:</strong> The one you just set</p>
-            <p style="margin: 0; font-size: 14px; color: #1A1A1A;">🌐 <strong>Login URL:</strong> <a href="${loginUrl}" style="color: #1A3E8C;">${loginUrl}</a></p>
+            <p style="margin: 0 0 6px; font-size: 14px; color: #1A1A1A;"><strong>Email:</strong> ${updatedClient.email}</p>
+            <p style="margin: 0 0 6px; font-size: 14px; color: #1A1A1A;"><strong>Password:</strong> The one you just set</p>
+            <p style="margin: 0; font-size: 14px; color: #1A1A1A;"><strong>Login URL:</strong> <a href="${loginUrl}" style="color: #1A3E8C;">${loginUrl}</a></p>
           </div>
 
           <p style="text-align: center; margin: 30px 0;">
@@ -170,7 +170,7 @@ export const setupClientPassword = async (req, res, next) => {
           </p>
         </div>
       `,
-      text: `Hi ${updatedClient.name},\n\nYour client portal account is now active!\n\nLogin Details:\nEmail: ${updatedClient.email}\nLogin URL: ${loginUrl}\n\nPlease save these details safely.\n\nHindustan Projects Team`,
+      text: `Hi ${updatedClient.name},\n\nYour client portal account is now active!\n\nLogin Details:\nEmail: ${updatedClient.email}\nPassword: The one you just set\nLogin URL: ${loginUrl}\n\nPlease save these details safely.\n\nHindustan Projects Team`,
     }).catch((err) => {
       console.error('[welcome-email] Failed to send:', err.message)
     })

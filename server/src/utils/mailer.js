@@ -681,6 +681,47 @@ export function supportTicketCreatedTemplate({ clientName, ticketId, subject, ca
 }
 
 /**
+ * ticketAssignmentTemplate — sent to the assigned staff/admin when a ticket is assigned to them.
+ */
+export function ticketAssignmentTemplate({ adminEmail, ticketId, subject, category, clientName, assignedByRole, portalUrl }) {
+  return {
+    subject: `[Assigned To You] Support Ticket #${ticketId.slice(-6).toUpperCase()}: ${subject}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
+        <div style="background: linear-gradient(135deg, #1A3E8C, #1e4db7); padding: 20px; border-radius: 6px 6px 0 0; margin: -20px -20px 20px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 20px;">Ticket Assigned to You</h1>
+          <p style="color: #93c5fd; margin: 4px 0 0; font-size: 14px;">Hindustan Projects Support Desk</p>
+        </div>
+
+        <p style="font-size: 15px; color: #1A1A1A;">Hello <strong>${adminEmail}</strong>,</p>
+
+        <p style="font-size: 15px; color: #374151; line-height: 1.7;">
+          A support ticket has been assigned to you by <strong>${assignedByRole || 'Admin'}</strong>. Please review and respond at your earliest convenience.
+        </p>
+
+        <div style="margin: 20px 0; padding: 16px; background: #f0f4ff; border-left: 4px solid #1A3E8C; border-radius: 4px;">
+          <p style="margin: 0 0 8px; font-size: 14px; color: #1A1A1A;">🏷️ <strong>Ticket ID:</strong> #${ticketId.slice(-6).toUpperCase()}</p>
+          <p style="margin: 0 0 8px; font-size: 14px; color: #1A1A1A;">👤 <strong>Client:</strong> ${clientName}</p>
+          <p style="margin: 0 0 8px; font-size: 14px; color: #1A1A1A;">📁 <strong>Category:</strong> ${category}</p>
+          <p style="margin: 0; font-size: 14px; color: #1A1A1A;">📝 <strong>Subject:</strong> ${subject}</p>
+        </div>
+
+        <p style="font-size: 14px; color: #4B5563; margin-top: 16px;">
+          Please log in to the Admin Dashboard to review the ticket thread and provide a timely response.
+        </p>
+
+        ${portalUrl ? `
+        <div style="margin-top: 24px; text-align: center;">
+          <a href="${portalUrl}" target="_blank" style="display: inline-block; background: #1A3E8C; color: white; padding: 10px 24px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 600;">View Assigned Ticket</a>
+        </div>
+        ` : ''}
+      </div>
+    `,
+    text: `Ticket Assigned to You\n\nTicket ID: #${ticketId.slice(-6).toUpperCase()}\nClient: ${clientName}\nCategory: ${category}\nSubject: ${subject}\n\nPlease log in to the Admin Dashboard to respond.`,
+  }
+}
+
+/**
  * supportTicketReplyTemplate — sent to client or admin when a reply is posted.
  */
 export function supportTicketReplyTemplate({ recipientName, ticketId, subject, senderName, message, portalUrl }) {

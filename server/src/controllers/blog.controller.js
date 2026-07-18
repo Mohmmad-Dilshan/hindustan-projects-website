@@ -47,6 +47,7 @@ export const getPublicPosts = async (req, res, next) => {
 
     const where = {
       status: 'PUBLISHED',
+      deletedAt: null,
       ...(category && { category }),
       ...(tag && { tags: { has: tag } }),
       ...(search && {
@@ -110,7 +111,7 @@ export const getBlogCategories = async (_req, res, next) => {
 
     const posts = await prisma.blogPost.groupBy({
       by: ['category'],
-      where: { status: 'PUBLISHED' },
+      where: { status: 'PUBLISHED', deletedAt: null },
       _count: { category: true },
       orderBy: { _count: { category: 'desc' } },
     })
@@ -133,7 +134,7 @@ export const getPublicPostBySlug = async (req, res, next) => {
 
     const post = await prisma.blogPost.findUnique({ where: { slug } })
 
-    if (!post || post.status !== 'PUBLISHED') {
+    if (!post || post.status !== 'PUBLISHED' || post.deletedAt !== null) {
       return res.status(404).json({ status: 'error', message: 'Blog post not found.' })
     }
 
@@ -147,6 +148,7 @@ export const getPublicPostBySlug = async (req, res, next) => {
     const related = await prisma.blogPost.findMany({
       where: {
         status: 'PUBLISHED',
+        deletedAt: null,
         category: post.category,
         id: { not: post.id },
       },
@@ -290,6 +292,7 @@ export const adminListPosts = async (req, res, next) => {
   try {
     const { status, category, search } = req.query
     const where = {
+      deletedAt: null,
       ...(status && { status }),
       ...(category && { category }),
       ...(search && {
@@ -333,7 +336,7 @@ export const adminGetPost = async (req, res, next) => {
   try {
     const { id } = req.params
     const post = await prisma.blogPost.findUnique({ where: { id } })
-    if (!post) return res.status(404).json({ status: 'error', message: 'Post not found.' })
+    if (!post || post.deletedAt !== null) return res.status(404).json({ status: 'error', message: 'Post not found.' })
     res.json({ status: 'ok', data: post })
   } catch (err) {
     next(err)
@@ -452,11 +455,14 @@ export const adminDeletePost = async (req, res, next) => {
     const { id } = req.params
     const post = await prisma.blogPost.findUnique({ where: { id } })
     if (post) {
-      await prisma.blogPost.delete({ where: { id } })
+      await prisma.blogPost.update({
+        where: { id },
+        data: { deletedAt: new Date() },
+      })
       deleteCacheByPrefix('blog:')
-      await logActivity(req, 'DELETE', 'BlogPost', `Deleted blog post '${post.title}'`)
+      await logActivity(req, 'DELETE', 'BlogPost', `Soft deleted blog post '${post.title}'`)
     }
-    res.json({ status: 'ok', message: 'Blog post deleted.' })
+    res.json({ status: 'ok', message: 'Blog post soft deleted.' })
   } catch (err) {
     next(err)
   }

@@ -35,6 +35,7 @@ import {
   Newspaper,
   Search,
   Loader2,
+  Trash2,
 } from 'lucide-react'
 import { api } from '@/utils/api'
 import { useQuery } from '@tanstack/react-query'
@@ -86,6 +87,7 @@ const NAV_GROUPS = [
       { to: '/admin/integrations', icon: Plug, label: 'Integrations', badge: 'key', roles: ['SUPER_ADMIN'] },
       { to: '/admin/monitoring', icon: Activity, label: 'Monitoring', badge: 'live', roles: ['SUPER_ADMIN'] },
       { to: '/admin/backup', icon: Database, label: 'Data Backup', badge: 'dl', roles: ['SUPER_ADMIN'] },
+      { to: '/admin/recycle-bin', icon: Trash2, label: 'Recycle Bin', roles: ['ADMIN', 'SUPER_ADMIN'] },
       { to: '/admin/settings', icon: Settings, label: 'Account', roles: ['ADMIN', 'SUPER_ADMIN', 'STAFF'] },
     ],
   },
@@ -107,6 +109,7 @@ const PAGE_TITLES = {
   '/admin/milestones': 'Milestones',
   '/admin/partners': 'Partners',
   '/admin/legal': 'Legal Pages',
+  '/admin/recycle-bin': 'Recycle Bin',
   '/admin/site-settings': 'Site Settings',
   '/admin/users': 'Admins & Staff',
   '/admin/integrations': 'Integrations',

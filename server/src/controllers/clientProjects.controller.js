@@ -7,6 +7,7 @@ import { logActivity } from '../utils/activity.js'
 export const listClientProjects = async (req, res, next) => {
   try {
     const projects = await prisma.clientProject.findMany({
+      where: { deletedAt: null },
       orderBy: { createdAt: 'desc' },
       include: {
         tasks: true,
@@ -114,15 +115,18 @@ export const deleteClientProject = async (req, res, next) => {
     const { id } = req.params
     const project = await prisma.clientProject.findUnique({ where: { id } })
     if (project) {
-      await prisma.clientProject.delete({ where: { id } })
+      await prisma.clientProject.update({
+        where: { id },
+        data: { deletedAt: new Date() },
+      })
       await logActivity(
         req,
         'DELETE',
         'ClientProject',
-        `Deleted project '${project.projectTitle}' (Client: ${project.clientName})`
+        `Soft deleted project '${project.projectTitle}' (Client: ${project.clientName})`
       )
     }
-    res.json({ status: 'ok', message: 'Client project deleted.' })
+    res.json({ status: 'ok', message: 'Client project soft deleted.' })
   } catch (err) {
     next(err)
   }

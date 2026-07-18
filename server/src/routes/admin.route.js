@@ -7,6 +7,7 @@ import { body } from 'express-validator'
 import { verifyToken, requireRole } from '../middleware/auth.js'
 import { adminLoginLimiter, validateRequest } from '../middleware/security.js'
 import { getLeads, updateLeadStatus, deleteLead } from '../controllers/leads.controller.js'
+import { getDeletedItems, restoreItem, permanentlyDeleteItem } from '../controllers/recycleBin.controller.js'
 import {
   listServices,
   createService,
@@ -664,5 +665,10 @@ router.post(
   verifyIntegrationKey
 )
 router.get('/integrations/check-unlock', verifyToken, requireRole('SUPER_ADMIN'), checkUnlockToken)
+
+// ── Recycle Bin Management ────────────────────────────────────
+router.get('/recycle-bin', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), getDeletedItems)
+router.post('/recycle-bin/restore', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), restoreItem)
+router.delete('/recycle-bin/permanent/:id', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), permanentlyDeleteItem)
 
 export default router

@@ -23,6 +23,7 @@ export const globalSearch = async (req, res, next) => {
     // Define search conditions for each module
     const searchConditions = {
       leads: {
+        deletedAt: null,
         OR: [
           { name: { contains: searchStr, mode: 'insensitive' } },
           { email: { contains: searchStr, mode: 'insensitive' } },
@@ -31,6 +32,7 @@ export const globalSearch = async (req, res, next) => {
         ],
       },
       projects: {
+        deletedAt: null,
         OR: [
           { clientName: { contains: searchStr, mode: 'insensitive' } },
           { projectTitle: { contains: searchStr, mode: 'insensitive' } },
@@ -48,6 +50,7 @@ export const globalSearch = async (req, res, next) => {
         ],
       },
       blog: {
+        deletedAt: null,
         OR: [
           { title: { contains: searchStr, mode: 'insensitive' } },
           { excerpt: { contains: searchStr, mode: 'insensitive' } },

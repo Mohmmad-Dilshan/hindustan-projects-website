@@ -167,7 +167,7 @@ export function professionalEmailFooter(settings = {}) {
               </tr>
               <tr>
                 <td style="padding: 2px 8px 2px 0; white-space: nowrap;">&#127760;</td>
-                <td style="padding: 2px 0;"><a href="https://www.hindustanprojects.in" style="color: #1A3E8C; text-decoration: none;">www.hindustanprojects.in</a></td>
+                <td style="padding: 2px 0;"><a href="https://www.itservices.hindustanprojects.in" style="color: #1A3E8C; text-decoration: none;">www.itservices.hindustanprojects.in</a></td>
               </tr>
               <tr>
                 <td style="padding: 2px 8px 2px 0; white-space: nowrap;">&#128205;</td>

@@ -80,10 +80,10 @@ import {
   updateTicketStatus,
 } from '../controllers/tickets.controller.js'
 import {
-  listProjectMilestones,
-  createMilestone,
-  updateMilestone,
-  deleteMilestone,
+  listProjectBillingMilestones,
+  createBillingMilestone,
+  updateBillingMilestone,
+  deleteBillingMilestone,
 } from '../controllers/billing.controller.js'
 import {
   adminListPosts,
@@ -649,10 +649,10 @@ router.post('/tickets/:id/messages', verifyToken, requireRole('ADMIN', 'SUPER_AD
 router.patch('/tickets/:id', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN', 'STAFF'), updateTicketStatus)
 
 // ── Project Billing Milestones ─────────────────────────────────
-router.get('/client-projects/:id/billing', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN', 'STAFF'), listProjectMilestones)
-router.post('/client-projects/:id/billing', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), createMilestone)
-router.patch('/billing/:id', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), updateMilestone)
-router.delete('/billing/:id', verifyToken, requireRole('SUPER_ADMIN'), deleteMilestone)
+router.get('/client-projects/:id/billing', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN', 'STAFF'), listProjectBillingMilestones)
+router.post('/client-projects/:id/billing', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), createBillingMilestone)
+router.patch('/billing/:id', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), updateBillingMilestone)
+router.delete('/billing/:id', verifyToken, requireRole('SUPER_ADMIN'), deleteBillingMilestone)
 
 // ── Blog Posts ─────────────────────────────────────────────────
 router.get('/blog', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), adminListPosts)

@@ -73,7 +73,7 @@ export const simulatePayment = async (req, res, next) => {
 // ── ADMINISTRATIVE ACTIONS ────────────────────────────────────────
 
 // GET /api/admin/client-projects/:id/billing
-export const listProjectMilestones = async (req, res, next) => {
+export const listProjectBillingMilestones = async (req, res, next) => {
   try {
     const { id } = req.params
 
@@ -89,7 +89,7 @@ export const listProjectMilestones = async (req, res, next) => {
 }
 
 // POST /api/admin/client-projects/:id/billing
-export const createMilestone = async (req, res, next) => {
+export const createBillingMilestone = async (req, res, next) => {
   try {
     const { id } = req.params
     const { title, amount, dueDate, status } = req.body
@@ -125,7 +125,7 @@ export const createMilestone = async (req, res, next) => {
 }
 
 // PATCH /api/admin/billing/:id
-export const updateMilestone = async (req, res, next) => {
+export const updateBillingMilestone = async (req, res, next) => {
   try {
     const { id } = req.params
     const { title, amount, dueDate, status } = req.body
@@ -165,7 +165,7 @@ export const updateMilestone = async (req, res, next) => {
 }
 
 // DELETE /api/admin/billing/:id
-export const deleteMilestone = async (req, res, next) => {
+export const deleteBillingMilestone = async (req, res, next) => {
   try {
     const { id } = req.params
 

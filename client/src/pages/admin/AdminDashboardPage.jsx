@@ -30,6 +30,19 @@ import {
 import { api } from '@/utils/api'
 import { SEO } from '@/components/ui'
 import { SocialDraftsSection } from '@/components/admin/SocialDraftsSection'
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from 'recharts'
 
 function StatCard({ icon: Icon, label, value, color, bg, to, trend }) {
   const inner = (
@@ -705,6 +718,103 @@ export default function AdminDashboardPage() {
             })}
           </div>
         </div>
+
+        {/* ── Charts Grid ── */}
+        {!isLoading && !isError && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            {/* Monthly Trends Area Chart */}
+            <div className="lg:col-span-2 bg-white rounded-xl border border-gray-205 p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="font-heading text-sm font-bold text-gray-800">Monthly Website Activity</h2>
+                  <p className="text-[10px] text-gray-400">Total Leads & Client Projects registered in the last 6 months</p>
+                </div>
+              </div>
+              <div className="h-64 w-full text-xs">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={data?.monthlyTrends || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorLeads" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#1A3E8C" stopOpacity={0.15}/>
+                        <stop offset="95%" stopColor="#1A3E8C" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="colorProjects" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.15}/>
+                        <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                    <XAxis dataKey="month" stroke="#9CA3AF" fontSize={10} tickLine={false} axisLine={false} />
+                    <YAxis stroke="#9CA3AF" fontSize={10} tickLine={false} axisLine={false} />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #E5E7EB', fontSize: '11px' }}
+                      labelStyle={{ fontWeight: 'bold', color: '#1F2937' }}
+                    />
+                    <Legend verticalAlign="top" height={36} iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '11px', fontWeight: 500 }} />
+                    <Area name="Leads Received" type="monotone" dataKey="leads" stroke="#1A3E8C" strokeWidth={2} fillOpacity={1} fill="url(#colorLeads)" />
+                    <Area name="Projects Created" type="monotone" dataKey="projects" stroke="#10B981" strokeWidth={2} fillOpacity={1} fill="url(#colorProjects)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Project Status Pie Chart */}
+            <div className="bg-white rounded-xl border border-gray-205 p-6 shadow-sm flex flex-col justify-between">
+              <div>
+                <h2 className="font-heading text-sm font-bold text-gray-800">Project Status Distribution</h2>
+                <p className="text-[10px] text-gray-400 mb-4">Current stage of active client projects</p>
+              </div>
+              <div className="h-44 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: 'Planning', value: data?.projectStatusDistribution?.PLANNING || 0, color: '#6B7280' },
+                        { name: 'In Progress', value: data?.projectStatusDistribution?.IN_PROGRESS || 0, color: '#3B82F6' },
+                        { name: 'Review', value: data?.projectStatusDistribution?.REVIEW || 0, color: '#F59E0B' },
+                        { name: 'Completed', value: data?.projectStatusDistribution?.COMPLETED || 0, color: '#10B981' },
+                        { name: 'On Hold', value: data?.projectStatusDistribution?.ON_HOLD || 0, color: '#EF4444' },
+                      ].filter(x => x.value > 0)}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={35}
+                      outerRadius={55}
+                      paddingAngle={4}
+                      dataKey="value"
+                    >
+                      {[
+                        { name: 'Planning', color: '#6B7280' },
+                        { name: 'In Progress', color: '#3B82F6' },
+                        { name: 'Review', color: '#F59E0B' },
+                        { name: 'Completed', color: '#10B981' },
+                        { name: 'On Hold', color: '#EF4444' },
+                      ].map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{ backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #E5E7EB', fontSize: '11px' }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="grid grid-cols-3 gap-1 text-[9px] text-center font-semibold text-gray-500 pt-2 border-t border-gray-100">
+                <div className="flex flex-col items-center">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mb-0.5" />
+                  <span>Active ({data?.projectStatusDistribution?.IN_PROGRESS || 0})</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mb-0.5" />
+                  <span>Done ({data?.projectStatusDistribution?.COMPLETED || 0})</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mb-0.5" />
+                  <span>Review ({data?.projectStatusDistribution?.REVIEW || 0})</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ── Visual Breakdown + Checklist ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">

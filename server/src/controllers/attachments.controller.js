@@ -26,7 +26,12 @@ export const createAttachment = async (req, res, next) => {
     const resourceType = isImage ? 'image' : 'raw'
 
     // Upload to Cloudinary
-    const result = await uploadToCloudinary(req.file.buffer, 'hindustan-projects-attachments', resourceType)
+    const result = await uploadToCloudinary(
+      req.file.buffer,
+      'hindustan-projects-attachments',
+      resourceType,
+      req.file.originalname
+    )
 
     // Save attachment in database
     const attachment = await prisma.attachment.create({

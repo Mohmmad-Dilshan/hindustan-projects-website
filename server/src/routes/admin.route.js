@@ -524,7 +524,7 @@ router.delete('/faqs/:id', verifyToken, requireRole('SUPER_ADMIN'), deleteFaq)
 router.patch('/settings', verifyToken, requireRole('SUPER_ADMIN'), updateSettings)
 
 // ── Admin & Staff User Management ──────────────────────────────
-router.get('/users', verifyToken, requireRole('SUPER_ADMIN'), listAdminUsers)
+router.get('/users', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN', 'STAFF'), listAdminUsers)
 router.post('/users', verifyToken, requireRole('SUPER_ADMIN'), createAdminUser)
 router.patch('/users/:id', verifyToken, requireRole('SUPER_ADMIN'), updateAdminUser)
 router.delete('/users/:id', verifyToken, requireRole('SUPER_ADMIN'), deleteAdminUser)
@@ -619,7 +619,7 @@ router.delete('/client-projects/:id', verifyToken, requireRole('SUPER_ADMIN'), d
 router.get('/tasks', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN', 'STAFF'), listTasks)
 router.post('/tasks', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN', 'STAFF'), createTask)
 router.patch('/tasks/:id', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN', 'STAFF'), updateTask)
-router.delete('/tasks/:id', verifyToken, requireRole('SUPER_ADMIN', 'STAFF'), deleteTask)
+router.delete('/tasks/:id', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), deleteTask)
 
 // ── Quick Notes ────────────────────────────────────────────────
 router.get('/notes', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN', 'STAFF'), listNotes)
@@ -628,7 +628,7 @@ router.patch('/notes/:id', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN', 'STA
 router.delete('/notes/:id', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN', 'STAFF'), deleteNote)
 
 // ── Activity Logs ──────────────────────────────────────────────
-router.get('/activities', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), listActivities)
+router.get('/activities', verifyToken, requireRole('SUPER_ADMIN'), listActivities)
 
 // ── Blog Posts ─────────────────────────────────────────────────
 router.get('/blog', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), adminListPosts)

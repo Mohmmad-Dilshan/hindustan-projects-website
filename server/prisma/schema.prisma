@@ -180,9 +180,11 @@ model ContactLead {
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
   attachments       Attachment[]
+  deletedAt         DateTime?
 
   @@index([status])
   @@index([createdAt])
+  @@index([deletedAt])
   @@map("contact_leads")
 }
 
@@ -328,8 +330,10 @@ model ClientProject {
   clientId      String?
   client        Client?         @relation(fields: [clientId], references: [id], onDelete: SetNull)
   attachments   Attachment[]
+  deletedAt     DateTime?
 
   @@index([clientId])
+  @@index([deletedAt])
   @@map("client_projects")
 }
 
@@ -425,11 +429,13 @@ model BlogPost {
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
   comments         BlogComment[]
+  deletedAt        DateTime?
 
   @@index([slug])
   @@index([status, publishedAt])
   @@index([category])
   @@index([isFeatured])
+  @@index([deletedAt])
   @@map("blog_posts")
 }
 

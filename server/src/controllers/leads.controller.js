@@ -8,7 +8,10 @@ import { logActivity } from '../utils/activity.js'
 export const getLeads = async (req, res, next) => {
   try {
     const { status, page = 1, limit = 20 } = req.query
-    const where = status ? { status } : {}
+    const where = {
+      deletedAt: null,
+      ...(status ? { status } : {}),
+    }
     const skip = (Number(page) - 1) * Number(limit)
 
     const [leads, total] = await Promise.all([
@@ -77,9 +80,12 @@ export const updateLeadStatus = async (req, res, next) => {
 export const deleteLead = async (req, res, next) => {
   try {
     const lead = await prisma.contactLead.findUnique({ where: { id: req.params.id } })
-    await prisma.contactLead.delete({ where: { id: req.params.id } })
-    await logActivity(req, 'DELETE', 'ContactLead', `Deleted lead '${lead?.name ?? req.params.id}'`)
-    res.json({ status: 'ok', message: 'Lead deleted.' })
+    await prisma.contactLead.update({
+      where: { id: req.params.id },
+      data: { deletedAt: new Date() },
+    })
+    await logActivity(req, 'DELETE', 'ContactLead', `Soft deleted lead '${lead?.name ?? req.params.id}'`)
+    res.json({ status: 'ok', message: 'Lead soft deleted.' })
   } catch (err) {
     next(err)
   }

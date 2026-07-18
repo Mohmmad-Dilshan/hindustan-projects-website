@@ -95,6 +95,7 @@ const AdminMonitoringPage = lazyWithRetry(() => import('@/pages/admin/AdminMonit
 const AdminBlogPage = lazyWithRetry(() => import('@/pages/admin/AdminBlogPage'))
 const AdminBlogCommentsPage = lazyWithRetry(() => import('@/pages/admin/AdminBlogCommentsPage'))
 const AdminUsersPage = lazyWithRetry(() => import('@/pages/admin/AdminUsersPage'))
+const AdminRecycleBinPage = lazyWithRetry(() => import('@/pages/admin/AdminRecycleBinPage'))
 
 // ── Client Portal pages — lazy loaded ──────────────────────────
 const ClientLayout = lazyWithRetry(() => import('@/layouts/ClientLayout'))
@@ -242,6 +243,14 @@ export default function App() {
             element={
               <Suspense fallback={<PageFallback />}>
                 <AdminBackupPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="recycle-bin"
+            element={
+              <Suspense fallback={<PageFallback />}>
+                <AdminRecycleBinPage />
               </Suspense>
             }
           />

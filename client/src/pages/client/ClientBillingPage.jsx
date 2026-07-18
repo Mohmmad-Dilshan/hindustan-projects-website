@@ -165,6 +165,40 @@ export default function ClientBillingPage() {
                           </span>
                         )}
                       </div>
+
+                      {/* Render Deliverables Lock/Unlock status */}
+                      {m.deliverables && Array.isArray(m.deliverables) && m.deliverables.length > 0 && (
+                        <div className="mt-3 bg-gray-50/50 p-2.5 rounded-xl border border-gray-100/80">
+                          <p className="text-[10px] font-bold text-gray-550 uppercase tracking-wide mb-1.5 flex items-center gap-1">
+                            {m.status === 'PAID' ? (
+                              <>
+                                <span className="text-emerald-500">🔓</span>
+                                <span>Unlocked Deliverables</span>
+                              </>
+                            ) : (
+                              <>
+                                <span className="text-amber-500">🔒</span>
+                                <span>Locked Deliverables (Requires Payment)</span>
+                              </>
+                            )}
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {m.deliverables.map((del, index) => (
+                              <span
+                                key={index}
+                                className={`px-2 py-1 rounded text-[10px] font-semibold border flex items-center gap-1.5 transition-all ${
+                                  m.status === 'PAID'
+                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100/50'
+                                    : 'bg-gray-100 text-gray-400 border-gray-200 select-none opacity-60'
+                                }`}
+                              >
+                                <span>📦</span>
+                                <span>{del}</span>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 

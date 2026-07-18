@@ -92,7 +92,7 @@ export const listProjectBillingMilestones = async (req, res, next) => {
 export const createBillingMilestone = async (req, res, next) => {
   try {
     const { id } = req.params
-    const { title, amount, dueDate, status } = req.body
+    const { title, amount, dueDate, status, deliverables } = req.body
 
     if (!title || amount === undefined) {
       return res.status(400).json({ status: 'error', message: 'Title and amount are required' })
@@ -114,6 +114,7 @@ export const createBillingMilestone = async (req, res, next) => {
         dueDate: dueDate ? new Date(dueDate) : null,
         status: status || 'PENDING',
         clientProjectId: id,
+        deliverables: deliverables || null,
         paidAt: status === 'PAID' ? new Date() : null,
       },
     })
@@ -128,7 +129,7 @@ export const createBillingMilestone = async (req, res, next) => {
 export const updateBillingMilestone = async (req, res, next) => {
   try {
     const { id } = req.params
-    const { title, amount, dueDate, status } = req.body
+    const { title, amount, dueDate, status, deliverables } = req.body
 
     const milestone = await prisma.billingMilestone.findUnique({
       where: { id },
@@ -142,6 +143,7 @@ export const updateBillingMilestone = async (req, res, next) => {
     if (title !== undefined) data.title = title
     if (amount !== undefined) data.amount = parseFloat(amount)
     if (dueDate !== undefined) data.dueDate = dueDate ? new Date(dueDate) : null
+    if (deliverables !== undefined) data.deliverables = deliverables
     if (status !== undefined) {
       data.status = status
       if (status === 'PAID' && milestone.status !== 'PAID') {

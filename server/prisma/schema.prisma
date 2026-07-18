@@ -588,6 +588,8 @@ model SupportTicket {
   client          Client          @relation(fields: [clientId], references: [id], onDelete: Cascade)
   clientProjectId String?
   clientProject   ClientProject?  @relation(fields: [clientProjectId], references: [id], onDelete: Cascade)
+  clientHasUnread Boolean         @default(false)
+  adminHasUnread  Boolean         @default(true)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   messages        TicketMessage[]
@@ -619,6 +621,7 @@ model BillingMilestone {
   status          String        @default("PENDING") // "PENDING" | "PAID" | "OVERDUE"
   clientProjectId String
   clientProject   ClientProject @relation(fields: [clientProjectId], references: [id], onDelete: Cascade)
+  deliverables    Json?         // e.g. [{ name: "Figma Link", url: "https://figma.com/..." }]
   paidAt          DateTime?
   invoiceUrl      String?
   createdAt       DateTime      @default(now())

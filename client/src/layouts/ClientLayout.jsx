@@ -15,7 +15,7 @@ import {
   CreditCard,
 } from 'lucide-react'
 import { useState } from 'react'
-import { useClientMe, useClientLogout } from '@/hooks/useClientPortal'
+import { useClientMe, useClientLogout, useClientTickets } from '@/hooks/useClientPortal'
 import { ClientMobileNavBar } from '@/components/ui'
 
 export default function ClientLayout() {
@@ -24,6 +24,7 @@ export default function ClientLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { data: client, isLoading, isError } = useClientMe()
   const logoutMutation = useClientLogout()
+  const { data: tickets = [] } = useClientTickets()
 
   useEffect(() => {
     if (!isLoading && (isError || !client)) {
@@ -53,9 +54,11 @@ export default function ClientLayout() {
 
   if (!client) return null
 
+  const unreadTicketsCount = Array.isArray(tickets) ? tickets.filter((t) => t.clientHasUnread).length : 0
+
   const navigation = [
     { to: '/client/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { to: '/client/support', label: 'Support Desk', icon: MessageSquare },
+    { to: '/client/support', label: 'Support Desk', icon: MessageSquare, badge: unreadTicketsCount },
     { to: '/client/billing', label: 'Billing & Payments', icon: CreditCard },
   ]
 
@@ -109,7 +112,12 @@ export default function ClientLayout() {
                   <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-brand-red rounded-full" />
                 )}
                 <item.icon className="w-4 h-4 shrink-0" />
-                <span>{item.label}</span>
+                <span className="flex-1">{item.label}</span>
+                {item.badge > 0 && (
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-red-500 text-white shrink-0 animate-pulse">
+                    {item.badge}
+                  </span>
+                )}
               </Link>
             )
           })}

@@ -90,10 +90,10 @@ export default function AdminUsersPage() {
     enabled: activeTab === 'clients',
   })
 
-  // Fetch System Projects
+  // Fetch System Client Projects (private client portal workspaces)
   const { data: systemProjects = [] } = useQuery({
     queryKey: ['admin-system-projects'],
-    queryFn: () => api.get('/admin/projects').then((r) => r.data),
+    queryFn: () => api.get('/admin/client-projects').then((r) => r.data),
   })
 
   // Create User Mutation
@@ -565,7 +565,7 @@ export default function AdminUsersPage() {
                           }}
                           className="rounded border-gray-300 text-brand-blue focus:ring-brand-blue"
                         />
-                        <span className="text-xs font-semibold text-gray-800 truncate">{p.title}</span>
+                        <span className="text-xs font-semibold text-gray-800 truncate">{p.projectTitle}</span>
                       </label>
                     ))}
                   </div>
@@ -676,7 +676,7 @@ export default function AdminUsersPage() {
                       className="rounded border-gray-300 text-brand-blue focus:ring-brand-blue w-4 h-4"
                     />
                     <div className="min-w-0">
-                      <span className="text-xs font-bold text-gray-800 block truncate">{p.title}</span>
+                      <span className="text-xs font-bold text-gray-800 block truncate">{p.projectTitle}</span>
                       <span className="text-[10px] text-gray-400 block truncate uppercase tracking-wider">{p.category}</span>
                     </div>
                   </label>

@@ -58,12 +58,23 @@ export default function AdminBillingSection({ projectId, currentRole }) {
       amount: '',
       dueDate: '',
       status: 'PENDING',
+      deliverablesText: '',
     },
   })
 
   const onCreateSubmit = async (data) => {
     try {
-      await createMutation.mutateAsync(data)
+      const parsedDeliverables = data.deliverablesText
+        ? data.deliverablesText.split(',').map((d) => d.trim()).filter(Boolean)
+        : []
+
+      await createMutation.mutateAsync({
+        title: data.title,
+        amount: data.amount,
+        dueDate: data.dueDate,
+        status: data.status,
+        deliverables: parsedDeliverables,
+      })
     } catch (err) {
       console.error(err)
     }
@@ -137,33 +148,48 @@ export default function AdminBillingSection({ projectId, currentRole }) {
       {showAddForm && (
         <form
           onSubmit={handleSubmit(onCreateSubmit)}
-          className="p-4 border border-dashed border-gray-250 bg-gray-50/40 rounded-2xl grid grid-cols-1 sm:grid-cols-4 gap-3 items-end"
+          className="p-4 border border-dashed border-gray-250 bg-gray-50/40 rounded-2xl space-y-3"
         >
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="text-[10px] font-bold text-gray-500 block mb-1">Milestone Name</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Design Approval Milestone"
+                {...register('title')}
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold text-gray-500 block mb-1">Amount (INR)</label>
+              <input
+                type="number"
+                required
+                placeholder="e.g. 50000"
+                {...register('amount')}
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold text-gray-500 block mb-1">Due Date</label>
+              <input type="date" {...register('dueDate')} className={inputCls} />
+            </div>
+          </div>
+
           <div>
-            <label className="text-[10px] font-bold text-gray-500 block mb-1">Milestone Name</label>
+            <label className="text-[10px] font-bold text-gray-500 block mb-1">
+              Deliverables (comma-separated list, e.g. Figma wireframe link, UI/UX designs)
+            </label>
             <input
               type="text"
-              required
-              placeholder="e.g. Design Approval Milestone"
-              {...register('title')}
+              placeholder="e.g. Figma Link, Database Schema, API endpoints draft"
+              {...register('deliverablesText')}
               className={inputCls}
             />
           </div>
-          <div>
-            <label className="text-[10px] font-bold text-gray-500 block mb-1">Amount (INR)</label>
-            <input
-              type="number"
-              required
-              placeholder="e.g. 50000"
-              {...register('amount')}
-              className={inputCls}
-            />
-          </div>
-          <div>
-            <label className="text-[10px] font-bold text-gray-500 block mb-1">Due Date</label>
-            <input type="date" {...register('dueDate')} className={inputCls} />
-          </div>
-          <div className="flex gap-2 justify-end">
+
+          <div className="flex gap-2 justify-end pt-1">
             <button
               type="button"
               onClick={() => setShowAddForm(false)}
@@ -213,6 +239,16 @@ export default function AdminBillingSection({ projectId, currentRole }) {
                         </span>
                       )}
                     </div>
+                    {item.deliverables && Array.isArray(item.deliverables) && item.deliverables.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {item.deliverables.map((del, index) => (
+                          <span key={index} className="px-2 py-0.5 bg-gray-50 text-gray-500 rounded text-[9px] font-semibold border border-gray-150 flex items-center gap-1">
+                            <span>📦</span>
+                            <span>{del}</span>
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 

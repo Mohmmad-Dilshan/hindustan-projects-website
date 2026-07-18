@@ -97,6 +97,14 @@ export const getClientTicketById = async (req, res, next) => {
       return res.status(404).json({ status: 'error', message: 'Ticket not found' })
     }
 
+    if (ticket.clientHasUnread) {
+      await prisma.supportTicket.update({
+        where: { id },
+        data: { clientHasUnread: false },
+      })
+      ticket.clientHasUnread = false
+    }
+
     res.json({ status: 'ok', data: ticket })
   } catch (err) {
     next(err)
@@ -139,11 +147,13 @@ export const replyToTicketFromClient = async (req, res, next) => {
         },
       })
 
-      // Update ticket status back to OPEN if it was RESOLVED, and update updatedAt timestamp
+      // Update ticket status back to OPEN if it was RESOLVED, update unread flags, and update updatedAt timestamp
       await tx.supportTicket.update({
         where: { id },
         data: {
           status: ticket.status === 'RESOLVED' ? 'OPEN' : ticket.status,
+          adminHasUnread: true,
+          clientHasUnread: false,
           updatedAt: new Date(),
         },
       })
@@ -207,6 +217,14 @@ export const getAdminTicketById = async (req, res, next) => {
       return res.status(404).json({ status: 'error', message: 'Ticket not found' })
     }
 
+    if (ticket.adminHasUnread) {
+      await prisma.supportTicket.update({
+        where: { id },
+        data: { adminHasUnread: false },
+      })
+      ticket.adminHasUnread = false
+    }
+
     res.json({ status: 'ok', data: ticket })
   } catch (err) {
     next(err)
@@ -248,11 +266,13 @@ export const replyToTicketFromAdmin = async (req, res, next) => {
         },
       })
 
-      // Update ticket status to IN_PROGRESS when admin replies
+      // Update ticket status to IN_PROGRESS when admin replies, and update unread flags
       await tx.supportTicket.update({
         where: { id },
         data: {
           status: 'IN_PROGRESS',
+          clientHasUnread: true,
+          adminHasUnread: false,
           updatedAt: new Date(),
         },
       })

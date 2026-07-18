@@ -78,6 +78,8 @@ import {
   getAdminTicketById,
   replyToTicketFromAdmin,
   updateTicketStatus,
+  assignTicket,
+  listAssignableAdmins,
 } from '../controllers/tickets.controller.js'
 import {
   listProjectBillingMilestones,
@@ -647,6 +649,8 @@ router.get('/tickets', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN', 'STAFF')
 router.get('/tickets/:id', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN', 'STAFF'), getAdminTicketById)
 router.post('/tickets/:id/messages', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN', 'STAFF'), replyToTicketFromAdmin)
 router.patch('/tickets/:id', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN', 'STAFF'), updateTicketStatus)
+router.patch('/tickets/:id/assign', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), assignTicket)
+router.get('/users/list-assignable', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN', 'STAFF'), listAssignableAdmins)
 
 // ── Project Billing Milestones ─────────────────────────────────
 router.get('/client-projects/:id/billing', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN', 'STAFF'), listProjectBillingMilestones)

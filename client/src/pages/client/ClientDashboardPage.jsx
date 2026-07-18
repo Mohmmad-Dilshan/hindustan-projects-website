@@ -12,8 +12,12 @@ import {
   TrendingUp,
   MessageCircle,
   Star,
+  TicketCheck,
+  Bell,
+  Wallet,
+  CalendarClock,
 } from 'lucide-react'
-import { useClientProjects, useClientSubmitFeedback } from '@/hooks/useClientPortal'
+import { useClientProjects, useClientSubmitFeedback, useClientDashboardStats } from '@/hooks/useClientPortal'
 import { useSiteSettings } from '@/hooks/useContent'
 
 const STATUS_COLORS = {
@@ -32,8 +36,21 @@ const STATUS_LABELS = {
   ON_HOLD: 'On Hold',
 }
 
+function StatCardSkeleton() {
+  return (
+    <div className="bg-white/80 border border-gray-150 backdrop-blur-md rounded-2xl p-5 md:p-6 shadow-sm flex items-center gap-4 animate-pulse">
+      <div className="w-12 h-12 rounded-xl bg-gray-100 shrink-0" />
+      <div className="flex-1 space-y-2">
+        <div className="h-3 bg-gray-100 rounded w-2/3" />
+        <div className="h-6 bg-gray-100 rounded w-1/3" />
+      </div>
+    </div>
+  )
+}
+
 export default function ClientDashboardPage() {
-  const { data: projects = [], isLoading } = useClientProjects()
+  const { data: projects = [], isLoading: projectsLoading } = useClientProjects()
+  const { data: statsData, isLoading: statsLoading } = useClientDashboardStats()
   const { data: settingsData } = useSiteSettings()
 
   const [selectedProjectFeedback, setSelectedProjectFeedback] = useState(null)
@@ -66,7 +83,7 @@ export default function ClientDashboardPage() {
     }
   }
 
-  if (isLoading) {
+  if (projectsLoading) {
     return (
       <div className="flex justify-center items-center py-12">
         <div className="w-8 h-8 border-2 border-brand-blue border-t-transparent rounded-full animate-spin" />
@@ -74,29 +91,82 @@ export default function ClientDashboardPage() {
     )
   }
 
-  const activeProjects = projects.filter((p) => p.status !== 'COMPLETED')
-  const completedProjects = projects.filter((p) => p.status === 'COMPLETED')
+  const s = statsData?.data || {}
+
+  // Format currency
+  const formatCurrency = (amount) =>
+    amount != null
+      ? `₹${amount.toLocaleString('en-IN')}`
+      : '—'
+
+  // Format date
+  const formatDate = (dateStr) =>
+    dateStr
+      ? new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+      : '—'
 
   const stats = [
     {
+      id: 'active-projects',
       label: 'Active Projects',
-      value: activeProjects.length,
+      value: statsLoading ? '…' : s.activeProjects ?? 0,
       icon: FolderKanban,
       color: 'bg-blue-50 text-blue-600',
+      accent: 'border-blue-100',
+      link: null,
+      subtext: null,
     },
     {
+      id: 'completed-projects',
       label: 'Completed Projects',
-      value: completedProjects.length,
+      value: statsLoading ? '…' : s.completedProjects ?? 0,
       icon: CheckCircle,
       color: 'bg-emerald-50 text-emerald-600',
+      accent: 'border-emerald-100',
+      link: null,
+      subtext: null,
     },
     {
+      id: 'overall-progress',
       label: 'Overall Progress',
-      value: projects.length > 0 
-        ? `${Math.round(projects.reduce((acc, curr) => acc + curr.progress, 0) / projects.length)}%` 
-        : '0%',
+      value: statsLoading ? '…' : `${s.overallProgress ?? 0}%`,
       icon: TrendingUp,
       color: 'bg-purple-50 text-purple-600',
+      accent: 'border-purple-100',
+      link: null,
+      subtext: 'Across all projects',
+    },
+    {
+      id: 'open-tickets',
+      label: 'Open Support Tickets',
+      value: statsLoading ? '…' : s.openTickets ?? 0,
+      icon: TicketCheck,
+      color: s.openTickets > 0 ? 'bg-amber-50 text-amber-600' : 'bg-gray-50 text-gray-400',
+      accent: s.openTickets > 0 ? 'border-amber-100' : 'border-gray-100',
+      link: '/client/support',
+      subtext: s.unreadReplies > 0 ? `${s.unreadReplies} unread ${s.unreadReplies === 1 ? 'reply' : 'replies'}` : null,
+      subIcon: Bell,
+      subIconColor: 'text-rose-500',
+    },
+    {
+      id: 'next-payment',
+      label: 'Next Payment Due',
+      value: statsLoading ? '…' : formatCurrency(s.pendingMilestoneAmount),
+      icon: Wallet,
+      color: s.pendingMilestoneAmount != null ? 'bg-rose-50 text-rose-600' : 'bg-gray-50 text-gray-400',
+      accent: s.pendingMilestoneAmount != null ? 'border-rose-100' : 'border-gray-100',
+      link: '/client/billing',
+      subtext: s.nextMilestoneTitle ? `Milestone: ${s.nextMilestoneTitle}` : null,
+    },
+    {
+      id: 'payment-due-date',
+      label: 'Payment Deadline',
+      value: statsLoading ? '…' : formatDate(s.nextMilestoneDue),
+      icon: CalendarClock,
+      color: s.nextMilestoneDue != null ? 'bg-indigo-50 text-indigo-600' : 'bg-gray-50 text-gray-400',
+      accent: s.nextMilestoneDue != null ? 'border-indigo-100' : 'border-gray-100',
+      link: '/client/billing',
+      subtext: null,
     },
   ]
 
@@ -113,19 +183,39 @@ export default function ClientDashboardPage() {
         <p className="text-sm text-gray-500">Track and manage your ongoing project deliverables.</p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {stats.map((stat, i) => (
-          <div key={i} className="bg-white/80 border border-gray-150 backdrop-blur-md rounded-2xl p-5 md:p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-4 group">
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105 ${stat.color}`}>
-              <stat.icon className="w-5.5 h-5.5" />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{stat.label}</p>
-              <h3 className="text-2xl font-bold text-gray-900 mt-0.5">{stat.value}</h3>
-            </div>
-          </div>
-        ))}
+      {/* Stats Cards — 6 premium cards in 2-row 3-col grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+        {statsLoading
+          ? Array.from({ length: 6 }).map((_, i) => <StatCardSkeleton key={i} />)
+          : stats.map((stat) => {
+              const CardWrapper = stat.link ? Link : 'div'
+              const wrapperProps = stat.link ? { to: stat.link } : {}
+
+              return (
+                <CardWrapper
+                  key={stat.id}
+                  {...wrapperProps}
+                  className={`bg-white/80 border backdrop-blur-md rounded-2xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex items-start gap-4 group ${stat.accent || 'border-gray-150'} ${stat.link ? 'cursor-pointer' : ''}`}
+                >
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105 ${stat.color}`}>
+                    <stat.icon className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{stat.label}</p>
+                    <h3 className="text-xl font-bold text-gray-900 mt-0.5 truncate">{stat.value}</h3>
+                    {stat.subtext && (
+                      <p className={`text-[10px] font-semibold mt-1 flex items-center gap-1 ${stat.subIconColor || 'text-gray-400'}`}>
+                        {stat.subIcon && <stat.subIcon className="w-3 h-3" />}
+                        {stat.subtext}
+                      </p>
+                    )}
+                  </div>
+                  {stat.link && (
+                    <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-brand-blue group-hover:translate-x-0.5 transition-all shrink-0 mt-1" />
+                  )}
+                </CardWrapper>
+              )
+            })}
       </div>
 
       {/* Dynamic WhatsApp Support Banner */}

@@ -2,7 +2,7 @@
  * tickets.controller.js — Support Ticketing System controller
  */
 import prisma from '../config/db.js'
-import { sendEmail, supportTicketCreatedTemplate, supportTicketReplyTemplate } from '../utils/mailer.js'
+import { sendEmail, supportTicketCreatedTemplate, supportTicketReplyTemplate, ticketAssignmentTemplate } from '../utils/mailer.js'
 import { env } from '../config/env.js'
 import { uploadToCloudinary } from '../utils/cloudinary.js'
 
@@ -227,6 +227,9 @@ export const listAllTickets = async (req, res, next) => {
         clientProject: {
           select: { projectTitle: true },
         },
+        assignedAdmin: {
+          select: { id: true, email: true, role: true },
+        },
         _count: {
           select: { messages: true },
         },
@@ -253,6 +256,9 @@ export const getAdminTicketById = async (req, res, next) => {
         },
         clientProject: {
           select: { projectTitle: true },
+        },
+        assignedAdmin: {
+          select: { id: true, email: true, role: true },
         },
         messages: {
           orderBy: { createdAt: 'asc' },
@@ -414,6 +420,92 @@ export const uploadTicketAttachment = async (req, res, next) => {
         fileName: req.file.originalname,
       },
     })
+  } catch (err) {
+    next(err)
+  }
+}
+
+// PATCH /api/admin/tickets/:id/assign
+export const assignTicket = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const { assignedAdminId } = req.body
+    const assigningAdminId = req.user.id
+
+    // Validate ticket exists
+    const ticket = await prisma.supportTicket.findUnique({
+      where: { id },
+      include: {
+        client: { select: { name: true } },
+      },
+    })
+
+    if (!ticket) {
+      return res.status(404).json({ status: 'error', message: 'Ticket not found' })
+    }
+
+    // Validate the target admin exists (if assigning, not unassigning)
+    let targetAdmin = null
+    if (assignedAdminId) {
+      targetAdmin = await prisma.admin.findUnique({
+        where: { id: assignedAdminId },
+        select: { id: true, email: true, role: true, isActive: true },
+      })
+      if (!targetAdmin || !targetAdmin.isActive) {
+        return res.status(400).json({ status: 'error', message: 'Invalid or inactive admin/staff selected.' })
+      }
+    }
+
+    const assigner = await prisma.admin.findUnique({
+      where: { id: assigningAdminId },
+      select: { role: true },
+    })
+
+    const updated = await prisma.supportTicket.update({
+      where: { id },
+      data: {
+        assignedAdminId: assignedAdminId || null,
+        updatedAt: new Date(),
+      },
+      include: {
+        assignedAdmin: { select: { id: true, email: true, role: true } },
+      },
+    })
+
+    // Send assignment notification email to the newly assigned staff (async, non-blocking)
+    if (targetAdmin?.email) {
+      const emailOptions = ticketAssignmentTemplate({
+        adminEmail: targetAdmin.email,
+        ticketId: ticket.id,
+        subject: ticket.subject,
+        category: ticket.category,
+        clientName: ticket.client?.name || 'Client',
+        assignedByRole: assigner?.role || 'Admin',
+        portalUrl: `https://it-services.hindustanprojects.in/admin/support`,
+      })
+      sendEmail({
+        to: targetAdmin.email,
+        subject: emailOptions.subject,
+        html: emailOptions.html,
+        text: emailOptions.text,
+      }).catch((err) => console.error('Assignment notification email failed:', err.message))
+    }
+
+    res.json({ status: 'ok', data: updated })
+  } catch (err) {
+    next(err)
+  }
+}
+
+// GET /api/admin/users/list-assignable — lightweight list for ticket assignment dropdowns
+export const listAssignableAdmins = async (req, res, next) => {
+  try {
+    const admins = await prisma.admin.findMany({
+      where: { isActive: true },
+      select: { id: true, email: true, role: true },
+      orderBy: [{ role: 'asc' }, { email: 'asc' }],
+    })
+    res.json({ status: 'ok', data: admins })
   } catch (err) {
     next(err)
   }

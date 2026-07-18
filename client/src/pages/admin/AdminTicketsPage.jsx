@@ -4,7 +4,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/utils/api'
-import { MessageSquare, Send, ArrowLeft, User, Paperclip } from 'lucide-react'
+import { MessageSquare, Send, ArrowLeft, User, Paperclip, UserCheck, ChevronDown } from 'lucide-react'
 
 const TICKET_CATEGORIES = {
   TECHNICAL: 'Technical Issue',
@@ -17,6 +17,12 @@ const STATUS_BADGES = {
   OPEN: 'bg-indigo-50 text-indigo-700 border-indigo-200',
   IN_PROGRESS: 'bg-amber-50 text-amber-700 border-amber-200',
   RESOLVED: 'bg-emerald-50 text-emerald-700 border-emerald-250',
+}
+
+const ROLE_LABELS = {
+  SUPER_ADMIN: 'Super Admin',
+  ADMIN: 'Admin',
+  STAFF: 'Staff',
 }
 
 export default function AdminTicketsPage() {
@@ -38,6 +44,12 @@ export default function AdminTicketsPage() {
     enabled: !!selectedTicketId,
   })
 
+  // Fetch assignable admins list for the dropdown
+  const { data: assignableAdmins = [] } = useQuery({
+    queryKey: ['admin-assignable'],
+    queryFn: () => api.get('/admin/users/list-assignable').then((res) => res.data),
+  })
+
   // Reply mutation
   const replyMutation = useMutation({
     mutationFn: ({ id, message }) => api.post(`/admin/tickets/${id}/messages`, { message }),
@@ -57,15 +69,21 @@ export default function AdminTicketsPage() {
     },
   })
 
+  // Assignment mutation — PATCH /admin/tickets/:id/assign
+  const assignMutation = useMutation({
+    mutationFn: ({ id, assignedAdminId }) =>
+      api.patch(`/admin/tickets/${id}/assign`, { assignedAdminId: assignedAdminId || null }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-ticket', selectedTicketId] })
+      qc.invalidateQueries({ queryKey: ['admin-tickets'] })
+    },
+  })
+
   const handleSendReply = async (e) => {
     e.preventDefault()
     if (!replyText.trim()) return
-
     try {
-      await replyMutation.mutateAsync({
-        id: selectedTicketId,
-        message: replyText,
-      })
+      await replyMutation.mutateAsync({ id: selectedTicketId, message: replyText })
     } catch (err) {
       console.error(err)
     }
@@ -73,9 +91,17 @@ export default function AdminTicketsPage() {
 
   const handleStatusChange = async (newStatus) => {
     try {
-      await statusMutation.mutateAsync({
+      await statusMutation.mutateAsync({ id: selectedTicketId, status: newStatus })
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const handleAssignChange = async (newAdminId) => {
+    try {
+      await assignMutation.mutateAsync({
         id: selectedTicketId,
-        status: newStatus,
+        assignedAdminId: newAdminId || null,
       })
     } catch (err) {
       console.error(err)
@@ -100,7 +126,7 @@ export default function AdminTicketsPage() {
       {/* Header */}
       <div>
         <h2 className="text-2xl font-bold text-gray-900 font-heading">Support Desk</h2>
-        <p className="text-sm text-gray-500">Manage client support inquiries, discussions, and resolution status.</p>
+        <p className="text-sm text-gray-500">Manage client support inquiries, assign to team members, and resolve tickets.</p>
       </div>
 
       {/* Filter Tabs */}
@@ -160,6 +186,18 @@ export default function AdminTicketsPage() {
                     <User className="w-3 h-3" />
                     <span>Client: {t.client?.name}</span>
                   </div>
+                  {/* Assignment badge in list */}
+                  {t.assignedAdmin ? (
+                    <div className="flex items-center gap-1 text-[10px] text-emerald-600 font-semibold">
+                      <UserCheck className="w-3 h-3" />
+                      <span>Assigned: {t.assignedAdmin.email}</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1 text-[10px] text-gray-300 font-semibold">
+                      <UserCheck className="w-3 h-3" />
+                      <span>Unassigned</span>
+                    </div>
+                  )}
                   {t.clientProject && (
                     <span className="text-[10px] text-brand-blue font-medium">
                       Project: {t.clientProject.projectTitle}
@@ -179,39 +217,75 @@ export default function AdminTicketsPage() {
           {selectedTicketId ? (
             <>
               {/* Detail Header */}
-              <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setSelectedTicketId(null)}
-                    className="lg:hidden p-1.5 hover:bg-gray-100 rounded-lg text-gray-500"
-                  >
-                    <ArrowLeft className="w-5 h-5" />
-                  </button>
-                  <div>
-                    <h3 className="text-xs font-bold text-gray-800">
-                      {loadingDetail ? 'Loading...' : ticketDetail?.subject}
-                    </h3>
-                    <p className="text-[10px] text-gray-400 mt-0.5">
-                      Client Email: {ticketDetail?.client?.email}
-                    </p>
+              <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex flex-col gap-3 shrink-0">
+                {/* Top row: title + status */}
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setSelectedTicketId(null)}
+                      className="lg:hidden p-1.5 hover:bg-gray-100 rounded-lg text-gray-500"
+                    >
+                      <ArrowLeft className="w-5 h-5" />
+                    </button>
+                    <div>
+                      <h3 className="text-xs font-bold text-gray-800">
+                        {loadingDetail ? 'Loading...' : ticketDetail?.subject}
+                      </h3>
+                      <p className="text-[10px] text-gray-400 mt-0.5">
+                        Client Email: {ticketDetail?.client?.email}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Status selector + badge */}
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={ticketDetail?.status}
+                      onChange={(e) => handleStatusChange(e.target.value)}
+                      className="px-2.5 py-1 text-xs border border-gray-200 bg-white rounded-lg focus:outline-none"
+                    >
+                      <option value="OPEN">Open</option>
+                      <option value="IN_PROGRESS">In Progress</option>
+                      <option value="RESOLVED">Resolved / Closed</option>
+                    </select>
+                    <span className={`px-2 py-1 text-[9px] font-bold rounded border uppercase tracking-wider ${STATUS_BADGES[ticketDetail?.status]}`}>
+                      {ticketDetail?.status}
+                    </span>
                   </div>
                 </div>
-                
-                {/* Status selection and badges */}
-                <div className="flex items-center gap-2">
-                  <select
-                    value={ticketDetail?.status}
-                    onChange={(e) => handleStatusChange(e.target.value)}
-                    className="px-2.5 py-1 text-xs border border-gray-200 bg-white rounded-lg focus:outline-none"
-                  >
-                    <option value="OPEN">Open</option>
-                    <option value="IN_PROGRESS">In Progress</option>
-                    <option value="RESOLVED">Resolved / Closed</option>
-                  </select>
-                  <span className={`px-2 py-1 text-[9px] font-bold rounded border uppercase tracking-wider ${STATUS_BADGES[ticketDetail?.status]}`}>
-                    {ticketDetail?.status}
-                  </span>
-                </div>
+
+                {/* Assignment row */}
+                {!loadingDetail && (
+                  <div className="flex items-center gap-2 pt-1.5 border-t border-gray-100">
+                    <UserCheck className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider whitespace-nowrap">Assign To:</span>
+                    <div className="relative flex-1 max-w-[280px]">
+                      <select
+                        value={ticketDetail?.assignedAdminId || ''}
+                        onChange={(e) => handleAssignChange(e.target.value)}
+                        disabled={assignMutation.isPending}
+                        className="w-full pl-3 pr-7 py-1.5 text-xs border border-gray-200 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue/20 appearance-none disabled:opacity-60 cursor-pointer"
+                      >
+                        <option value="">— Unassigned —</option>
+                        {assignableAdmins.map((admin) => (
+                          <option key={admin.id} value={admin.id}>
+                            {admin.email} ({ROLE_LABELS[admin.role] || admin.role})
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="w-3 h-3 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
+                    {assignMutation.isPending && (
+                      <span className="text-[10px] text-gray-400 animate-pulse">Saving…</span>
+                    )}
+                    {!assignMutation.isPending && ticketDetail?.assignedAdmin && (
+                      <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1 whitespace-nowrap">
+                        <UserCheck className="w-3 h-3" />
+                        Assigned ✓
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Chat Thread Messages */}
@@ -292,7 +366,7 @@ export default function AdminTicketsPage() {
               <MessageSquare className="w-12 h-12 text-gray-300 mx-auto opacity-75" />
               <h4 className="text-sm font-bold text-gray-700">No Query Selected</h4>
               <p className="text-xs text-gray-400 max-w-xs mx-auto">
-                Select an open query ticket from the left panel to review client discussion threads, change ticket status, or reply.
+                Select an open query ticket from the left panel to review client discussion threads, change ticket status, assign to a team member, or reply.
               </p>
             </div>
           )}

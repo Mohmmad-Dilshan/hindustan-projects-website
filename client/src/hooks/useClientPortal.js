@@ -141,3 +141,10 @@ export function useClientInvoice(milestoneId) {
   })
 }
 
+export function useClientDashboardStats() {
+  return useQuery({
+    queryKey: ['client-dashboard-stats'],
+    queryFn: () => api.get('/client/dashboard/stats').then((r) => r.data),
+    staleTime: 2 * 60 * 1000,
+  })
+}

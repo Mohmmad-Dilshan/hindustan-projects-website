@@ -12,6 +12,7 @@ import {
   getClientProjects,
   getClientProjectById,
   submitProjectFeedback,
+  getClientDashboardStats,
 } from '../controllers/clientPortal.controller.js'
 import {
   createTicket,
@@ -40,6 +41,7 @@ router.get('/me', verifyClientToken, getClientProfile)
 router.get('/projects', verifyClientToken, getClientProjects)
 router.get('/projects/:id', verifyClientToken, getClientProjectById)
 router.post('/projects/:id/feedback', verifyClientToken, submitProjectFeedback)
+router.get('/dashboard/stats', verifyClientToken, getClientDashboardStats)
 
 // Support Tickets routes
 router.get('/tickets', verifyClientToken, listClientTickets)

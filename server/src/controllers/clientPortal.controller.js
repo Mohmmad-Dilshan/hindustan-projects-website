@@ -132,3 +132,65 @@ export const submitProjectFeedback = async (req, res, next) => {
     next(err)
   }
 }
+
+// GET /api/client/dashboard/stats
+export const getClientDashboardStats = async (req, res, next) => {
+  try {
+    const clientId = req.client.id
+
+    // Fetch all needed data in parallel for efficiency
+    const [projects, tickets, milestones] = await Promise.all([
+      prisma.clientProject.findMany({
+        where: { clientId, deletedAt: null },
+        select: { status: true, progress: true },
+      }),
+      prisma.supportTicket.findMany({
+        where: { clientId },
+        select: { status: true, clientHasUnread: true },
+      }),
+      prisma.billingMilestone.findMany({
+        where: {
+          clientProject: { clientId },
+          status: 'PENDING',
+        },
+        select: {
+          title: true,
+          amount: true,
+          dueDate: true,
+          status: true,
+        },
+        orderBy: { dueDate: 'asc' },
+        take: 1, // only need the nearest upcoming one
+      }),
+    ])
+
+    const activeProjects = projects.filter((p) => p.status !== 'COMPLETED').length
+    const completedProjects = projects.filter((p) => p.status === 'COMPLETED').length
+    const overallProgress =
+      projects.length > 0
+        ? Math.round(projects.reduce((acc, p) => acc + p.progress, 0) / projects.length)
+        : 0
+
+    const openTickets = tickets.filter((t) => t.status !== 'RESOLVED').length
+    const unreadReplies = tickets.filter((t) => t.clientHasUnread).length
+
+    const nextMilestone = milestones[0] || null
+    const pendingMilestoneAmount = nextMilestone?.amount ?? null
+
+    res.json({
+      status: 'ok',
+      data: {
+        activeProjects,
+        completedProjects,
+        overallProgress,
+        openTickets,
+        unreadReplies,
+        pendingMilestoneAmount,
+        nextMilestoneDue: nextMilestone?.dueDate ?? null,
+        nextMilestoneTitle: nextMilestone?.title ?? null,
+      },
+    })
+  } catch (err) {
+    next(err)
+  }
+}

@@ -195,7 +195,12 @@ export const submitApplication = async (req, res, next) => {
     let resumeUrl = 'https://res.cloudinary.com/demo/image/upload/v1580000000/sample_resume.pdf'
     if (req.file?.buffer) {
       try {
-        const result = await uploadToCloudinary(req.file.buffer, 'hindustan-projects-resumes', 'raw')
+        const result = await uploadToCloudinary(
+          req.file.buffer,
+          'hindustan-projects-resumes',
+          'raw',
+          req.file.originalname
+        )
         resumeUrl = result.secure_url
       } catch (e) {
         console.error('[upload] Resume upload to Cloudinary failed:', e.message)

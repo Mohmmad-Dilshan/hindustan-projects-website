@@ -87,12 +87,26 @@ export const uploadAttachment = multer({
  * Upload buffer to Cloudinary directly
  * Used in upload.route.js after multer processes the file into memory
  */
-export const uploadToCloudinary = (buffer, folder = 'hindustan-projects', resourceType = 'image') => {
+export const uploadToCloudinary = (buffer, folder = 'hindustan-projects', resourceType = 'image', originalName = '') => {
   return new Promise((resolve, reject) => {
+    let public_id = undefined
+    if (originalName) {
+      const ext = originalName.split('.').pop().toLowerCase()
+      const nameWithoutExt = originalName.substring(0, originalName.lastIndexOf('.'))
+      const cleanName = nameWithoutExt.replace(/[^a-zA-Z0-9_\-]/g, '_')
+      // For raw files, we MUST append the extension to public_id so Cloudinary serves it with the extension
+      if (resourceType === 'raw') {
+        public_id = `${cleanName}_${Date.now()}.${ext}`
+      } else {
+        public_id = `${cleanName}_${Date.now()}`
+      }
+    }
+
     const stream = cloudinary.uploader.upload_stream(
       {
         folder,
         resource_type: resourceType,
+        public_id,
         transformation: resourceType === 'image'
           ? [{ width: 1200, quality: 'auto', fetch_format: 'auto' }]
           : undefined,

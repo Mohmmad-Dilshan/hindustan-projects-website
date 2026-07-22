@@ -61,6 +61,11 @@ function ProjectForm({ initial, onSave, onCancel, loading, onAttachmentChange })
     queryFn: () => api.get('/admin/clients').then((r) => r.data),
   })
 
+  const { data: assignableTeam = [] } = useQuery({
+    queryKey: ['admin-assignable-team-dropdown'],
+    queryFn: () => api.get('/admin/users/list-assignable').then((r) => r.data),
+  })
+
   // Format dates for input type="date"
   const formatDateForInput = (dateStr) => {
     if (!dateStr) return ''
@@ -150,13 +155,16 @@ function ProjectForm({ initial, onSave, onCancel, loading, onAttachmentChange })
           </div>
           <div>
             <label className="text-xs font-semibold text-gray-600 block mb-1.5">
-              Assigned To (Team Member)
+              Assigned To (Team Lead / Staff)
             </label>
-            <input
-              {...register('assignedTo')}
-              className={inputCls}
-              placeholder="e.g. Mohmmad Dilshan"
-            />
+            <select {...register('assignedTo')} className={inputCls}>
+              <option value="">-- Unassigned --</option>
+              {assignableTeam.map((m) => (
+                <option key={m.id} value={m.name}>
+                  {m.name} ({m.role === 'SUPER_ADMIN' ? 'Super Admin' : m.role === 'ADMIN' ? 'Admin' : 'Staff'})
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="text-xs font-semibold text-gray-600 block mb-1.5">Budget</label>

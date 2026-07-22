@@ -186,20 +186,46 @@ export default function AdminBackupPage() {
 
         {/* Table selector */}
         <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+          <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <Package className="w-4 h-4 text-gray-500" />
               <h2 className="font-heading text-base font-semibold text-gray-800">
                 Select Tables to Export
               </h2>
             </div>
-            <button
-              type="button"
-              onClick={toggleAll}
-              className="text-xs font-semibold text-brand-blue hover:underline transition-colors"
-            >
-              {allSelected ? 'Deselect All' : 'Select All'}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const coreKeys = tables
+                    .filter((t) => ['projects', 'clientProjects', 'leads', 'services', 'clients', 'milestones'].includes(t.key))
+                    .map((t) => t.key)
+                  setSelected(new Set(coreKeys))
+                }}
+                className="text-[11px] font-bold text-gray-600 hover:text-brand-blue bg-gray-100 hover:bg-gray-150 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+              >
+                Core Data
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const auditKeys = tables
+                    .filter((t) => ['activities', 'errorLogs', 'chatbotInquiries', 'pageVisits'].includes(t.key))
+                    .map((t) => t.key)
+                  setSelected(new Set(auditKeys))
+                }}
+                className="text-[11px] font-bold text-gray-600 hover:text-brand-blue bg-gray-100 hover:bg-gray-150 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+              >
+                Audit &amp; Logs
+              </button>
+              <button
+                type="button"
+                onClick={toggleAll}
+                className="text-xs font-bold text-brand-blue hover:underline transition-colors ml-1 cursor-pointer"
+              >
+                {allSelected ? 'Deselect All' : 'Select All'}
+              </button>
+            </div>
           </div>
 
           <div className="p-4 space-y-2">

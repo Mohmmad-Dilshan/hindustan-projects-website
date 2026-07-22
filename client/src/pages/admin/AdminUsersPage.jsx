@@ -337,6 +337,57 @@ export default function AdminUsersPage() {
           </button>
         </div>
 
+        {/* Top Summary Stat Counters */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="bg-white p-4.5 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 border border-purple-100 flex items-center justify-center shrink-0">
+              <ShieldAlert className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Super Admins</p>
+              <p className="text-xl font-bold font-heading text-gray-900">
+                {users.filter((u) => u.role === 'SUPER_ADMIN').length}
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white p-4.5 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-brand-blue border border-blue-100 flex items-center justify-center shrink-0">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Admins &amp; Staff</p>
+              <p className="text-xl font-bold font-heading text-gray-900">
+                {users.filter((u) => u.role !== 'SUPER_ADMIN').length}
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white p-4.5 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0">
+              <UserCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Client Accounts</p>
+              <p className="text-xl font-bold font-heading text-gray-900">
+                {clients.length}
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white p-4.5 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center shrink-0">
+              <FolderLock className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Unlinked Portal Clients</p>
+              <p className="text-xl font-bold font-heading text-gray-900">
+                {clients.filter((c) => !c.projects || c.projects.length === 0).length}
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Tab Switcher & Filters */}
         <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
           <div className="flex gap-1.5 bg-gray-150 p-1.5 rounded-2xl w-fit border border-gray-200">

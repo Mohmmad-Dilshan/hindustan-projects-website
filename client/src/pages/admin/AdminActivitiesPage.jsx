@@ -19,6 +19,19 @@ const ENTITY_LABELS = {
   QuickNote: 'Sticky Note',
 }
 
+const formatTimeAgo = (dateStr) => {
+  const d = new Date(dateStr)
+  const diffMs = Date.now() - d.getTime()
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMins / 60)
+  const diffDays = Math.floor(diffHours / 24)
+  if (diffMins < 1) return 'Just now'
+  if (diffMins < 60) return `${diffMins}m ago`
+  if (diffHours < 24) return `${diffHours}h ago`
+  if (diffDays < 7) return `${diffDays}d ago`
+  return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })
+}
+
 export default function AdminActivitiesPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [entityFilter, setEntityFilter] = useState('ALL')
@@ -40,19 +53,35 @@ export default function AdminActivitiesPage() {
     return matchesSearch && matchesEntity && matchesAction
   })
 
+  const hasActiveFilters = searchTerm !== '' || entityFilter !== 'ALL' || actionFilter !== 'ALL'
+
   return (
     <>
       <SEO title="Activity Log" noIndex />
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 font-heading flex items-center gap-2">
-            <History className="w-6 h-6 text-brand-blue" />
-            System Activity Log
-          </h1>
-          <p className="text-sm text-gray-500">
-            Track which administrator performed what create, update, or delete operations.
-          </p>
+        <div className="flex justify-between items-center flex-wrap gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 font-heading flex items-center gap-2">
+              <History className="w-6 h-6 text-brand-blue" />
+              System Activity Log
+            </h1>
+            <p className="text-sm text-gray-500">
+              Track which administrator performed what create, update, or delete operations.
+            </p>
+          </div>
+          {hasActiveFilters && (
+            <button
+              onClick={() => {
+                setSearchTerm('')
+                setEntityFilter('ALL')
+                setActionFilter('ALL')
+              }}
+              className="text-xs font-bold text-brand-blue hover:text-brand-blue-hover bg-blue-50 px-3 py-1.5 rounded-xl border border-blue-100 transition-all cursor-pointer"
+            >
+              Reset Filters
+            </button>
+          )}
         </div>
 
         {/* Filters */}
@@ -77,6 +106,7 @@ export default function AdminActivitiesPage() {
               <option value="ClientProject">Client Projects Only</option>
               <option value="WorkTask">Tasks Only</option>
               <option value="QuickNote">Sticky Notes Only</option>
+              <option value="Client">Client Accounts Only</option>
             </select>
           </div>
           <div>

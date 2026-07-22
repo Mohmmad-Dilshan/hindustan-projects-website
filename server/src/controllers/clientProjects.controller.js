@@ -185,7 +185,10 @@ export const updateClientProject = async (req, res, next) => {
     delete updateData.id
     delete updateData.tasks
     delete updateData.attachments
+    delete updateData.billingMilestones
+    delete updateData.tickets
     delete updateData.client
+    delete updateData.hasFeedback
     delete updateData.createdAt
     delete updateData.updatedAt
     delete updateData.deletedAt

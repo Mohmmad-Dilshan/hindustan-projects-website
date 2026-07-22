@@ -25,6 +25,8 @@ import { api } from '@/utils/api'
 import { SEO } from '@/components/ui'
 import AttachmentSection from '@/components/ui/AttachmentSection'
 import AdminBillingSection from '@/components/admin/AdminBillingSection'
+import { useToast } from '@/components/ui/ToastProvider'
+
 
 const STATUSES = ['PLANNING', 'IN_PROGRESS', 'REVIEW', 'COMPLETED', 'ON_HOLD']
 const PRIORITIES = ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
@@ -106,16 +108,27 @@ function ProjectForm({ initial, onSave, onCancel, loading, onAttachmentChange })
   const watchedProgress = watch('progress') || 0
 
   const onSubmit = (data) => {
-    onSave({
-      ...data,
+    const payload = {
+      projectTitle: data.projectTitle,
+      clientName: data.clientName,
+      description: data.description || '',
+      startDate: data.startDate,
+      deadline: data.deadline,
+      assignedTo: data.assignedTo || '',
+      assignedToEmail: data.assignedToEmail || '',
+      budget: data.budget || '',
+      notes: data.notes || '',
+      status: data.status || 'PLANNING',
+      priority: data.priority || 'MEDIUM',
       progress: parseInt(data.progress || 0),
+      clientId: data.clientId || null,
       tags: data.tags
-        ? data.tags
-            .split(',')
-            .map((t) => t.trim())
-            .filter(Boolean)
+        ? typeof data.tags === 'string'
+          ? data.tags.split(',').map((t) => t.trim()).filter(Boolean)
+          : data.tags
         : [],
-    })
+    }
+    onSave(payload)
   }
 
   const onFormError = (errors) => {
@@ -557,6 +570,8 @@ export default function AdminClientProjectsPage() {
     queryFn: () => api.get('/admin/me').then((res) => res.data),
   })
 
+  const toast = useToast()
+
   const createMutation = useMutation({
     mutationFn: (data) => api.post('/admin/client-projects', data),
     onSuccess: async () => {
@@ -564,10 +579,10 @@ export default function AdminClientProjectsPage() {
       qc.invalidateQueries({ queryKey: ['admin-stats'] })
       setShowForm(false)
       window.scrollTo({ top: 0, behavior: 'smooth' })
-      alert('✅ Project created! Client & assigned staff have been notified via email.')
+      toast.success('Project created! Client & assigned staff have been notified via email.')
     },
     onError: (err) => {
-      alert(err.response?.data?.message || err.message || 'Failed to create client project.')
+      toast.error(err.response?.data?.message || err.message || 'Failed to create client project.')
     },
   })
 
@@ -578,10 +593,10 @@ export default function AdminClientProjectsPage() {
       qc.invalidateQueries({ queryKey: ['admin-stats'] })
       setEditing(null)
       window.scrollTo({ top: 0, behavior: 'smooth' })
-      alert('✅ Project updated successfully! Notifications sent to client & assigned staff.')
+      toast.success('Project updated successfully! Saved to database.')
     },
     onError: (err) => {
-      alert(err.response?.data?.message || err.message || 'Failed to update client project.')
+      toast.error(err.response?.data?.message || err.message || 'Failed to update client project.')
     },
   })
 

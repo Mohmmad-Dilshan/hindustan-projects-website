@@ -616,6 +616,53 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
+        {/* ── Financial Revenue Summary (Super Admin & Admin) ── */}
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm space-y-4">
+          <div className="flex items-center justify-between flex-wrap gap-2 border-b border-gray-100 pb-3">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-emerald-600" />
+              <h2 className="font-heading text-base font-bold text-gray-900">Financial Revenue & Collections Overview</h2>
+            </div>
+            <span className="text-xs font-semibold px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full">
+              Real-time Business Financials
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-emerald-50/50 border border-emerald-200/60 rounded-xl p-4">
+              <p className="text-xs text-emerald-700 font-bold uppercase tracking-wider">Total Paid Revenue</p>
+              <p className="text-2xl font-black text-emerald-800 mt-1">
+                ₹{isLoading ? '…' : (data?.totalPaidRevenue || 0).toLocaleString('en-IN')}
+              </p>
+              <p className="text-[11px] text-emerald-600 font-medium mt-1">Collected from paid milestones</p>
+            </div>
+
+            <div className="bg-amber-50/50 border border-amber-200/60 rounded-xl p-4">
+              <p className="text-xs text-amber-700 font-bold uppercase tracking-wider">Pending Receivables</p>
+              <p className="text-2xl font-black text-amber-800 mt-1">
+                ₹{isLoading ? '…' : (data?.totalPendingReceivables || 0).toLocaleString('en-IN')}
+              </p>
+              <p className="text-[11px] text-amber-600 font-medium mt-1">Awaiting client payment</p>
+            </div>
+
+            <div className="bg-blue-50/50 border border-blue-200/60 rounded-xl p-4">
+              <p className="text-xs text-brand-blue font-bold uppercase tracking-wider">Total Contract Value</p>
+              <p className="text-2xl font-black text-blue-900 mt-1">
+                ₹{isLoading ? '…' : (data?.totalBillingVolume || 0).toLocaleString('en-IN')}
+              </p>
+              <p className="text-[11px] text-blue-600 font-medium mt-1">Total project milestone volume</p>
+            </div>
+
+            <div className="bg-purple-50/50 border border-purple-200/60 rounded-xl p-4">
+              <p className="text-xs text-purple-700 font-bold uppercase tracking-wider">Active Client Accounts</p>
+              <p className="text-2xl font-black text-purple-900 mt-1">
+                {isLoading ? '…' : (data?.totalClients || 0)}
+              </p>
+              <p className="text-[11px] text-purple-600 font-medium mt-1">Clients registered in portal</p>
+            </div>
+          </div>
+        </div>
+
         {/* ── Stats grid ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <StatCard

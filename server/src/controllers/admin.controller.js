@@ -707,6 +707,8 @@ export const getDashboardStats = async (req, res, next) => {
       siteSettings,
       recentLeads,
       recentProjects,
+      billingMilestones,
+      totalClients,
     ] = await Promise.all([
       safeQuery(() => prisma.contactLead.count({ where: { deletedAt: null } }), 0),
       safeQuery(() => prisma.contactLead.count({ where: { status: 'NEW', deletedAt: null } }), 0),
@@ -749,7 +751,19 @@ export const getDashboardStats = async (req, res, next) => {
           }),
         []
       ),
+      safeQuery(() => prisma.billingMilestone.findMany(), []),
+      safeQuery(() => prisma.client.count(), 0),
     ])
+
+    const totalPaidRevenue = (billingMilestones || [])
+      .filter((m) => m.status === 'PAID')
+      .reduce((sum, m) => sum + (m.amount || 0), 0)
+
+    const totalPendingReceivables = (billingMilestones || [])
+      .filter((m) => m.status === 'PENDING' || m.status === 'OVERDUE')
+      .reduce((sum, m) => sum + (m.amount || 0), 0)
+
+    const totalBillingVolume = (billingMilestones || []).reduce((sum, m) => sum + (m.amount || 0), 0)
 
     const activeProjectsCount = (clientProjects || []).filter((p) => p.status !== 'COMPLETED').length
     const now = new Date()
@@ -836,6 +850,10 @@ export const getDashboardStats = async (req, res, next) => {
     res.json({
       status: 'ok',
       data: {
+        totalPaidRevenue,
+        totalPendingReceivables,
+        totalBillingVolume,
+        totalClients,
         totalLeads,
         newLeads,
         contactedLeads,

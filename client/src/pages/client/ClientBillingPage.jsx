@@ -3,7 +3,7 @@
  */
 import { Link } from 'react-router-dom'
 import { useClientBilling, useClientPayMilestone } from '@/hooks/useClientPortal'
-import { Landmark, Calendar, CheckCircle2, AlertCircle, FileText, Download, TrendingUp, CreditCard } from 'lucide-react'
+import { Landmark, Calendar, CheckCircle2, AlertCircle, FileText, TrendingUp, CreditCard } from 'lucide-react'
 
 const MILESTONE_STATUS = {
   PAID: {
@@ -31,8 +31,8 @@ export default function ClientBillingPage() {
     if (window.confirm('Simulate milestone payment check? This will immediately mark the milestone as PAID.')) {
       try {
         await payMutation.mutateAsync(id)
-      } catch (err) {
-        console.error(err)
+      } catch (_err) {
+        // Handled by payMutation error state
       }
     }
   }

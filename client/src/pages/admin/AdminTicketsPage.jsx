@@ -84,16 +84,16 @@ export default function AdminTicketsPage() {
     if (!replyText.trim()) return
     try {
       await replyMutation.mutateAsync({ id: selectedTicketId, message: replyText })
-    } catch (err) {
-      console.error(err)
+    } catch (_err) {
+      // Error handled by mutation toast/state
     }
   }
 
   const handleStatusChange = async (newStatus) => {
     try {
       await statusMutation.mutateAsync({ id: selectedTicketId, status: newStatus })
-    } catch (err) {
-      console.error(err)
+    } catch (_err) {
+      // Error handled by mutation toast/state
     }
   }
 
@@ -103,8 +103,8 @@ export default function AdminTicketsPage() {
         id: selectedTicketId,
         assignedAdminId: newAdminId || null,
       })
-    } catch (err) {
-      console.error(err)
+    } catch (_err) {
+      // Error handled by mutation toast/state
     }
   }
 

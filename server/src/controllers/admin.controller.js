@@ -4,7 +4,7 @@ import speakeasy from 'speakeasy'
 import QRCode from 'qrcode'
 import prisma from '../config/db.js'
 import { env } from '../config/env.js'
-import { setAdminCookie, setAdminRefreshTokenCookie, clearAdminCookies, clearAdminCookie } from '../utils/authCookie.js'
+import { setAdminCookie, setAdminRefreshTokenCookie, clearAdminCookies } from '../utils/authCookie.js'
 import { verifyMasterKey, resolveMasterKey } from '../utils/masterKey.js'
 import { sendEmail } from '../utils/mailer.js'
 
@@ -250,7 +250,7 @@ export const adminRefreshToken = async (req, res, next) => {
     let decoded
     try {
       decoded = jwt.verify(token, env.JWT_SECRET)
-    } catch (err) {
+    } catch (_err) {
       return res.status(401).json({ status: 'error', message: 'Invalid or expired refresh token' })
     }
 
@@ -385,7 +385,7 @@ export const login2FA = async (req, res, next) => {
     let decoded
     try {
       decoded = jwt.verify(tempToken, env.JWT_SECRET)
-    } catch (err) {
+    } catch (_err) {
       return res.status(401).json({ status: 'error', message: 'Temporary session expired. Please log in again.' })
     }
 

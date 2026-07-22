@@ -78,8 +78,8 @@ export default function ClientDashboardPage() {
       setFeedbackRating(5)
       setClientRole('')
       setClientCompany('')
-    } catch (err) {
-      console.error(err)
+    } catch (_err) {
+      // Handled by feedbackMutation error state
     }
   }
 

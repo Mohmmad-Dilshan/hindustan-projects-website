@@ -76,7 +76,7 @@ const NAV_GROUPS = [
   {
     label: 'Work Management',
     items: [
-      { to: '/admin/client-projects', icon: FolderKanban, label: 'Client Projects', roles: ['ADMIN', 'SUPER_ADMIN'] },
+      { to: '/admin/client-projects', icon: FolderKanban, label: 'Client Projects', roles: ['ADMIN', 'SUPER_ADMIN', 'STAFF'] },
       { to: '/admin/tasks', icon: CheckSquare, label: 'Tasks', roles: ['ADMIN', 'SUPER_ADMIN', 'STAFF'] },
       { to: '/admin/tickets', icon: MessageSquare, label: 'Support Tickets', badge: 'tickets', roles: ['ADMIN', 'SUPER_ADMIN', 'STAFF'] },
       { to: '/admin/notes', icon: StickyNote, label: 'Notes', roles: ['ADMIN', 'SUPER_ADMIN', 'STAFF'] },

@@ -7,8 +7,18 @@ import sendMail from '../utils/mailer.js'
 
 export const listClientProjects = async (req, res, next) => {
   try {
+    const isStaff = req.admin?.role === 'STAFF'
+    const whereClause = { deletedAt: null }
+
+    if (isStaff) {
+      whereClause.OR = [
+        { assignedToEmail: req.admin.email },
+        { assignedTo: req.admin.email },
+      ]
+    }
+
     const projects = await prisma.clientProject.findMany({
-      where: { deletedAt: null },
+      where: whereClause,
       orderBy: { createdAt: 'desc' },
       include: {
         tasks: true,

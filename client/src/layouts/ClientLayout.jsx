@@ -170,7 +170,7 @@ export default function ClientLayout() {
           <div className="flex items-center gap-3">
             {/* Notification Bell */}
             <button
-              onClick={() => window.location.href = '/client/support'}
+              onClick={() => navigate('/client/support')}
               className="relative p-2 rounded-xl hover:bg-gray-100 transition-all"
               title={unreadTicketsCount > 0 ? `${unreadTicketsCount} unread ticket update(s)` : 'No new notifications'}
             >

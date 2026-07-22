@@ -610,7 +610,7 @@ export const getDashboardStats = async (req, res, next) => {
   try {
     const isStaff = req.admin.role === 'STAFF'
     if (isStaff) {
-      const [myTasks, myTickets, myRecentNotes] = await Promise.all([
+      const [myTasks, myTickets, myRecentNotes, myAssignedProjects] = await Promise.all([
         prisma.workTask.findMany({
           where: {
             OR: [
@@ -633,6 +633,17 @@ export const getDashboardStats = async (req, res, next) => {
         prisma.quickNote.findMany({
           where: { creatorId: req.admin.id },
           orderBy: { createdAt: 'desc' },
+          take: 5,
+        }),
+        prisma.clientProject.findMany({
+          where: {
+            deletedAt: null,
+            OR: [
+              { assignedToEmail: req.admin.email },
+              { assignedTo: req.admin.email },
+            ],
+          },
+          orderBy: { updatedAt: 'desc' },
           take: 5,
         }),
       ])
@@ -669,6 +680,7 @@ export const getDashboardStats = async (req, res, next) => {
           totalEstimatedHours,
           totalLoggedHours,
           myAssignedTickets: myTickets,
+          myAssignedProjects,
           recentTasks: myTasks.slice(0, 5),
           recentNotes: myRecentNotes,
         },

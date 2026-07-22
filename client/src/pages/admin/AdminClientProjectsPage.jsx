@@ -857,9 +857,13 @@ export default function AdminClientProjectsPage() {
                     <p className="text-xs text-gray-400 font-semibold mb-3 flex items-center gap-1 flex-wrap">
                       <User className="w-3.5 h-3.5 text-gray-300" />
                       {p.clientName}
-                      {p.client && (
+                      {p.client ? (
                         <span className="text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-100 px-1.5 py-0.5 rounded font-bold ml-1" title={`Linked to client portal account: ${p.client.email}`}>
                           Portal Linked
+                        </span>
+                      ) : (
+                        <span className="text-[9px] bg-amber-50 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded font-bold ml-1" title="Client account not linked. Edit project to link a Client so they can view it in their Portal.">
+                          ⚠️ Portal Unlinked
                         </span>
                       )}
                     </p>

@@ -394,6 +394,48 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
+          {/* ── Assigned Projects Section ── */}
+          {data?.myAssignedProjects && data.myAssignedProjects.length > 0 && (
+            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <FolderKanban className="w-4 h-4 text-brand-blue" />
+                  <h2 className="font-heading text-sm font-bold text-gray-800">Client Projects Assigned to You</h2>
+                </div>
+                <Link to="/admin/client-projects" className="text-xs text-brand-blue hover:underline font-bold">
+                  View Assigned Projects
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {data.myAssignedProjects.map((project) => (
+                  <div key={project.id} className="p-4 rounded-xl border border-gray-150 bg-gray-50/50 space-y-2">
+                    <div className="flex justify-between items-start gap-2">
+                      <div>
+                        <h4 className="font-bold text-xs text-gray-900 line-clamp-1">{project.projectTitle}</h4>
+                        <p className="text-[11px] text-gray-500">{project.clientName}</p>
+                      </div>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-brand-blue border border-blue-100">
+                        {project.status}
+                      </span>
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-[10px] text-gray-500 font-semibold mb-1">
+                        <span>Progress</span>
+                        <span>{project.progress}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                        <div
+                          className="bg-brand-blue h-1.5 rounded-full"
+                          style={{ width: `${project.progress}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* ── Assigned Tickets Section ── */}
           {data?.myAssignedTickets && data.myAssignedTickets.length > 0 && (
             <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">

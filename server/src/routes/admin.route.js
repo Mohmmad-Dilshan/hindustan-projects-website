@@ -616,7 +616,7 @@ router.patch(
 router.delete('/applications/:id', verifyToken, requireRole('SUPER_ADMIN'), deleteApplication)
 
 // ── Client Projects ────────────────────────────────────────────
-router.get('/client-projects', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), listClientProjects)
+router.get('/client-projects', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN', 'STAFF'), listClientProjects)
 router.post(
   '/client-projects',
   verifyToken,

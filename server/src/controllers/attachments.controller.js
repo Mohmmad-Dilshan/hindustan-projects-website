@@ -41,6 +41,7 @@ export const createAttachment = async (req, res, next) => {
         fileType: req.file.mimetype,
         fileSize: req.file.size,
         publicId: result.public_id,
+        uploadedByRole: req.admin?.role || 'ADMIN',
         leadId: leadId || null,
         taskId: taskId || null,
         clientProjectId: clientProjectId || null,

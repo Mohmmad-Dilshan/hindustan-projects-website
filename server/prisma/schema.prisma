@@ -567,6 +567,7 @@ model Attachment {
   fileType        String
   fileSize        Int?
   publicId        String?
+  uploadedByRole  String?        // 'ADMIN' | 'STAFF' | 'CLIENT'
   createdAt       DateTime       @default(now())
 
   // Scoped Relations

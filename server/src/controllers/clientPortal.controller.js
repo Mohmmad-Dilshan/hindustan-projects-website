@@ -1,7 +1,8 @@
 /**
- * clientPortal.controller.js — Client-scoped queries for their projects
+ * clientPortal.controller.js — Client-facing API controllers
  */
 import prisma from '../config/db.js'
+import { uploadToCloudinary } from '../utils/cloudinary.js'
 
 // GET /api/client/projects
 export const getClientProjects = async (req, res, next) => {
@@ -213,15 +214,25 @@ export const uploadClientProjectAttachment = async (req, res, next) => {
       return res.status(400).json({ status: 'error', message: 'No file uploaded.' })
     }
 
+    // Upload file to Cloudinary
+    const isImage = req.file.mimetype.startsWith('image/')
+    const resourceType = isImage ? 'image' : 'raw'
+    const result = await uploadToCloudinary(
+      req.file.buffer,
+      'hindustan-projects-attachments',
+      resourceType,
+      req.file.originalname
+    )
+
     const attachment = await prisma.attachment.create({
       data: {
-        filename: req.file.originalname || req.file.filename,
-        fileUrl: req.file.path || req.file.secure_url || req.file.url,
+        fileName: req.file.originalname,
+        fileUrl: result.secure_url,
         fileSize: req.file.size || 0,
         fileType: req.file.mimetype || 'application/octet-stream',
+        publicId: result.public_id,
         clientProjectId: id,
         uploadedByRole: 'CLIENT',
-        uploadedByName: req.client.name || 'Client',
       },
     })
 

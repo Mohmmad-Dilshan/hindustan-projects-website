@@ -505,3 +505,69 @@ export const deleteClientUser = async (req, res, next) => {
   }
 }
 
+// POST /api/admin/clients/:id/resend-welcome
+export const resendClientWelcome = async (req, res, next) => {
+  try {
+    const { id } = req.params
+
+    const existing = await prisma.client.findUnique({ where: { id } })
+    if (!existing) {
+      return res.status(404).json({ status: 'error', message: 'Client not found.' })
+    }
+
+    // Generate fresh invite token
+    const inviteToken = crypto.randomBytes(32).toString('hex')
+    const inviteTokenExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+
+    const client = await prisma.client.update({
+      where: { id },
+      data: {
+        inviteToken,
+        inviteTokenExpires,
+        passwordHash: null, // reset password so they must set a new one
+      },
+    })
+
+    const clientUrl = env.CLIENT_URL || 'https://it-services-hindustan-projects.vercel.app'
+    const inviteLink = `${clientUrl}/client/setup-password?token=${inviteToken}`
+    const settings = await fetchEmailFooterSettings(prisma)
+
+    await sendEmail({
+      to: client.email,
+      subject: '🔑 Client Portal Access — Hindustan Projects',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
+          <div style="background: #1A3E8C; padding: 20px; border-radius: 6px 6px 0 0; margin: -20px -20px 20px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 22px;"><span style="color: #E31E24;">Hindustan</span> Projects</h1>
+            <p style="color: #93c5fd; margin: 6px 0 0; font-size: 14px;">Client Portal — Access Link Resent</p>
+          </div>
+
+          <p style="font-size: 16px; color: #1A1A1A;">Hi <strong>${client.name}</strong>,</p>
+
+          <p style="font-size: 15px; color: #374151; line-height: 1.7;">
+            Your portal access link has been resent by the Hindustan Projects team. Click the button below to set up or reset your password and access your project dashboard:
+          </p>
+
+          <p style="text-align: center; margin: 30px 0;">
+            <a href="${inviteLink}" style="background-color: #E31E24; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 15px;">Access My Client Portal</a>
+          </p>
+
+          <div style="background: #fff8f0; border: 1px solid #fed7aa; border-radius: 6px; padding: 12px 16px; margin: 20px 0;">
+            <p style="margin: 0; font-size: 13px; color: #92400e;">⚠️ This link will expire in <strong>7 days</strong>. Please set up your account before it expires.</p>
+          </div>
+
+          <p style="font-size: 12px; color: #6b7280; margin-top: 16px;">If the button doesn't work, copy and paste this link in your browser:<br/><a href="${inviteLink}" style="color: #1A3E8C; word-break: break-all;">${inviteLink}</a></p>
+
+          ${professionalEmailFooter(settings)}
+        </div>
+      `,
+      text: `Hi ${client.name},\n\nYour Hindustan Projects client portal access link has been resent.\n\nSet up your password: ${inviteLink}\n\nThis link expires in 7 days.\n\nHindustan Projects\nWeb: www.itservices.hindustanprojects.in`,
+    })
+
+    await logActivity(req, 'UPDATE', 'Client', `Resent welcome/portal credentials to '${client.email}'`)
+
+    res.json({ status: 'ok', message: `Portal credentials sent to ${client.email}` })
+  } catch (err) {
+    next(err)
+  }
+}

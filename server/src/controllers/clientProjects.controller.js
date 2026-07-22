@@ -39,6 +39,7 @@ export const createClientProject = async (req, res, next) => {
       startDate,
       deadline,
       assignedTo,
+      assignedToEmail,
       budget,
       tags,
       notes,
@@ -61,6 +62,7 @@ export const createClientProject = async (req, res, next) => {
         startDate: new Date(startDate),
         deadline: new Date(deadline),
         assignedTo,
+        assignedToEmail: assignedToEmail || null,
         budget,
         tags: tags ?? [],
         notes,
@@ -89,7 +91,7 @@ export const createClientProject = async (req, res, next) => {
       `Created project '${project.projectTitle}' for client '${project.clientName}'`
     )
 
-    // Dispatch portal update notification email asynchronously if client is linked
+    // 1) Notify client via email if linked
     if (project.client && project.client.email) {
       sendMail({
         to: project.client.email,
@@ -112,7 +114,35 @@ export const createClientProject = async (req, res, next) => {
             <p style="font-size: 11px; color: #64748b; margin-top: 24px; border-top: 1px solid #e2e8f0; padding-top: 12px;">Hindustan Projects IT Services — Corporate Office: Bhilwara, Rajasthan</p>
           </div>
         `,
-      }).catch((err) => console.error('[ClientProject/mailer] Email notification failed:', err.message))
+      }).catch((err) => console.error('[ClientProject/mailer] Client email failed:', err.message))
+    }
+
+    // 2) Notify assigned staff member via email
+    if (assignedToEmail) {
+      sendMail({
+        to: assignedToEmail,
+        subject: `📋 New Project Assigned to You: ${project.projectTitle}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px;">
+            <h2 style="color: #1e3a8a; margin-top: 0;">You have been assigned a new project!</h2>
+            <p>Hi <strong>${assignedTo}</strong>,</p>
+            <p>You have been assigned as the lead on a new client project at Hindustan Projects:</p>
+            <div style="background-color: #f0f9ff; padding: 16px; border-radius: 12px; margin: 16px 0; border: 1px solid #bae6fd;">
+              <p style="margin: 6px 0;"><strong>Project:</strong> ${project.projectTitle}</p>
+              <p style="margin: 6px 0;"><strong>Client:</strong> ${project.clientName}</p>
+              <p style="margin: 6px 0;"><strong>Status:</strong> ${project.status}</p>
+              <p style="margin: 6px 0;"><strong>Start Date:</strong> ${new Date(project.startDate).toLocaleDateString('en-IN')}</p>
+              <p style="margin: 6px 0;"><strong>Deadline:</strong> ${new Date(project.deadline).toLocaleDateString('en-IN')}</p>
+              <p style="margin: 6px 0;"><strong>Priority:</strong> ${project.priority}</p>
+            </div>
+            <p>Please log into the admin panel to review the project details and start work:</p>
+            <div style="text-align: center; margin: 24px 0;">
+              <a href="https://itservices.hindustanprojects.in/admin/client-projects" style="background-color: #1A3E8C; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 10px; font-weight: bold; display: inline-block;">Open Admin Panel</a>
+            </div>
+            <p style="font-size: 11px; color: #64748b; margin-top: 24px; border-top: 1px solid #e2e8f0; padding-top: 12px;">Hindustan Projects IT Services — Internal Assignment Notification</p>
+          </div>
+        `,
+      }).catch((err) => console.error('[ClientProject/mailer] Staff email failed:', err.message))
     }
 
     res.status(201).json({ status: 'ok', data: project })
@@ -167,7 +197,7 @@ export const updateClientProject = async (req, res, next) => {
       `Updated project '${project.projectTitle}' (Progress: ${project.progress}%, Status: ${project.status})`
     )
 
-    // Dispatch portal update notification email asynchronously if client is linked
+    // 1) Notify client via email if linked
     if (project.client && project.client.email) {
       sendMail({
         to: project.client.email,
@@ -190,7 +220,34 @@ export const updateClientProject = async (req, res, next) => {
             <p style="font-size: 11px; color: #64748b; margin-top: 24px; border-top: 1px solid #e2e8f0; padding-top: 12px;">Hindustan Projects IT Services — Corporate Office: Bhilwara, Rajasthan</p>
           </div>
         `,
-      }).catch((err) => console.error('[ClientProject/mailer] Email notification failed:', err.message))
+      }).catch((err) => console.error('[ClientProject/mailer] Client email failed:', err.message))
+    }
+
+    // 2) Notify assigned staff if assignment changed
+    if (project.assignedToEmail) {
+      sendMail({
+        to: project.assignedToEmail,
+        subject: `📋 Project Assignment Update: ${project.projectTitle}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px;">
+            <h2 style="color: #1e3a8a; margin-top: 0;">Project Update — You Are the Assigned Lead</h2>
+            <p>Hi <strong>${project.assignedTo}</strong>,</p>
+            <p>The following project has been updated and you are assigned as the lead:</p>
+            <div style="background-color: #f0f9ff; padding: 16px; border-radius: 12px; margin: 16px 0; border: 1px solid #bae6fd;">
+              <p style="margin: 6px 0;"><strong>Project:</strong> ${project.projectTitle}</p>
+              <p style="margin: 6px 0;"><strong>Client:</strong> ${project.clientName}</p>
+              <p style="margin: 6px 0;"><strong>Status:</strong> ${project.status}</p>
+              <p style="margin: 6px 0;"><strong>Progress:</strong> ${project.progress}%</p>
+              <p style="margin: 6px 0;"><strong>Deadline:</strong> ${new Date(project.deadline).toLocaleDateString('en-IN')}</p>
+              <p style="margin: 6px 0;"><strong>Priority:</strong> ${project.priority}</p>
+            </div>
+            <div style="text-align: center; margin: 24px 0;">
+              <a href="https://itservices.hindustanprojects.in/admin/client-projects" style="background-color: #1A3E8C; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 10px; font-weight: bold; display: inline-block;">Open Admin Panel</a>
+            </div>
+            <p style="font-size: 11px; color: #64748b; margin-top: 24px; border-top: 1px solid #e2e8f0; padding-top: 12px;">Hindustan Projects IT Services — Internal Assignment Notification</p>
+          </div>
+        `,
+      }).catch((err) => console.error('[ClientProject/mailer] Staff email failed:', err.message))
     }
 
     res.json({ status: 'ok', data: project })

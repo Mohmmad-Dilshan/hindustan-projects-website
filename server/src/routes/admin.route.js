@@ -131,6 +131,7 @@ import {
   createClientUser,
   updateClientUser,
   deleteClientUser,
+  resendClientWelcome,
 } from '../controllers/adminUsers.controller.js'
 import { globalSearch } from '../controllers/adminSearch.controller.js'
 
@@ -548,6 +549,7 @@ router.get('/clients', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), listCli
 router.post('/clients', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), createClientUser)
 router.patch('/clients/:id', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), updateClientUser)
 router.delete('/clients/:id', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), deleteClientUser)
+router.post('/clients/:id/resend-welcome', verifyToken, requireRole('ADMIN', 'SUPER_ADMIN'), resendClientWelcome)
 
 // ── Global Search ──────────────────────────────────────────────
 router.get('/search', verifyToken, globalSearch)

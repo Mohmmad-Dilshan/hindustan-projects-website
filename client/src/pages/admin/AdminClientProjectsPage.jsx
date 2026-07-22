@@ -82,6 +82,8 @@ function ProjectForm({ initial, onSave, onCancel, loading, onAttachmentChange })
           deadline: formatDateForInput(initial.deadline),
           tags: initial.tags ? initial.tags.join(', ') : '',
           clientId: initial.clientId || '',
+          assignedTo: initial.assignedTo || '',
+          assignedToEmail: initial.assignedToEmail || '',
         }
       : {
           clientName: '',
@@ -90,6 +92,7 @@ function ProjectForm({ initial, onSave, onCancel, loading, onAttachmentChange })
           startDate: formatDateForInput(new Date()),
           deadline: '',
           assignedTo: '',
+          assignedToEmail: '',
           budget: '',
           tags: '',
           notes: '',
@@ -165,18 +168,31 @@ function ProjectForm({ initial, onSave, onCancel, loading, onAttachmentChange })
             <label className="text-xs font-bold text-gray-700 block mb-1.5">
               Assigned To (Team Lead / Staff)
             </label>
-            <select {...register('assignedTo')} className={inputCls}>
+            <select
+              className={inputCls}
+              value={watch('assignedTo') || ''}
+              onChange={(e) => {
+                const selectedVal = e.target.value
+                // selectedVal is in format "Name||email"
+                const parts = selectedVal.split('||')
+                const nameVal = parts[0] || ''
+                const emailVal = parts[1] || ''
+                setValue('assignedTo', nameVal)
+                setValue('assignedToEmail', emailVal)
+              }}
+            >
               <option value="">-- Unassigned --</option>
               {assignableTeam.map((m) => {
                 const displayName = m.name || m.email.split('@')[0].toUpperCase()
                 const roleLabel = m.role === 'SUPER_ADMIN' ? 'Super Admin' : m.role === 'ADMIN' ? 'Admin' : 'Staff'
                 return (
-                  <option key={m.id} value={displayName}>
+                  <option key={m.id} value={`${displayName}||${m.email}`}>
                     👤 {displayName} ({m.email}) — [{roleLabel}]
                   </option>
                 )
               })}
             </select>
+            <input type="hidden" {...register('assignedToEmail')} />
           </div>
         </div>
       </div>

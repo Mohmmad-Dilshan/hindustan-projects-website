@@ -324,6 +324,7 @@ model ClientProject {
   startDate         DateTime
   deadline          DateTime
   assignedTo        String?
+  assignedToEmail   String?            // Email of assigned staff for notifications
   budget            String?
   tags              String[]
   notes             String?

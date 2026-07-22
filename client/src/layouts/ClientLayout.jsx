@@ -27,6 +27,9 @@ export default function ClientLayout() {
   const { data: tickets = [] } = useClientTickets()
 
   useEffect(() => {
+    if (client?.name) {
+      localStorage.setItem('hp_client_name', client.name)
+    }
     if (!isLoading && (isError || !client)) {
       navigate('/client-login', { replace: true })
     }

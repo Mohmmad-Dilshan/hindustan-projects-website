@@ -17,7 +17,7 @@ import {
   Wallet,
   CalendarClock,
 } from 'lucide-react'
-import { useClientProjects, useClientSubmitFeedback, useClientDashboardStats } from '@/hooks/useClientPortal'
+import { useClientProjects, useClientSubmitFeedback, useClientDashboardStats, useClientMe } from '@/hooks/useClientPortal'
 import { useSiteSettings } from '@/hooks/useContent'
 
 const STATUS_COLORS = {
@@ -175,12 +175,42 @@ export default function ClientDashboardPage() {
   const cleanPhone = rawPhone.replace(/[^0-9]/g, '')
   const whatsappUrl = `https://wa.me/${cleanPhone}?text=Hi%20Hindustan%20Projects%20Team`
 
+  const { data: clientMe } = useClientMe()
+  const clientName = clientMe?.name || localStorage.getItem('hp_client_name') || 'Valued Client'
+
   return (
     <div className="space-y-8">
-      {/* Page Header */}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900 font-heading">Dashboard</h2>
-        <p className="text-sm text-gray-500">Track and manage your ongoing project deliverables.</p>
+      {/* Personalized Welcome Hero Banner */}
+      <div className="relative rounded-2xl overflow-hidden p-6 md:p-8 bg-gradient-to-r from-brand-blue via-blue-900 to-indigo-950 text-white shadow-lg">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <span className="text-xs font-semibold px-3 py-1 bg-white/10 text-blue-200 border border-white/15 rounded-full backdrop-blur-sm">
+              Client Portal &bull; {clientMe?.companyName || 'Hindustan Projects Partner'}
+            </span>
+            <h1 className="font-heading text-2xl md:text-3xl font-bold text-white mt-3">
+              Welcome back, {clientName}! 👋
+            </h1>
+            <p className="text-xs md:text-sm text-blue-100/90 mt-1 max-w-xl">
+              Track your active project roadmap, milestone billing status, and open support tickets in real-time.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link
+              to="/client/support"
+              className="px-4 py-2.5 bg-white text-brand-blue font-bold text-xs rounded-xl shadow hover:bg-blue-50 transition-all flex items-center gap-2"
+            >
+              <TicketCheck className="w-4 h-4" />
+              Support Desk
+            </Link>
+            <Link
+              to="/client/billing"
+              className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/20 rounded-xl transition-all flex items-center gap-2"
+            >
+              <Wallet className="w-4 h-4" />
+              Billing & Invoices
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* Stats Cards — 6 premium cards in 2-row 3-col grid */}

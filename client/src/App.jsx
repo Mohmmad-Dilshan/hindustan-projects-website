@@ -2,6 +2,8 @@ import { lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import RootLayout from '@/layouts/RootLayout'
 import GlobalClickRipple from '@/components/ui/GlobalClickRipple'
+import { ToastProvider } from '@/components/ui/ToastProvider'
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 
 // ── Page loading fallback ──────────────────────────────────────
 function PageFallback() {
@@ -112,9 +114,10 @@ const ClientInvoicePage = lazyWithRetry(() => import('@/pages/client/ClientInvoi
 
 export default function App() {
   return (
-    <>
-      <GlobalClickRipple />
-      <Routes>
+    <ErrorBoundary>
+      <ToastProvider>
+        <GlobalClickRipple />
+        <Routes>
         {/* ── Admin ── */}
         <Route
           path="/admin"
@@ -560,6 +563,8 @@ export default function App() {
           />
         </Route>
       </Routes>
-    </>
+      </ToastProvider>
+    </ErrorBoundary>
   )
 }
+

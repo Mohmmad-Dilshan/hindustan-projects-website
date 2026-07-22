@@ -22,6 +22,7 @@ import { useForm } from 'react-hook-form'
 import { api } from '@/utils/api'
 import { SEO } from '@/components/ui'
 import AttachmentSection from '@/components/ui/AttachmentSection'
+import { useToast } from '@/components/ui/ToastProvider'
 
 const COLUMNS = [
   {
@@ -266,15 +267,19 @@ export default function AdminTasksPage() {
     queryKey: ['admin-profile'],
     queryFn: () => api.get('/admin/me').then((r) => r.data),
   })
+  const toast = useToast()
 
   const createMutation = useMutation({
     mutationFn: (data) => api.post('/admin/tasks', data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-tasks'] })
       qc.invalidateQueries({ queryKey: ['admin-stats'] })
-      setQuickTitle('')
-      setQuickDate('')
       setShowForm(false)
+      setQuickTitle('')
+      toast.success('Task created successfully!')
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || err.message || 'Failed to create task.')
     },
   })
 
@@ -284,6 +289,10 @@ export default function AdminTasksPage() {
       qc.invalidateQueries({ queryKey: ['admin-tasks'] })
       qc.invalidateQueries({ queryKey: ['admin-stats'] })
       setEditing(null)
+      toast.success('Task updated!')
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || err.message || 'Failed to update task.')
     },
   })
 
@@ -292,6 +301,7 @@ export default function AdminTasksPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-tasks'] })
       qc.invalidateQueries({ queryKey: ['admin-stats'] })
+      toast.info('Task deleted.')
     },
   })
 

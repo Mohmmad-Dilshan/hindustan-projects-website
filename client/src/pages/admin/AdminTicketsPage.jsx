@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/utils/api'
 import { MessageSquare, Send, ArrowLeft, User, Paperclip, UserCheck, ChevronDown } from 'lucide-react'
+import { useToast } from '@/components/ui/ToastProvider'
 
 const TICKET_CATEGORIES = {
   TECHNICAL: 'Technical Issue',
@@ -27,6 +28,7 @@ const ROLE_LABELS = {
 
 export default function AdminTicketsPage() {
   const qc = useQueryClient()
+  const toast = useToast()
   const [selectedTicketId, setSelectedTicketId] = useState(null)
   const [replyText, setReplyText] = useState('')
   const [statusFilter, setStatusFilter] = useState('ALL')
@@ -57,6 +59,10 @@ export default function AdminTicketsPage() {
       qc.invalidateQueries({ queryKey: ['admin-ticket', selectedTicketId] })
       qc.invalidateQueries({ queryKey: ['admin-tickets'] })
       setReplyText('')
+      toast.success('Reply sent to client successfully!')
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || err.message || 'Failed to send reply.')
     },
   })
 
@@ -66,6 +72,10 @@ export default function AdminTicketsPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-ticket', selectedTicketId] })
       qc.invalidateQueries({ queryKey: ['admin-tickets'] })
+      toast.success('Ticket status updated!')
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || err.message || 'Failed to update ticket status.')
     },
   })
 
@@ -76,6 +86,10 @@ export default function AdminTicketsPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-ticket', selectedTicketId] })
       qc.invalidateQueries({ queryKey: ['admin-tickets'] })
+      toast.success('Ticket lead updated successfully!')
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || err.message || 'Failed to re-assign ticket.')
     },
   })
 

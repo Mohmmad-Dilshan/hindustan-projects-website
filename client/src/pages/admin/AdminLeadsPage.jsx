@@ -22,6 +22,7 @@ import {
 import { api } from '@/utils/api'
 import { SEO } from '@/components/ui'
 import AttachmentSection from '@/components/ui/AttachmentSection'
+import { useToast } from '@/components/ui/ToastProvider'
 
 const STATUS_CONFIG = {
   NEW: { label: 'New', dot: 'bg-blue-500', pill: 'bg-blue-50 text-blue-700 border-blue-200' },
@@ -39,33 +40,28 @@ const STATUS_CONFIG = {
 
 function PageHeader({ count, onExport, onImport }) {
   return (
-    <div className="flex items-start justify-between flex-wrap gap-4">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <div className="flex items-center gap-2 mb-1">
-          <div className="w-8 h-8 rounded-lg bg-brand-blue/10 flex items-center justify-center">
-            <MessageSquare className="w-4 h-4 text-brand-blue" />
-          </div>
-          <h1 className="font-heading text-2xl font-bold text-gray-900">Contact Leads</h1>
-        </div>
-        <p className="text-sm text-gray-400 ml-10">
-          {count != null ? `${count} total submissions` : 'All form submissions from your website'}
+        <h1 className="text-2xl font-bold text-gray-900 font-heading">Leads & Inquiries</h1>
+        <p className="text-sm text-gray-500">
+          Review, contact, and import potential clients submitting web forms.
         </p>
       </div>
-      <div className="flex items-center gap-2 shrink-0">
-        {onImport && (
-          <button
-            onClick={onImport}
-            className="flex items-center gap-1.5 bg-gray-150 hover:bg-gray-200 border border-gray-250 text-gray-700 px-4 py-2.5 rounded-xl text-xs font-semibold hover:shadow-md transition-all cursor-pointer"
-          >
-            <Upload className="w-3.5 h-3.5" /> Import CSV
-          </button>
-        )}
+      <div className="flex items-center gap-2 self-start sm:self-auto">
+        <button
+          onClick={onImport}
+          className="inline-flex items-center gap-2 bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer"
+        >
+          <Upload className="w-4 h-4 text-gray-500" />
+          Import CSV
+        </button>
         {onExport && (
           <button
             onClick={onExport}
-            className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold hover:shadow-md transition-all cursor-pointer"
+            className="inline-flex items-center gap-2 bg-brand-blue text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-md shadow-brand-blue/10 hover:shadow-lg hover:shadow-brand-blue/20 hover:-translate-y-0.5 transition-all cursor-pointer"
           >
-            <Download className="w-3.5 h-3.5" /> Export to CSV
+            <Download className="w-4 h-4" />
+            Export CSV ({count})
           </button>
         )}
       </div>
@@ -80,20 +76,22 @@ export default function AdminLeadsPage() {
   const [csvFile, setCsvFile] = useState(null)
   const [importStatus, setImportStatus] = useState(null)
   const qc = useQueryClient()
+  const toast = useToast()
 
-  const { data, isLoading, isError, refetch } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['admin-leads', statusFilter],
     queryFn: () =>
-      api.get(`/admin/leads${statusFilter ? `?status=${statusFilter}` : ''}`).then((r) => r.data),
+      api.get('/admin/leads', { params: statusFilter ? { status: statusFilter } : {} }).then((r) => r.data),
   })
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, ...payload }) => api.patch(`/admin/leads/${id}`, payload),
-    onSuccess: (res) => {
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ id, status }) => api.patch(`/admin/leads/${id}`, { status }),
+    onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-leads'] })
-      if (selectedLead && res?.data) {
-        setSelectedLead(res.data)
-      }
+      toast.success('Lead status updated!')
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || err.message || 'Failed to update lead status.')
     },
   })
 
@@ -102,6 +100,10 @@ export default function AdminLeadsPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-leads'] })
       setSelectedLead(null)
+      toast.info('Lead deleted.')
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || err.message || 'Failed to delete lead.')
     },
   })
 

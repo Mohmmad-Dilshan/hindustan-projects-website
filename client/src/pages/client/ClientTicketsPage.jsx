@@ -84,8 +84,8 @@ export default function ClientTicketsPage() {
       setShowCreateModal(false)
       setCreateFile(null)
       reset()
-    } catch (err) {
-      console.error(err)
+    } catch (_err) {
+      // Error state handled by mutation toast
     } finally {
       setIsUploading(false)
     }
@@ -114,8 +114,8 @@ export default function ClientTicketsPage() {
       })
       setReplyText('')
       setReplyFile(null)
-    } catch (err) {
-      console.error(err)
+    } catch (_err) {
+      // Error state handled by mutation toast
     } finally {
       setIsUploading(false)
     }

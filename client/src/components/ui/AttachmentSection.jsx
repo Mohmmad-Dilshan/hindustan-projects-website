@@ -194,8 +194,13 @@ export default function AttachmentSection({
                     <p className="text-xs font-semibold text-gray-800 truncate" title={item.fileName}>
                       {item.fileName}
                     </p>
-                    <p className="text-[10px] text-gray-400 mt-0.5">
-                      {formatBytes(item.fileSize)}
+                    <p className="text-[10px] text-gray-400 mt-0.5 flex items-center gap-1.5">
+                      <span>{formatBytes(item.fileSize)}</span>
+                      {item.uploadedByRole === 'CLIENT' && (
+                        <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded-full">
+                          Client Uploaded
+                        </span>
+                      )}
                     </p>
                   </div>
                 </div>

@@ -11,11 +11,6 @@ import {
   HelpCircle,
   FileText,
   AlertTriangle,
-  FileImage,
-  FileSpreadsheet,
-  FileArchive,
-  File,
-  Download,
   Lock,
   Unlock,
   FileCheck,
@@ -55,7 +50,7 @@ const TASK_STATUS_LABELS = {
 
 export default function ClientProjectDetailPage() {
   const { id } = useParams()
-  const { data: project, isLoading, isError } = useClientProject(id)
+  const { data: project, isLoading, isError, refetch } = useClientProject(id)
   const payMutation = useClientPayMilestone()
 
   if (isLoading) {

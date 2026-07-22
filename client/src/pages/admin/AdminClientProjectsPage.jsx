@@ -18,7 +18,6 @@ import {
   FolderOpen,
   Download,
   Eye,
-  CheckCircle2,
   FileCheck,
 } from 'lucide-react'
 import { useForm } from 'react-hook-form'

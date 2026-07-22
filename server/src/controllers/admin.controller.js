@@ -681,6 +681,14 @@ export const getDashboardStats = async (req, res, next) => {
     sixMonthsAgo.setDate(1)
     sixMonthsAgo.setHours(0, 0, 0, 0)
 
+    const safeQuery = async (queryFn, fallbackValue) => {
+      try {
+        return await queryFn()
+      } catch (_err) {
+        return fallbackValue
+      }
+    }
+
     const [
       totalLeads,
       newLeads,
@@ -700,41 +708,53 @@ export const getDashboardStats = async (req, res, next) => {
       recentLeads,
       recentProjects,
     ] = await Promise.all([
-      prisma.contactLead.count({ where: { deletedAt: null } }),
-      prisma.contactLead.count({ where: { status: 'NEW', deletedAt: null } }),
-      prisma.contactLead.count({ where: { status: 'CONTACTED', deletedAt: null } }),
-      prisma.contactLead.count({ where: { status: 'CLOSED', deletedAt: null } }),
-      prisma.project.count(), // public projects
-      prisma.service.count({ where: { isActive: true } }),
-      prisma.teamMember.count(),
-      prisma.jobApplication.count({ where: { deletedAt: null } }),
-      prisma.jobPosting.count({ where: { isActive: true } }),
-      prisma.clientProject.findMany({ where: { deletedAt: null } }),
-      prisma.workTask.findMany(),
-      prisma.blogPost.count({ where: { status: 'PUBLISHED', deletedAt: null } }),
-      prisma.blogComment.count({ where: { isApproved: false } }),
-      prisma.testimonial.count({ where: { isActive: true } }),
-      prisma.siteSetting.findMany({
-        where: {
-          key: {
-            in: ['phone', 'email', 'address', 'linkedin', 'instagram', 'facebook'],
-          },
-        },
-      }),
-      prisma.contactLead.findMany({
-        where: { createdAt: { gte: sixMonthsAgo }, deletedAt: null },
-        select: { createdAt: true },
-      }),
-      prisma.clientProject.findMany({
-        where: { createdAt: { gte: sixMonthsAgo }, deletedAt: null },
-        select: { createdAt: true },
-      }),
+      safeQuery(() => prisma.contactLead.count({ where: { deletedAt: null } }), 0),
+      safeQuery(() => prisma.contactLead.count({ where: { status: 'NEW', deletedAt: null } }), 0),
+      safeQuery(() => prisma.contactLead.count({ where: { status: 'CONTACTED', deletedAt: null } }), 0),
+      safeQuery(() => prisma.contactLead.count({ where: { status: 'CLOSED', deletedAt: null } }), 0),
+      safeQuery(() => prisma.project.count(), 0),
+      safeQuery(() => prisma.service.count({ where: { isActive: true } }), 0),
+      safeQuery(() => prisma.teamMember.count(), 0),
+      safeQuery(() => prisma.jobApplication.count({ where: { deletedAt: null } }), 0),
+      safeQuery(() => prisma.jobPosting.count({ where: { isActive: true } }), 0),
+      safeQuery(() => prisma.clientProject.findMany({ where: { deletedAt: null } }), []),
+      safeQuery(() => prisma.workTask.findMany(), []),
+      safeQuery(() => prisma.blogPost.count({ where: { status: 'PUBLISHED', deletedAt: null } }), 0),
+      safeQuery(() => prisma.blogComment.count({ where: { isApproved: false } }), 0),
+      safeQuery(() => prisma.testimonial.count({ where: { isActive: true } }), 0),
+      safeQuery(
+        () =>
+          prisma.siteSetting.findMany({
+            where: {
+              key: {
+                in: ['phone', 'email', 'address', 'linkedin', 'instagram', 'facebook'],
+              },
+            },
+          }),
+        []
+      ),
+      safeQuery(
+        () =>
+          prisma.contactLead.findMany({
+            where: { createdAt: { gte: sixMonthsAgo }, deletedAt: null },
+            select: { createdAt: true },
+          }),
+        []
+      ),
+      safeQuery(
+        () =>
+          prisma.clientProject.findMany({
+            where: { createdAt: { gte: sixMonthsAgo }, deletedAt: null },
+            select: { createdAt: true },
+          }),
+        []
+      ),
     ])
 
-    const activeProjectsCount = clientProjects.filter((p) => p.status !== 'COMPLETED').length
+    const activeProjectsCount = (clientProjects || []).filter((p) => p.status !== 'COMPLETED').length
     const now = new Date()
-    const overdueProjectsCount = clientProjects.filter(
-      (p) => p.status !== 'COMPLETED' && new Date(p.deadline) < now
+    const overdueProjectsCount = (clientProjects || []).filter(
+      (p) => p.status !== 'COMPLETED' && p.deadline && new Date(p.deadline) < now
     ).length
 
     const todayStart = new Date()

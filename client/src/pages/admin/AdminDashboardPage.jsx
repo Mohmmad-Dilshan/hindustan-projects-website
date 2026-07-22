@@ -411,7 +411,7 @@ export default function AdminDashboardPage() {
                   <div key={ticket.id} className="py-3 flex items-center justify-between gap-3 text-xs">
                     <div>
                       <p className="font-semibold text-gray-900">{ticket.subject}</p>
-                      <p className="text-gray-400 mt-0.5">Project: {ticket.clientProject?.name || 'General'}</p>
+                      <p className="text-gray-400 mt-0.5">Project: {ticket.clientProject?.projectTitle || 'General'}</p>
                     </div>
                     <span className={`px-2 py-1 rounded-full text-[11px] font-semibold ${
                       ticket.status === 'OPEN' ? 'bg-red-50 text-red-700' :

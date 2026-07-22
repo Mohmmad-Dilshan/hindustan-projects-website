@@ -832,14 +832,40 @@ export default function AdminClientProjectsPage() {
                     )}
                   </div>
 
-                  {/* Deadline countdown tag & Edit/Delete actions */}
-                  <div className="flex items-center justify-between mt-2 pt-3 border-t border-gray-100">
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border ${deadlineStatus.color}`}
-                    >
-                      {deadlineStatus.text}
-                    </span>
-                    <div className="flex gap-1.5">
+                  {/* Deadline countdown tag & File Count & Edit/Delete actions */}
+                  <div className="flex items-center justify-between mt-2 pt-3 border-t border-gray-100 flex-wrap gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border ${deadlineStatus.color}`}
+                      >
+                        {deadlineStatus.text}
+                      </span>
+                      {p.attachments && p.attachments.length > 0 && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-blue-50 text-brand-blue border border-blue-100 flex items-center gap-1" title="Files in Project Vault">
+                          📎 {p.attachments.length} Files
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      {p.client && (
+                        <button
+                          onClick={async () => {
+                            if (window.confirm(`Resend portal login credentials to ${p.client.email}?`)) {
+                              try {
+                                await api.post(`/admin/clients/${p.client.id}/resend-welcome`)
+                                alert(`Welcome email sent to ${p.client.email}!`)
+                              } catch (err) {
+                                alert(err.response?.data?.message || 'Failed to send credentials.')
+                              }
+                            }
+                          }}
+                          className="text-gray-400 hover:text-emerald-600 p-1.5 hover:bg-emerald-50 rounded-lg transition-all"
+                          title="Resend Portal Welcome Credentials Email"
+                        >
+                          ✉️
+                        </button>
+                      )}
                       <button
                         onClick={() => {
                           setEditing(p)

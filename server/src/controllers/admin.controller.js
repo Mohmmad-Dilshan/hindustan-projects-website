@@ -620,13 +620,13 @@ export const getDashboardStats = async (req, res, next) => {
             ],
           },
           include: {
-            clientProject: { select: { id: true, name: true, clientName: true } },
+            clientProject: { select: { id: true, projectTitle: true, clientName: true } },
           },
           orderBy: { updatedAt: 'desc' },
         }),
         prisma.supportTicket.findMany({
           where: { assignedAdminId: req.admin.id },
-          include: { clientProject: { select: { id: true, name: true } } },
+          include: { clientProject: { select: { id: true, projectTitle: true } } },
           orderBy: { updatedAt: 'desc' },
           take: 5,
         }),

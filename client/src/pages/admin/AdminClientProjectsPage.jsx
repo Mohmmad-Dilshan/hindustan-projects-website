@@ -162,11 +162,15 @@ function ProjectForm({ initial, onSave, onCancel, loading, onAttachmentChange })
             </label>
             <select {...register('assignedTo')} className={inputCls}>
               <option value="">-- Unassigned --</option>
-              {assignableTeam.map((m) => (
-                <option key={m.id} value={m.name}>
-                  {m.name} ({m.role === 'SUPER_ADMIN' ? 'Super Admin' : m.role === 'ADMIN' ? 'Admin' : 'Staff'})
-                </option>
-              ))}
+              {assignableTeam.map((m) => {
+                const displayName = m.name || m.email.split('@')[0].toUpperCase()
+                const roleLabel = m.role === 'SUPER_ADMIN' ? 'Super Admin' : m.role === 'ADMIN' ? 'Admin' : 'Staff'
+                return (
+                  <option key={m.id} value={displayName}>
+                    👤 {displayName} ({m.email}) — [{roleLabel}]
+                  </option>
+                )
+              })}
             </select>
           </div>
         </div>

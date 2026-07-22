@@ -194,3 +194,39 @@ export const getClientDashboardStats = async (req, res, next) => {
     next(err)
   }
 }
+
+// POST /api/client/projects/:id/attachments
+export const uploadClientProjectAttachment = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const clientId = req.client.id
+
+    const project = await prisma.clientProject.findFirst({
+      where: { id, clientId },
+    })
+
+    if (!project) {
+      return res.status(404).json({ status: 'error', message: 'Project not found.' })
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ status: 'error', message: 'No file uploaded.' })
+    }
+
+    const attachment = await prisma.attachment.create({
+      data: {
+        filename: req.file.originalname || req.file.filename,
+        fileUrl: req.file.path || req.file.secure_url || req.file.url,
+        fileSize: req.file.size || 0,
+        fileType: req.file.mimetype || 'application/octet-stream',
+        clientProjectId: id,
+        uploadedByRole: 'CLIENT',
+        uploadedByName: req.client.name || 'Client',
+      },
+    })
+
+    res.status(201).json({ status: 'ok', data: attachment })
+  } catch (err) {
+    next(err)
+  }
+}

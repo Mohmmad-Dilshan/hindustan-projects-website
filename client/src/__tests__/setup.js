@@ -7,7 +7,7 @@
  */
 
 import '@testing-library/jest-dom'
-import { vi } from 'vitest'
+import { vi, beforeAll, afterAll } from 'vitest'
 
 // ── Mock window.location.reload (used by ErrorBoundary) ────────
 Object.defineProperty(window, 'location', {

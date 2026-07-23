@@ -78,20 +78,20 @@ export default function AdminLeadsPage() {
   const qc = useQueryClient()
   const toast = useToast()
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-leads', statusFilter],
     queryFn: () =>
       api.get('/admin/leads', { params: statusFilter ? { status: statusFilter } : {} }).then((r) => r.data),
   })
 
-  const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status }) => api.patch(`/admin/leads/${id}`, { status }),
+  const updateMutation = useMutation({
+    mutationFn: ({ id, ...payload }) => api.patch(`/admin/leads/${id}`, payload),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-leads'] })
-      toast.success('Lead status updated!')
+      toast.success('Lead updated successfully!')
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || err.message || 'Failed to update lead status.')
+      toast.error(err.response?.data?.message || err.message || 'Failed to update lead.')
     },
   })
 

@@ -2,11 +2,12 @@ name: Continuous Integration
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, feature/* ]
   pull_request:
     branches: [ main ]
 
 jobs:
+  # ────────────────────────────────────────────────────────────
   client-ci:
     name: Client CI (Frontend)
     runs-on: ubuntu-latest
@@ -31,15 +32,28 @@ jobs:
       - name: Check Linting & Formatting
         run: npm run lint
 
+      - name: Run Unit Tests
+        run: npm test
+
       - name: Build Application
         run: npm run build
 
+  # ────────────────────────────────────────────────────────────
   server-ci:
     name: Server CI (Backend)
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./server
+
+    env:
+      NODE_ENV: test
+      JWT_SECRET: ci-test-jwt-secret-minimum-32-characters-long
+      DATABASE_URL: ""
+      CLIENT_URL: http://localhost:5173
+      ADMIN_SECRET_PATH: ci-test-admin-path
+      PORT: "5001"
+      INTEGRATION_MASTER_KEY: ci-test-master-key
 
     steps:
       - name: Checkout Code
@@ -60,3 +74,6 @@ jobs:
 
       - name: Check Linting & Formatting
         run: npm run lint
+
+      - name: Run Tests
+        run: npm test

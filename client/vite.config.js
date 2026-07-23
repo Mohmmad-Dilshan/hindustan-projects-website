@@ -20,12 +20,9 @@ export default defineConfig({
     },
   },
   build: {
-    // Chunk warning limit — framer-motion is now only in lazy-loaded chunks (not initial bundle)
-    // 600 covers large lazy pages: BlogPostPage (42KB), AboutPage (38KB), etc.
     chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
-        // Vite 8 (rolldown) requires manualChunks as a function
         manualChunks(id) {
           if (id.includes('node_modules')) {
             if (id.includes('framer-motion')) return 'vendor-motion'
@@ -38,6 +35,23 @@ export default defineConfig({
           }
         },
       },
+    },
+  },
+  // ── Vitest configuration ──────────────────────────────────────
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./src/__tests__/setup.js'],
+    css: true,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html', 'lcov'],
+      include: ['src/**/*.{js,jsx}'],
+      exclude: [
+        'src/main.jsx',
+        'src/__tests__/**',
+        'src/assets/**',
+      ],
     },
   },
 })

@@ -202,6 +202,7 @@ model Admin {
   email            String          @unique
   passwordHash     String
   role             AdminRole       @default(ADMIN)
+  assignedModules  String[]        @default([]) // Delegated module permissions (e.g. ["CMS_SERVICES", "CMS_BLOG", "CRM_LEADS", "WORK_TASKS", "CLIENT_PROJECTS"])
   isActive         Boolean         @default(true)
   loginAttempts    Int             @default(0)
   lockoutUntil     DateTime?
@@ -468,21 +469,38 @@ model BlogComment {
 // ─────────────────────────────────────────────────────────────────
 // SocialPostDraft — Pre-formatted social drafts for featured projects
 // ─────────────────────────────────────────────────────────────────
+enum SocialPlatform {
+  LINKEDIN
+  TWITTER
+  INSTAGRAM
+  FACEBOOK
+  ALL
+}
+
 enum SocialPostStatus {
   DRAFT
+  SCHEDULED
   POSTED
 }
 
 model SocialPostDraft {
-  id        String           @id @default(cuid())
-  projectId String
-  project   Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  text      String
-  status    SocialPostStatus @default(DRAFT)
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+  id              String           @id @default(cuid())
+  projectId       String?
+  project         Project?         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  platform        SocialPlatform   @default(ALL)
+  text            String
+  campaignName    String?
+  mediaUrls       String[]         @default([])
+  scheduledFor    DateTime?
+  status          SocialPostStatus @default(DRAFT)
+  engagementCount Int              @default(0)
+  authorAdminId   String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 
   @@index([projectId])
+  @@index([platform])
+  @@index([status])
   @@map("social_post_drafts")
 }
 

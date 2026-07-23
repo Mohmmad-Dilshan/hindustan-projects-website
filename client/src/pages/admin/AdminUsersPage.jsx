@@ -35,6 +35,19 @@ import { SEO } from '@/components/ui'
 const inputCls =
   'w-full pl-9 pr-3 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue/25 focus:border-brand-blue transition-all'
 
+const DELEGABLE_MODULES = [
+  { id: 'CMS_SERVICES', label: 'Services Management', desc: 'Add/edit IT services on main website' },
+  { id: 'CMS_PROJECTS', label: 'Portfolio Projects', desc: 'Manage case studies & featured portfolio' },
+  { id: 'CMS_TEAM', label: 'Team Members', desc: 'Manage About page staff section' },
+  { id: 'CMS_BLOG', label: 'Blog Posts & Comments', desc: 'Write blogs and moderate reader comments' },
+  { id: 'CMS_CAREERS', label: 'Careers & Applications', desc: 'Post jobs and review applicant resumes' },
+  { id: 'CRM_LEADS', label: 'CRM Sales Leads', desc: 'View and follow up with client inquiries' },
+  { id: 'WORK_TASKS', label: 'Task Management', desc: 'Assign & update staff tasks & Kanban' },
+  { id: 'CLIENT_PROJECTS', label: 'Client Projects', desc: 'Manage active client deliverables & progress' },
+  { id: 'SOCIAL_MARKETING', label: 'Social Marketing Suite', desc: 'Draft & schedule social campaigns' },
+  { id: 'CHATBOT_INQUIRIES', label: 'Chatbot Inquiries', desc: 'Review visitor AI chatbot submissions' },
+]
+
 export default function AdminUsersPage() {
   const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
@@ -49,6 +62,10 @@ export default function AdminUsersPage() {
   const [password, setPassword] = useState('')
   const [role, setRole] = useState('STAFF')
   const [showPassword, setShowPassword] = useState(false)
+
+  // Module Permission Delegation State
+  const [delegatingUser, setDelegatingUser] = useState(null)
+  const [assignedModulesSelection, setAssignedModulesSelection] = useState([])
 
   // Create Client Form State
   const [clientName, setClientName] = useState('')
@@ -253,6 +270,16 @@ export default function AdminUsersPage() {
       id: resetUserId,
       updates: { password: newPassword },
     })
+  }
+
+  const handleSaveAssignedModules = () => {
+    clearAlert()
+    if (!delegatingUser) return
+    updateMutation.mutate({
+      id: delegatingUser.id,
+      updates: { assignedModules: assignedModulesSelection },
+    })
+    setDelegatingUser(null)
   }
 
   const handleDeleteUser = (user) => {
@@ -754,6 +781,78 @@ export default function AdminUsersPage() {
           </div>
         )}
 
+        {/* Module Access Delegation Modal Overlay/Card */}
+        {delegatingUser && (
+          <div className="bg-purple-50/60 border border-purple-200 rounded-2xl p-6 shadow-sm space-y-4 animate-slide-down">
+            <div className="flex items-center justify-between pb-2 border-b border-purple-100">
+              <h2 className="font-heading text-base font-bold text-purple-950 flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-purple-700" />
+                Delegate Module Access &amp; Permissions: <span className="underline">{delegatingUser.email}</span> ({delegatingUser.role})
+              </h2>
+              <button
+                onClick={() => setDelegatingUser(null)}
+                className="text-purple-500 hover:text-purple-700 text-xs font-bold"
+              >
+                Close
+              </button>
+            </div>
+
+            <p className="text-xs text-purple-900">
+              Check/uncheck the administrative modules that this staff member is authorized to access and manage.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {DELEGABLE_MODULES.map((m) => {
+                const isChecked = assignedModulesSelection.includes(m.id)
+                return (
+                  <label
+                    key={m.id}
+                    className={`flex items-start gap-3 p-3.5 rounded-xl border transition-all cursor-pointer ${
+                      isChecked
+                        ? 'bg-white border-purple-300 shadow-sm ring-1 ring-purple-400/30'
+                        : 'bg-white/75 border-gray-200 hover:border-purple-200 hover:bg-white'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setAssignedModulesSelection([...assignedModulesSelection, m.id])
+                        } else {
+                          setAssignedModulesSelection(assignedModulesSelection.filter((id) => id !== m.id))
+                        }
+                      }}
+                      className="rounded border-gray-300 text-purple-600 focus:ring-purple-500 w-4 h-4 mt-0.5"
+                    />
+                    <div className="min-w-0">
+                      <span className="text-xs font-bold text-gray-900 block">{m.label}</span>
+                      <span className="text-[10px] text-gray-500 block leading-tight mt-0.5">{m.desc}</span>
+                    </div>
+                  </label>
+                )
+              })}
+            </div>
+
+            <div className="flex gap-2 pt-2 border-t border-purple-100">
+              <button
+                onClick={handleSaveAssignedModules}
+                disabled={updateMutation.isPending}
+                className="bg-purple-700 hover:bg-purple-800 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-colors cursor-pointer disabled:opacity-60 flex items-center gap-1.5"
+              >
+                <Check className="w-3.5 h-3.5" />
+                {updateMutation.isPending ? 'Saving Permissions...' : 'Save Module Permissions'}
+              </button>
+              <button
+                onClick={() => setDelegatingUser(null)}
+                className="border border-purple-200 hover:bg-purple-100/50 text-purple-900 font-semibold px-5 py-2.5 rounded-xl text-xs transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* ── INTERNAL USERS TABLE ── */}
         {activeTab === 'internal' && (
           <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
@@ -842,6 +941,24 @@ export default function AdminUsersPage() {
                                   title={u.isActive ? 'Deactivate Account' : 'Reactivate Account'}
                                 >
                                   <Power className="w-4 h-4" />
+                                </button>
+                              )}
+
+                              {/* Manage Delegated Modules */}
+                              {!isSuper && (
+                                <button
+                                  onClick={() => {
+                                    clearAlert()
+                                    setDelegatingUser(u)
+                                    setAssignedModulesSelection(u.assignedModules || [])
+                                    setResetUserId(null)
+                                    setShowAddForm(false)
+                                    setLinkingClient(null)
+                                  }}
+                                  className="p-2 border border-blue-200 bg-blue-50 text-brand-blue hover:bg-blue-100 rounded-lg transition-colors cursor-pointer"
+                                  title="Delegate Module Access & Permissions"
+                                >
+                                  <ShieldCheck className="w-4 h-4" />
                                 </button>
                               )}
 

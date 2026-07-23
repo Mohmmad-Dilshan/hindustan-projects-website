@@ -15,6 +15,7 @@ export const listAdminUsers = async (req, res, next) => {
         id: true,
         email: true,
         role: true,
+        assignedModules: true,
         isActive: true,
         twoFactorEnabled: true,
         createdAt: true,
@@ -30,7 +31,7 @@ export const listAdminUsers = async (req, res, next) => {
 
 export const createAdminUser = async (req, res, next) => {
   try {
-    const { email, password, role } = req.body
+    const { email, password, role, assignedModules } = req.body
 
     if (!email || !password || !role) {
       return res.status(400).json({ status: 'error', message: 'Email, password, and role are required.' })
@@ -52,12 +53,14 @@ export const createAdminUser = async (req, res, next) => {
         email: email.trim().toLowerCase(),
         passwordHash,
         role,
+        assignedModules: Array.isArray(assignedModules) ? assignedModules : [],
         isActive: true,
       },
       select: {
         id: true,
         email: true,
         role: true,
+        assignedModules: true,
         isActive: true,
         createdAt: true,
       },
@@ -117,7 +120,7 @@ export const createAdminUser = async (req, res, next) => {
 export const updateAdminUser = async (req, res, next) => {
   try {
     const { id } = req.params
-    const { role, isActive, password } = req.body
+    const { role, isActive, password, assignedModules } = req.body
 
     const existing = await prisma.admin.findUnique({ where: { id } })
     if (!existing) {
@@ -138,6 +141,9 @@ export const updateAdminUser = async (req, res, next) => {
     }
     if (isActive !== undefined) {
       data.isActive = Boolean(isActive)
+    }
+    if (Array.isArray(assignedModules)) {
+      data.assignedModules = assignedModules
     }
     if (password && password.trim()) {
       const matchesCurrent = await bcrypt.compare(password, existing.passwordHash)
@@ -192,6 +198,7 @@ export const updateAdminUser = async (req, res, next) => {
         id: true,
         email: true,
         role: true,
+        assignedModules: true,
         isActive: true,
         createdAt: true,
       },

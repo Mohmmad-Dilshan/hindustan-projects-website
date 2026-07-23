@@ -17,6 +17,12 @@ const ENTITY_LABELS = {
   ClientProject: 'Client Project',
   WorkTask: 'Task',
   QuickNote: 'Sticky Note',
+  Client: 'Client Portal',
+  Admin: 'Admin / Staff Account',
+  SocialPostDraft: 'Social Campaign Post',
+  Lead: 'Sales Lead',
+  Service: 'IT Service',
+  Project: 'Portfolio Showcase',
 }
 
 const formatTimeAgo = (dateStr) => {
@@ -105,6 +111,8 @@ export default function AdminActivitiesPage() {
               <option value="ALL">Filter by Entity: All</option>
               <option value="ClientProject">Client Projects Only</option>
               <option value="WorkTask">Tasks Only</option>
+              <option value="SocialPostDraft">Social Campaigns Only</option>
+              <option value="Admin">Staff / Admin Users Only</option>
               <option value="QuickNote">Sticky Notes Only</option>
               <option value="Client">Client Accounts Only</option>
             </select>

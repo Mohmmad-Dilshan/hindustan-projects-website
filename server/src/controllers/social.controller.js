@@ -5,7 +5,7 @@ export const listSocialDrafts = async (_req, res, next) => {
     const drafts = await prisma.socialPostDraft.findMany({
       include: {
         project: {
-          select: { title: true, category: true, clientName: true },
+          select: { id: true, title: true, category: true, clientName: true },
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -19,15 +19,28 @@ export const listSocialDrafts = async (_req, res, next) => {
 export const updateSocialDraftStatus = async (req, res, next) => {
   try {
     const { id } = req.params
-    const { status } = req.body
+    const { status, platform, text, campaignName, scheduledFor, mediaUrls } = req.body
 
-    if (!['DRAFT', 'POSTED'].includes(status)) {
-      return res.status(400).json({ status: 'error', message: 'Invalid status' })
+    const updateData = {}
+    if (status && ['DRAFT', 'SCHEDULED', 'POSTED'].includes(status)) {
+      updateData.status = status
     }
+    if (platform && ['LINKEDIN', 'TWITTER', 'INSTAGRAM', 'FACEBOOK', 'ALL'].includes(platform)) {
+      updateData.platform = platform
+    }
+    if (text !== undefined) updateData.text = text
+    if (campaignName !== undefined) updateData.campaignName = campaignName
+    if (scheduledFor !== undefined) updateData.scheduledFor = scheduledFor ? new Date(scheduledFor) : null
+    if (Array.isArray(mediaUrls)) updateData.mediaUrls = mediaUrls
 
     const draft = await prisma.socialPostDraft.update({
       where: { id },
-      data: { status },
+      data: updateData,
+      include: {
+        project: {
+          select: { id: true, title: true, category: true, clientName: true },
+        },
+      },
     })
     res.json({ status: 'ok', data: draft })
   } catch (err) {
@@ -47,21 +60,29 @@ export const deleteSocialDraft = async (req, res, next) => {
 
 export const createSocialDraft = async (req, res, next) => {
   try {
-    const { projectId, text, status } = req.body
-    if (!projectId || !text) {
-      return res.status(400).json({ status: 'error', message: 'Project ID and text are required.' })
+    const { projectId, text, status, platform, campaignName, scheduledFor, mediaUrls } = req.body
+    if (!text) {
+      return res.status(400).json({ status: 'error', message: 'Social post text is required.' })
     }
+
+    const adminId = req.user?.id || null
+
     const draft = await prisma.socialPostDraft.create({
       data: {
-        projectId,
-        text,
-        status: status || 'DRAFT'
+        projectId: projectId || null,
+        platform: platform && ['LINKEDIN', 'TWITTER', 'INSTAGRAM', 'FACEBOOK', 'ALL'].includes(platform) ? platform : 'ALL',
+        text: text.trim(),
+        campaignName: campaignName || null,
+        scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
+        mediaUrls: Array.isArray(mediaUrls) ? mediaUrls : [],
+        status: status && ['DRAFT', 'SCHEDULED', 'POSTED'].includes(status) ? status : 'DRAFT',
+        authorAdminId: adminId,
       },
       include: {
         project: {
-          select: { title: true, category: true, clientName: true }
-        }
-      }
+          select: { id: true, title: true, category: true, clientName: true },
+        },
+      },
     })
     res.json({ status: 'ok', data: draft })
   } catch (err) {

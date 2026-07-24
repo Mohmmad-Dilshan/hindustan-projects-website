@@ -51,8 +51,27 @@ export default function AdminMonitoringPage() {
   // 2. Single error log deletion mutation
   const deleteMutation = useMutation({
     mutationFn: (id) => api.delete(`/admin/monitoring/errors/${id}`),
-    onSuccess: () => {
+    onSuccess: (_, deletedId) => {
       addToast('Error log entry removed', 'info')
+      queryClient.setQueryData(['monitoring-stats'], (old) => {
+        if (!old) return old
+        if (old.data?.errorLogs) {
+          return {
+            ...old,
+            data: {
+              ...old.data,
+              errorLogs: old.data.errorLogs.filter((e) => e.id !== deletedId),
+            },
+          }
+        }
+        if (old.errorLogs) {
+          return {
+            ...old,
+            errorLogs: old.errorLogs.filter((e) => e.id !== deletedId),
+          }
+        }
+        return old
+      })
       queryClient.invalidateQueries({ queryKey: ['monitoring-stats'] })
     },
     onError: (err) => {
@@ -65,6 +84,25 @@ export default function AdminMonitoringPage() {
     mutationFn: () => api.delete('/admin/monitoring/errors'),
     onSuccess: () => {
       addToast('All error log entries cleared successfully', 'success')
+      queryClient.setQueryData(['monitoring-stats'], (old) => {
+        if (!old) return old
+        if (old.data?.errorLogs) {
+          return {
+            ...old,
+            data: {
+              ...old.data,
+              errorLogs: [],
+            },
+          }
+        }
+        if (old.errorLogs) {
+          return {
+            ...old,
+            errorLogs: [],
+          }
+        }
+        return old
+      })
       queryClient.invalidateQueries({ queryKey: ['monitoring-stats'] })
     },
     onError: (err) => {

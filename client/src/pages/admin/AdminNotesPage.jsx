@@ -21,7 +21,7 @@ import {
   Bookmark,
 } from 'lucide-react'
 import { api } from '@/utils/api'
-import { SEO } from '@/components/ui'
+import { SEO, ConfirmModal } from '@/components/ui'
 import { useToast } from '@/components/ui/ToastProvider'
 
 const COLORS = [
@@ -77,6 +77,13 @@ export default function AdminNotesPage() {
   const [filterColor, setFilterColor] = useState('ALL')
   const [filterPin, setFilterPin] = useState('ALL') // 'ALL' | 'PINNED' | 'UNPINNED'
   const [copiedId, setCopiedId] = useState(null)
+  const [deleteConfirm, setDeleteConfirm] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    itemTitle: '',
+    onConfirm: null,
+  })
 
   // Inline note creation states
   const [noteTitle, setNoteTitle] = useState('')
@@ -155,10 +162,17 @@ export default function AdminNotesPage() {
     updateMutation.mutate({ id: note.id, color })
   }
 
-  const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this sticky note?')) {
-      deleteMutation.mutate(id)
-    }
+  const handleDelete = (note) => {
+    setDeleteConfirm({
+      isOpen: true,
+      title: 'Delete Sticky Note',
+      message: 'Are you sure you want to permanently delete this sticky note from the vault?',
+      itemTitle: note.title || 'Untitled Sticky Note',
+      onConfirm: () => {
+        deleteMutation.mutate(note.id)
+        setDeleteConfirm((prev) => ({ ...prev, isOpen: false }))
+      },
+    })
   }
 
   const handleStartEdit = (note) => {
@@ -573,7 +587,7 @@ export default function AdminNotesPage() {
 
                         {/* Delete Note */}
                         <button
-                          onClick={() => handleDelete(note.id)}
+                          onClick={() => handleDelete(note)}
                           className="p-1 text-gray-600 hover:text-red-600 hover:bg-black/5 rounded transition-all cursor-pointer"
                           title="Delete Note"
                         >
@@ -602,6 +616,19 @@ export default function AdminNotesPage() {
             </p>
           </div>
         </div>
+
+        {/* ── Delete Confirmation Modal ──────────────────────────── */}
+        <ConfirmModal
+          isOpen={deleteConfirm.isOpen}
+          onClose={() => setDeleteConfirm((prev) => ({ ...prev, isOpen: false }))}
+          onConfirm={deleteConfirm.onConfirm}
+          title={deleteConfirm.title}
+          message={deleteConfirm.message}
+          itemTitle={deleteConfirm.itemTitle}
+          confirmText="Delete Sticky Note"
+          variant="danger"
+          isLoading={deleteMutation.isPending}
+        />
 
       </div>
     </>

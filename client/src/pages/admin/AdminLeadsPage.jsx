@@ -20,7 +20,7 @@ import {
   Upload,
 } from 'lucide-react'
 import { api } from '@/utils/api'
-import { SEO } from '@/components/ui'
+import { SEO, ConfirmModal } from '@/components/ui'
 import AttachmentSection from '@/components/ui/AttachmentSection'
 import { useToast } from '@/components/ui/ToastProvider'
 
@@ -75,6 +75,13 @@ export default function AdminLeadsPage() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
   const [csvFile, setCsvFile] = useState(null)
   const [importStatus, setImportStatus] = useState(null)
+  const [deleteConfirm, setDeleteConfirm] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    itemTitle: '',
+    onConfirm: null,
+  })
   const qc = useQueryClient()
   const toast = useToast()
 
@@ -575,9 +582,18 @@ export default function AdminLeadsPage() {
               <div className="p-4 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-2 shrink-0">
                 <button
                   onClick={() => {
-                    if (window.confirm('Delete this lead?')) deleteMutation.mutate(selectedLead.id)
+                    setDeleteConfirm({
+                      isOpen: true,
+                      title: 'Delete Inquiry Lead',
+                      message: 'Are you sure you want to permanently delete this lead record from CRM?',
+                      itemTitle: `${selectedLead.name} (${selectedLead.email})`,
+                      onConfirm: () => {
+                        deleteMutation.mutate(selectedLead.id)
+                        setDeleteConfirm((prev) => ({ ...prev, isOpen: false }))
+                      },
+                    })
                   }}
-                  className="px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                  className="px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
                 >
                   Delete Lead
                 </button>
@@ -689,12 +705,24 @@ export default function AdminLeadsPage() {
                   disabled={!csvFile || importMutation.isPending}
                   className="px-4 py-2 bg-brand-blue hover:bg-blue-700 disabled:bg-gray-300 text-white text-xs font-semibold rounded-xl hover:shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
                 >
-                  {importMutation.isPending ? 'Importing...' : 'Upload & Import'}
                 </button>
               </div>
             </div>
           </div>
         )}
+
+        {/* ── Delete Confirmation Modal ──────────────────────────── */}
+        <ConfirmModal
+          isOpen={deleteConfirm.isOpen}
+          onClose={() => setDeleteConfirm((prev) => ({ ...prev, isOpen: false }))}
+          onConfirm={deleteConfirm.onConfirm}
+          title={deleteConfirm.title}
+          message={deleteConfirm.message}
+          itemTitle={deleteConfirm.itemTitle}
+          confirmText="Delete Lead"
+          variant="danger"
+          isLoading={deleteMutation.isPending}
+        />
       </div>
     </>
   )

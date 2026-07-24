@@ -32,7 +32,7 @@ import {
   X,
 } from 'lucide-react'
 import { api } from '@/utils/api'
-import { SEO } from '@/components/ui'
+import { SEO, ConfirmModal } from '@/components/ui'
 import { useToast } from '@/components/ui/ToastProvider'
 
 const inputCls =
@@ -86,6 +86,15 @@ export default function AdminUsersPage() {
 
   // Copy Feedback State
   const [copiedToken, setCopiedToken] = useState(null)
+
+  // Confirm Modal State
+  const [deleteConfirm, setDeleteConfirm] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    itemTitle: '',
+    onConfirm: null,
+  })
 
   // 1. Fetch Staff/Admin Users
   const { data: users = [], isLoading, isError, refetch: refetchUsers } = useQuery({
@@ -251,15 +260,29 @@ export default function AdminUsersPage() {
   }
 
   const handleDeleteUser = (user) => {
-    if (confirm(`PERMANENT DELETION NOTICE:\nAre you sure you want to permanently delete account ${user.email}? This action cannot be undone.`)) {
-      deleteMutation.mutate(user.id)
-    }
+    setDeleteConfirm({
+      isOpen: true,
+      title: 'Delete Staff Account',
+      message: 'Are you sure you want to permanently delete this administrative account? The user will lose system access immediately.',
+      itemTitle: user.email,
+      onConfirm: () => {
+        deleteMutation.mutate(user.id)
+        setDeleteConfirm((prev) => ({ ...prev, isOpen: false }))
+      },
+    })
   }
 
   const handleDeleteClient = (client) => {
-    if (confirm(`PERMANENT DELETION NOTICE:\nAre you sure you want to permanently delete client account ${client.name} (${client.email})? This action cannot be undone.`)) {
-      deleteClientMutation.mutate(client.id)
-    }
+    setDeleteConfirm({
+      isOpen: true,
+      title: 'Delete Client Portal Account',
+      message: 'Are you sure you want to permanently delete this client portal space? The client will no longer be able to access deliverables.',
+      itemTitle: `${client.name} (${client.email})`,
+      onConfirm: () => {
+        deleteClientMutation.mutate(client.id)
+        setDeleteConfirm((prev) => ({ ...prev, isOpen: false }))
+      },
+    })
   }
 
   const handleOpenLinkProjects = (client) => {
@@ -1136,6 +1159,19 @@ export default function AdminUsersPage() {
             </p>
           </div>
         </div>
+
+        {/* ── Delete Confirmation Modal ──────────────────────────── */}
+        <ConfirmModal
+          isOpen={deleteConfirm.isOpen}
+          onClose={() => setDeleteConfirm((prev) => ({ ...prev, isOpen: false }))}
+          onConfirm={deleteConfirm.onConfirm}
+          title={deleteConfirm.title}
+          message={deleteConfirm.message}
+          itemTitle={deleteConfirm.itemTitle}
+          confirmText="Delete Account"
+          variant="danger"
+          isLoading={deleteMutation.isPending || deleteClientMutation.isPending}
+        />
 
       </div>
     </>

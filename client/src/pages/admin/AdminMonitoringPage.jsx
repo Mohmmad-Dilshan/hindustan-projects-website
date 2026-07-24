@@ -30,7 +30,7 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import { api } from '@/utils/api'
-import { SEO } from '@/components/ui'
+import { SEO, ConfirmModal } from '@/components/ui'
 import { useToast } from '@/components/ui/ToastProvider'
 
 export default function AdminMonitoringPage() {
@@ -72,17 +72,45 @@ export default function AdminMonitoringPage() {
     },
   })
 
-  const handleClearAll = () => {
-    if (window.confirm('PERMANENT DELETION NOTICE:\nAre you sure you want to permanently delete ALL error log entries?')) {
-      clearAllMutation.mutate()
-    }
-  }
+  const [deleteConfirm, setDeleteConfirm] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    itemTitle: '',
+    onConfirm: null,
+  })
 
-  const stats = data || {}
+  const stats = data?.data || data || {}
   const errorLogs = stats.errorLogs || []
   const traffic = stats.traffic || { today: 0, week: 0, month: 0, popularPages: [], chartData: [] }
   const health = stats.systemHealth || { database: 'UNKNOWN', uptime: 0, memoryUsed: 0, memoryTotal: 0, platform: '', cpuLoad: [0, 0, 0] }
   const config = stats.config || { sentry: false, googleAnalytics: false }
+
+  const handleClearAll = () => {
+    setDeleteConfirm({
+      isOpen: true,
+      title: 'Clear All Error Telemetry Logs',
+      message: 'Are you sure you want to permanently delete all recorded runtime error logs? This action cannot be undone.',
+      itemTitle: `All ${errorLogs.length} Log Entries`,
+      onConfirm: () => {
+        clearAllMutation.mutate()
+        setDeleteConfirm((prev) => ({ ...prev, isOpen: false }))
+      },
+    })
+  }
+
+  const handleDeleteSingle = (errLog) => {
+    setDeleteConfirm({
+      isOpen: true,
+      title: 'Delete Single Error Entry',
+      message: 'Are you sure you want to remove this specific error log entry from system telemetry?',
+      itemTitle: `${errLog.source} Error: ${errLog.errorMessage ? errLog.errorMessage.substring(0, 50) + '...' : 'Unknown Error'}`,
+      onConfirm: () => {
+        deleteMutation.mutate(errLog.id)
+        setDeleteConfirm((prev) => ({ ...prev, isOpen: false }))
+      },
+    })
+  }
 
   // Filter error logs
   const filteredErrors = errorLogs.filter((err) => {
@@ -468,11 +496,7 @@ export default function AdminMonitoringPage() {
                           </div>
 
                           <button
-                            onClick={() => {
-                              if (window.confirm('Delete this error log entry?')) {
-                                deleteMutation.mutate(err.id)
-                              }
-                            }}
+                            onClick={() => handleDeleteSingle(err)}
                             disabled={deleteMutation.isPending}
                             className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer disabled:opacity-50 shrink-0"
                             title="Delete Log"
@@ -598,6 +622,19 @@ export default function AdminMonitoringPage() {
             </p>
           </div>
         </div>
+
+        {/* ── Delete Confirmation Modal ──────────────────────────── */}
+        <ConfirmModal
+          isOpen={deleteConfirm.isOpen}
+          onClose={() => setDeleteConfirm((prev) => ({ ...prev, isOpen: false }))}
+          onConfirm={deleteConfirm.onConfirm}
+          title={deleteConfirm.title}
+          message={deleteConfirm.message}
+          itemTitle={deleteConfirm.itemTitle}
+          confirmText="Delete Error Log"
+          variant="danger"
+          isLoading={deleteMutation.isPending || clearAllMutation.isPending}
+        />
 
       </div>
     </>

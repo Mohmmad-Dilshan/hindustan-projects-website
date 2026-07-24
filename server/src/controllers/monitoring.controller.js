@@ -142,7 +142,7 @@ export const getMonitoringStats = async (req, res, next) => {
 export const deleteErrorLog = async (req, res, next) => {
   try {
     const { id } = req.params
-    await prisma.errorLog.delete({ where: { id } })
+    await prisma.errorLog.deleteMany({ where: { id } })
     res.json({ status: 'ok', message: 'Error log deleted successfully' })
   } catch (err) {
     next(err)

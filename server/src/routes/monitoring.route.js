@@ -34,22 +34,22 @@ router.post('/monitoring/log-frontend-error', errorLogLimiter, logFrontendError)
 router.get(
   '/admin/monitoring/stats',
   verifyToken,
-  requireRole('SUPER_ADMIN'),
+  requireRole('SUPER_ADMIN', 'ADMIN'),
   getMonitoringStats
-)
-
-router.delete(
-  '/admin/monitoring/errors/:id',
-  verifyToken,
-  requireRole('SUPER_ADMIN'),
-  deleteErrorLog
 )
 
 router.delete(
   '/admin/monitoring/errors',
   verifyToken,
-  requireRole('SUPER_ADMIN'),
+  requireRole('SUPER_ADMIN', 'ADMIN'),
   deleteAllErrorLogs
+)
+
+router.delete(
+  '/admin/monitoring/errors/:id',
+  verifyToken,
+  requireRole('SUPER_ADMIN', 'ADMIN'),
+  deleteErrorLog
 )
 
 export default router
